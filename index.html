@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سازنده توکن پالیگان</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- اضافه کردن Font Awesome برای آیکون‌ها -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- اضافه کردن ethers.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- هدر و لوگو -->
+        <header>
+            <div class="logo">
+                <i class="fas fa-coins"></i>
+                <h1>توکن‌ساز پالیگان</h1>
+            </div>
+            <button id="connectWallet" class="btn-connect">
+                <i class="fas fa-wallet"></i>
+                <span>اتصال کیف پول</span>
+            </button>
+        </header>
+
+        <!-- وضعیت شبکه -->
+        <div class="network-status">
+            <div class="status-indicator" id="networkIndicator"></div>
+            <span id="networkName">پالیگان</span>
+        </div>
+
+        <!-- کارت اصلی ساخت توکن -->
+        <div class="card">
+            <h2>ایجاد توکن جدید</h2>
+            <p class="subtitle">با کمترین هزینه روی شبکه پالیگان</p>
+
+            <!-- فرم ساخت توکن -->
+            <form id="tokenForm">
+                <!-- نام توکن -->
+                <div class="form-group">
+                    <label for="tokenName">
+                        <i class="fas fa-tag"></i>
+                        نام توکن
+                    </label>
+                    <input type="text" id="tokenName" placeholder="مثال: MyToken" required>
+                    <small>نام کامل توکن شما</small>
+                </div>
+
+                <!-- نماد توکن -->
+                <div class="form-group">
+                    <label for="tokenSymbol">
+                        <i class="fas fa-symbol"></i>
+                        نماد توکن
+                    </label>
+                    <input type="text" id="tokenSymbol" placeholder="مثال: MTK" maxlength="5" required>
+                    <small>حداکثر ۵ کاراکتر</small>
+                </div>
+
+                <!-- تعداد توکن -->
+                <div class="form-group">
+                    <label for="totalSupply">
+                        <i class="fas fa-chart-line"></i>
+                        عرضه کل
+                    </label>
+                    <input type="number" id="totalSupply" placeholder="مثال: 1000000" min="1" required>
+                    <small>تعداد کل توکن‌هایی که ساخته می‌شود</small>
+                </div>
+
+                <!-- اعشار توکن (اختیاری) -->
+                <div class="form-group">
+                    <label for="decimals">
+                        <i class="fas fa-decimal"></i>
+                        تعداد اعشار
+                    </label>
+                    <input type="number" id="decimals" value="18" min="0" max="18">
+                    <small>معمولاً ۱۸ (مثل همه توکن‌ها)</small>
+                </div>
+
+                <!-- گزینه‌های پیشرفته -->
+                <div class="advanced-options">
+                    <button type="button" id="toggleAdvanced" class="btn-toggle">
+                        <i class="fas fa-cog"></i>
+                        گزینه‌های پیشرفته
+                    </button>
+                    
+                    <div id="advancedPanel" class="advanced-panel hidden">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="mintable" checked>
+                                قابل mint کردن (Mintable)
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="burnable">
+                                قابل سوزاندن (Burnable)
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="pausable">
+                                قابلیت توقف (Pausable)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- دکمه ساخت توکن -->
+                <button type="submit" id="createToken" class="btn-create" disabled>
+                    <i class="fas fa-magic"></i>
+                    <span>ساخت توکن</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- کارت اطلاعات تراکنش -->
+        <div class="card" id="transactionCard" style="display: none;">
+            <h3>وضعیت تراکنش</h3>
+            <div class="transaction-status">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p id="transactionMessage">در حال ارسال تراکنش...</p>
+                <p id="transactionHash" class="tx-hash"></p>
+            </div>
+        </div>
+
+        <!-- کارت توکن ساخته شده -->
+        <div class="card" id="resultCard" style="display: none;">
+            <h3>✅ توکن با موفقیت ساخته شد</h3>
+            <div class="token-info">
+                <p><strong>نام:</strong> <span id="resultName"></span></p>
+                <p><strong>نماد:</strong> <span id="resultSymbol"></span></p>
+                <p><strong>آدرس قرارداد:</strong> 
+                    <span id="resultAddress" class="contract-address"></span>
+                    <button id="copyAddress" class="btn-icon">
+                        <i class="far fa-copy"></i>
+                    </button>
+                </p>
+                <p><strong>هزینه:</strong> <span id="resultCost">0.49 POL</span></p>
+            </div>
+            <div class="action-buttons">
+                <a href="#" id="polygonScanLink" target="_blank" class="btn-secondary">
+                    <i class="fas fa-external-link-alt"></i>
+                    مشاهده در پالیگان‌اسکن
+                </a>
+                <button id="createAnother" class="btn-primary">
+                    <i class="fas fa-plus"></i>
+                    ساخت توکن جدید
+                </button>
+            </div>
+        </div>
+
+        <!-- راهنما -->
+        <div class="faq-section">
+            <h3>سوالات متداول</h3>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>هزینه ساخت توکن چقدر است؟</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    هزینه گس در شبکه پالیگان بسیار کم است و معمولاً کمتر از ۰.۵ POL (حدود ۰.۱ دلار) می‌شود.
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>چقدر طول می‌کشد؟</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    تراکنش‌ها در پالیگان معمولاً چند ثانیه تا یک دقیقه طول می‌کشند.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+                                     </html>
