@@ -1,11 +1,12 @@
-// script.js
+// script.js - نسخه سازگار با موبایل
 class TokenCreator {
     constructor() {
         this.provider = null;
         this.signer = null;
         this.account = null;
-        this.contractAddress = "0xYourContractAddressHere"; // آدرس قرارداد شما
-        this.abi = []; // ABI قرارداد را از فایل abi.json بارگذاری کنید
+        this.sdk = null; // برای MetaMask SDK
+        this.contractAddress = "0xYourContractAddressHere"; // آدرس قراردادت رو بذار
+        this.abi = []; // ABI قرارداد
         
         this.init();
     }
@@ -15,10 +16,45 @@ class TokenCreator {
         this.attachEventListeners();
         await this.checkWalletConnection();
         this.loadABI();
+        // بارگذاری MetaMask SDK
+        this.loadMetaMaskSDK();
+    }
+    
+    loadMetaMaskSDK() {
+        // بارگذاری اسکریپت MetaMask SDK
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/@metamask/sdk@0.20.3/dist/browser/umd/index.js';
+        script.onload = () => this.initializeMetaMaskSDK();
+        document.head.appendChild(script);
+    }
+    
+    async initializeMetaMaskSDK() {
+        if (window.MetaMaskSDK) {
+            try {
+                const MMSDK = window.MetaMaskSDK.MetaMaskSDK;
+                this.sdk = new MMSDK({
+                    dappMetadata: {
+                        name: "توکن‌ساز پالیگان",
+                        url: window.location.href,
+                    },
+                    // این گزینه برای موبایل خیلی مهمه
+                    checkInstallationImmediately: false,
+                    preferDesktop: false,
+                    // ذخیره‌سازی وضعیت اتصال
+                    storage: {
+                        enabled: true,
+                    },
+                });
+                
+                console.log("MetaMask SDK initialized");
+            } catch (error) {
+                console.error("Error initializing MetaMask SDK:", error);
+            }
+        }
     }
     
     initializeElements() {
-        // المان‌های DOM
+        // المان‌های DOM - مثل قبل
         this.connectBtn = document.getElementById('connectWallet');
         this.connectBtnText = this.connectBtn.querySelector('span');
         this.networkIndicator = document.getElementById('networkIndicator');
@@ -31,13 +67,11 @@ class TokenCreator {
         this.transactionMessage = document.getElementById('transactionMessage');
         this.transactionHash = document.getElementById('transactionHash');
         
-        // المان‌های نتایج
         this.resultName = document.getElementById('resultName');
         this.resultSymbol = document.getElementById('resultSymbol');
         this.resultAddress = document.getElementById('resultAddress');
         this.polygonScanLink = document.getElementById('polygonScanLink');
         
-        // گزینه‌های پیشرفته
         this.toggleAdvanced = document.getElementById('toggleAdvanced');
         this.advancedPanel = document.getElementById('advancedPanel');
     }
@@ -47,8 +81,8 @@ class TokenCreator {
         this.tokenForm.addEventListener('submit', (e) => this.handleCreateToken(e));
         this.toggleAdvanced.addEventListener('click', () => this.toggleAdvancedOptions());
         
-        document.getElementById('copyAddress').addEventListener('click', () => this.copyAddress());
-        document.getElementById('createAnother').addEventListener('click', () => this.resetForm());
+        document.getElementById('copyAddress')?.addEventListener('click', () => this.copyAddress());
+        document.getElementById('createAnother')?.addEventListener('click', () => this.resetForm());
         
         // FAQ accordion
         document.querySelectorAll('.faq-question').forEach(question => {
@@ -61,21 +95,24 @@ class TokenCreator {
     
     async loadABI() {
         try {
-            // ABI قرارداد خود را از فایل جداگانه بارگذاری کنید
             const response = await fetch('abi.json');
-            this.abi = await response.json();
+            if (response.ok) {
+                this.abi = await response.json();
+            }
         } catch (error) {
             console.log('خطا در بارگذاری ABI:', error);
         }
     }
     
     async checkWalletConnection() {
-        if (window.ethereum) {
+        // بررسی اتصال قبلی
+        if (window.ethereum && window.ethereum.selectedAddress) {
             try {
-                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-                if (accounts.length > 0) {
-                    await this.connectWallet();
-                }
+                this.account = window.ethereum.selectedAddress;
+                this.provider = new ethers.BrowserProvider(window.ethereum);
+                this.signer = await this.provider.getSigner();
+                await this.checkNetwork();
+                this.updateUIForConnected();
             } catch (error) {
                 console.log('خطا در بررسی کیف پول:', error);
             }
@@ -83,51 +120,126 @@ class TokenCreator {
     }
     
     async connectWallet() {
-        if (!window.ethereum) {
-            alert('لطفاً MetaMask را نصب کنید!');
-            window.open('https://metamask.io/download.html', '_blank');
-            return;
-        }
+        // تشخیص محیط موبایل یا دسکتاپ
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         
         try {
-            // درخواست اتصال کیف پول
-            const accounts = await window.ethereum.request({ 
-                method: 'eth_requestAccounts' 
-            });
-            
-            this.account = accounts[0];
-            this.provider = new ethers.BrowserProvider(window.ethereum);
-            this.signer = await this.provider.getSigner();
-            
-            // بررسی شبکه
-            await this.checkNetwork();
-            
-            // بروزرسانی UI
-            this.updateUIForConnected();
-            
-            // گوش دادن به تغییرات
-            this.setupEventListeners();
-            
+            if (isMobile && this.sdk) {
+                // روش موبایل: استفاده از MetaMask SDK برای deep linking
+                await this.connectMobile();
+            } else {
+                // روش دسکتاپ: استفاده از ethereum provider
+                await this.connectDesktop();
+            }
         } catch (error) {
             console.error('خطا در اتصال کیف پول:', error);
             alert('خطا در اتصال کیف پول: ' + error.message);
         }
     }
     
-    async checkNetwork() {
-        const network = await this.provider.getNetwork();
-        const chainId = Number(network.chainId);
-        
-        // Polygon Mainnet: 137, Mumbai Testnet: 80001
-        if (chainId !== 137 && chainId !== 80001) {
-            const wantsToSwitch = confirm('لطفاً به شبکه پالیگان سوئیچ کنید. آیا می‌خواهید الآن سوئیچ کنید؟');
+    async connectMobile() {
+        try {
+            // استفاده از MetaMask SDK برای اتصال موبایل
+            const accounts = await this.sdk.connect();
             
-            if (wantsToSwitch) {
-                await this.switchToPolygon();
+            if (accounts && accounts[0]) {
+                this.account = accounts[0];
+                
+                // دریافت provider از SDK
+                const provider = this.sdk.getProvider();
+                this.provider = new ethers.BrowserProvider(provider);
+                this.signer = await this.provider.getSigner();
+                
+                await this.checkNetwork();
+                this.updateUIForConnected();
+                
+                // ذخیره وضعیت اتصال
+                localStorage.setItem('walletConnected', 'true');
+                localStorage.setItem('walletAddress', this.account);
             }
-        } else {
-            this.networkIndicator.classList.add('connected');
-            this.networkName.textContent = chainId === 137 ? 'Polygon Mainnet' : 'Polygon Mumbai';
+        } catch (error) {
+            console.error('Mobile connection error:', error);
+            // اگر SDK کار نکرد، از روش جایگزین استفاده کن
+            await this.connectWithWalletConnect();
+        }
+    }
+    
+    async connectWithWalletConnect() {
+        // روش جایگزین برای موبایل: استفاده از WalletConnect
+        try {
+            // نمایش QR کد یا راهنمایی برای اتصال
+            alert('لطفاً روی آیکون متامسک در مرورگر گوشی کلیک کنید یا از WalletConnect استفاده کنید.');
+            
+            // استفاده از WalletConnect (نیاز به نصب کتابخانه)
+            const WalletConnectProvider = window.WalletConnectProvider?.default;
+            if (WalletConnectProvider) {
+                const provider = new WalletConnectProvider({
+                    rpc: {
+                        137: 'https://polygon-rpc.com',
+                        80001: 'https://rpc-mumbai.maticvigil.com'
+                    },
+                    chainId: 137
+                });
+                
+                await provider.enable();
+                this.provider = new ethers.BrowserProvider(provider);
+                this.signer = await this.provider.getSigner();
+                this.account = await this.signer.getAddress();
+                
+                await this.checkNetwork();
+                this.updateUIForConnected();
+            }
+        } catch (error) {
+            console.error('WalletConnect error:', error);
+            alert('لطفاً مطمئن شوید متامسک روی گوشی نصب است و دوباره تلاش کنید.');
+        }
+    }
+    
+    async connectDesktop() {
+        // روش دسکتاپ - مثل قبل
+        if (!window.ethereum) {
+            alert('لطفاً MetaMask را نصب کنید!');
+            window.open('https://metamask.io/download.html', '_blank');
+            return;
+        }
+        
+        const accounts = await window.ethereum.request({ 
+            method: 'eth_requestAccounts' 
+        });
+        
+        this.account = accounts[0];
+        this.provider = new ethers.BrowserProvider(window.ethereum);
+        this.signer = await this.provider.getSigner();
+        
+        await this.checkNetwork();
+        this.updateUIForConnected();
+        
+        // ذخیره وضعیت
+        localStorage.setItem('walletConnected', 'true');
+        localStorage.setItem('walletAddress', this.account);
+        
+        this.setupEventListeners();
+    }
+    
+    async checkNetwork() {
+        if (!this.provider) return;
+        
+        try {
+            const network = await this.provider.getNetwork();
+            const chainId = Number(network.chainId);
+            
+            if (chainId !== 137 && chainId !== 80001) {
+                const wantsToSwitch = confirm('لطفاً به شبکه پالیگان سوئیچ کنید. آیا می‌خواهید الآن سوئیچ کنید؟');
+                
+                if (wantsToSwitch) {
+                    await this.switchToPolygon();
+                }
+            } else {
+                this.networkIndicator.classList.add('connected');
+                this.networkName.textContent = chainId === 137 ? 'Polygon Mainnet' : 'Polygon Mumbai';
+            }
+        } catch (error) {
+            console.error('Network check error:', error);
         }
     }
     
@@ -136,7 +248,7 @@ class TokenCreator {
             await window.ethereum.request({
                 method: 'wallet_addEthereumChain',
                 params: [{
-                    chainId: '0x89', // 137 in hex
+                    chainId: '0x89',
                     chainName: 'Polygon Mainnet',
                     nativeCurrency: {
                         name: 'MATIC',
@@ -154,23 +266,26 @@ class TokenCreator {
     
     updateUIForConnected() {
         this.connectBtn.classList.add('connected');
-        this.connectBtnText.textContent = this.account.slice(0, 6) + '...' + this.account.slice(-4);
+        const shortAddress = this.account.slice(0, 6) + '...' + this.account.slice(-4);
+        this.connectBtnText.textContent = shortAddress;
         this.createBtn.disabled = false;
     }
     
     setupEventListeners() {
-        window.ethereum.on('accountsChanged', (accounts) => {
-            if (accounts.length === 0) {
-                this.disconnectWallet();
-            } else {
-                this.account = accounts[0];
-                this.updateUIForConnected();
-            }
-        });
-        
-        window.ethereum.on('chainChanged', () => {
-            window.location.reload();
-        });
+        if (window.ethereum) {
+            window.ethereum.on('accountsChanged', (accounts) => {
+                if (accounts.length === 0) {
+                    this.disconnectWallet();
+                } else {
+                    this.account = accounts[0];
+                    this.updateUIForConnected();
+                }
+            });
+            
+            window.ethereum.on('chainChanged', () => {
+                window.location.reload();
+            });
+        }
     }
     
     disconnectWallet() {
@@ -181,12 +296,14 @@ class TokenCreator {
         this.createBtn.disabled = true;
         this.networkIndicator.classList.remove('connected');
         this.networkName.textContent = 'پالیگان';
+        
+        localStorage.removeItem('walletConnected');
+        localStorage.removeItem('walletAddress');
     }
     
     async handleCreateToken(e) {
         e.preventDefault();
         
-        // دریافت مقادیر فرم
         const name = document.getElementById('tokenName').value;
         const symbol = document.getElementById('tokenSymbol').value;
         const supply = document.getElementById('totalSupply').value;
@@ -197,24 +314,18 @@ class TokenCreator {
             return;
         }
         
-        // نمایش کارت تراکنش
         this.transactionCard.style.display = 'block';
         this.resultCard.style.display = 'none';
         this.progressFill.style.width = '30%';
         this.transactionMessage.textContent = 'در حال آماده‌سازی تراکنش...';
         
         try {
-            // محاسبه عرضه با اعشار
             const totalSupply = ethers.parseUnits(supply, decimals);
             
-            // اینجا باید تابع ساخت توکن را فراخوانی کنید
-            // بستگی به قرارداد شما دارد که چطور توکن بسازد
+            // اینجا تابع ساخت توکن را فراخوانی کن
+            // بستگی به قراردادت داره
             
-            // مثال: اگر قرارداد شما تابع createToken دارد
-            // const contract = new ethers.Contract(this.contractAddress, this.abi, this.signer);
-            // const tx = await contract.createToken(name, symbol, totalSupply, decimals);
-            
-            // شبیه‌سازی تراکنش (برای تست)
+            // برای تست:
             await this.simulateTransaction(name, symbol, supply);
             
         } catch (error) {
@@ -225,13 +336,9 @@ class TokenCreator {
     }
     
     async simulateTransaction(name, symbol, supply) {
-        // این تابع فقط برای شبیه‌سازی است
-        // در پروژه واقعی، اینجا تراکنش واقعی اجرا می‌شود
-        
         this.transactionMessage.textContent = 'در حال تایید در کیف پول...';
         this.progressFill.style.width = '60%';
         
-        // شبیه‌سازی تاخیر
         await new Promise(resolve => setTimeout(resolve, 2000));
         
         this.transactionMessage.textContent = 'در حال پردازش روی بلاکچین...';
@@ -239,13 +346,10 @@ class TokenCreator {
         
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        // نمایش نتیجه
         this.progressFill.style.width = '100%';
         this.transactionMessage.textContent = 'تراکنش با موفقیت انجام شد!';
         
-        // آدرس قرارداد شبیه‌سازی شده
         const mockContractAddress = '0x' + Math.random().toString(16).substring(2, 42);
-        
         this.showResult(name, symbol, mockContractAddress);
     }
     
@@ -257,7 +361,6 @@ class TokenCreator {
         this.resultSymbol.textContent = symbol;
         this.resultAddress.textContent = contractAddress;
         
-        // لینک پالیگان‌اسکن
         this.polygonScanLink.href = `https://polygonscan.com/address/${contractAddress}`;
     }
     
