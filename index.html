@@ -1,115 +1,197 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سازنده توکن پالیگان</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- اضافه کردن Font Awesome برای آیکون‌ها -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>توکن‌ساز پالیگان | ساخت توکن ارزان و سریع</title>
+    
+    <!-- Meta tags برای سئو و نمایش در موبایل -->
+    <meta name="description" content="ساخت توکن روی شبکه پالیگان با کمترین هزینه. فقط با چند کلیک توکن خود را بسازید.">
+    <meta name="keywords" content="توکن, پالیگان, ارز دیجیتال, بلاکچین, ساخت توکن, polygon, token">
+    <meta name="author" content="Token Creator">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%238247e5'>🪙</text></svg>">
+    
+    <!-- فونت‌ها و آیکون‌ها -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- اضافه کردن ethers.js -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- کتابخانه‌های ضروری -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+    
+    <!-- استایل‌ها -->
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* استایل‌های اضافی برای بهبود نمایش در موبایل */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f0c1f 0%, #1a1b2f 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 10px;
+            direction: rtl;
+        }
+        
+        /* بهبود اسکرول در موبایل */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #6b21a5, #8247e5);
+            border-radius: 10px;
+        }
+        
+        /* رفع مشکل کلیک در موبایل */
+        button, .btn-connect, .btn-create, .faq-question {
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* بهینه‌سازی برای موبایل */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+            
+            h1 {
+                font-size: 1.5rem !important;
+            }
+            
+            .container {
+                padding: 5px !important;
+            }
+            
+            .card {
+                padding: 15px !important;
+            }
+            
+            .btn-connect, .btn-create {
+                min-height: 50px;
+                font-size: 16px !important;
+            }
+            
+            input, select, textarea {
+                font-size: 16px !important; /* جلوگیری از زوم خودکار در موبایل */
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <!-- هدر و لوگو -->
-        <header>
-            <div class="logo">
-                <i class="fas fa-coins"></i>
-                <h1>توکن‌ساز پالیگان</h1>
+        <header style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0; margin-bottom: 20px;">
+            <div class="logo" style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-coins" style="font-size: 32px; color: #8247e5; background: linear-gradient(135deg, #6b21a5, #8247e5); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+                <h1 style="font-size: 24px; font-weight: 700; background: linear-gradient(135deg, #fff, #8247e5); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">توکن‌ساز</h1>
             </div>
-            <button id="connectWallet" class="btn-connect">
+            <button id="connectWallet" class="btn-connect" style="background: linear-gradient(135deg, #6b21a5, #8247e5); color: white; border: none; padding: 12px 24px; border-radius: 40px; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 10px; transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.1);">
                 <i class="fas fa-wallet"></i>
                 <span>اتصال کیف پول</span>
             </button>
         </header>
 
         <!-- وضعیت شبکه -->
-        <div class="network-status">
-            <div class="status-indicator" id="networkIndicator"></div>
-            <span id="networkName">پالیگان</span>
+        <div class="network-status" style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 12px 20px; border-radius: 40px; margin-bottom: 25px; font-size: 14px; backdrop-filter: blur(10px);">
+            <div class="status-indicator" id="networkIndicator" style="width: 10px; height: 10px; border-radius: 50%; background-color: #fbbf24;"></div>
+            <span id="networkName" style="color: #9ca3af;">Polygon</span>
+            <span style="color: #9ca3af; margin-right: auto;">⛽ ~0.01 POL</span>
         </div>
 
         <!-- کارت اصلی ساخت توکن -->
-        <div class="card">
-            <h2>ایجاد توکن جدید</h2>
-            <p class="subtitle">با کمترین هزینه روی شبکه پالیگان</p>
+        <div class="card" style="background: rgba(26, 28, 35, 0.8); backdrop-filter: blur(10px); border-radius: 24px; padding: 30px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px;">
+            <h2 style="font-size: 28px; margin-bottom: 10px; background: linear-gradient(135deg, #fff, #8247e5); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ایجاد توکن جدید</h2>
+            <p class="subtitle" style="color: #9ca3af; margin-bottom: 30px;">روی شبکه پالیگان با کمترین هزینه</p>
 
             <!-- فرم ساخت توکن -->
             <form id="tokenForm">
                 <!-- نام توکن -->
-                <div class="form-group">
-                    <label for="tokenName">
-                        <i class="fas fa-tag"></i>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: #9ca3af; font-size: 14px;">
+                        <i class="fas fa-tag" style="margin-left: 8px; color: #8247e5;"></i>
                         نام توکن
                     </label>
-                    <input type="text" id="tokenName" placeholder="مثال: MyToken" required>
-                    <small>نام کامل توکن شما</small>
+                    <input type="text" id="tokenName" placeholder="مثال: My Token" required style="width: 100%; padding: 16px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; color: white; font-size: 16px;">
+                    <small style="display: block; margin-top: 5px; color: #6b7280;">نام کامل توکن شما</small>
                 </div>
 
                 <!-- نماد توکن -->
-                <div class="form-group">
-                    <label for="tokenSymbol">
-                        <i class="fas fa-symbol"></i>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: #9ca3af; font-size: 14px;">
+                        <i class="fas fa-symbol" style="margin-left: 8px; color: #8247e5;"></i>
                         نماد توکن
                     </label>
-                    <input type="text" id="tokenSymbol" placeholder="مثال: MTK" maxlength="5" required>
-                    <small>حداکثر ۵ کاراکتر</small>
+                    <input type="text" id="tokenSymbol" placeholder="مثال: MTK" maxlength="5" required style="width: 100%; padding: 16px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; color: white; font-size: 16px;">
+                    <small style="display: block; margin-top: 5px; color: #6b7280;">حداکثر ۵ کاراکتر</small>
                 </div>
 
                 <!-- تعداد توکن -->
-                <div class="form-group">
-                    <label for="totalSupply">
-                        <i class="fas fa-chart-line"></i>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: #9ca3af; font-size: 14px;">
+                        <i class="fas fa-chart-line" style="margin-left: 8px; color: #8247e5;"></i>
                         عرضه کل
                     </label>
-                    <input type="number" id="totalSupply" placeholder="مثال: 1000000" min="1" required>
-                    <small>تعداد کل توکن‌هایی که ساخته می‌شود</small>
+                    <input type="number" id="totalSupply" placeholder="مثال: 1000000" min="1" required style="width: 100%; padding: 16px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; color: white; font-size: 16px;">
+                    <small style="display: block; margin-top: 5px; color: #6b7280;">تعداد کل توکن‌هایی که ساخته می‌شود</small>
                 </div>
 
-                <!-- اعشار توکن (اختیاری) -->
-                <div class="form-group">
-                    <label for="decimals">
-                        <i class="fas fa-decimal"></i>
+                <!-- اعشار توکن -->
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: #9ca3af; font-size: 14px;">
+                        <i class="fas fa-decimal" style="margin-left: 8px; color: #8247e5;"></i>
                         تعداد اعشار
                     </label>
-                    <input type="number" id="decimals" value="18" min="0" max="18">
-                    <small>معمولاً ۱۸ (مثل همه توکن‌ها)</small>
+                    <input type="number" id="decimals" value="18" min="0" max="18" style="width: 100%; padding: 16px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; color: white; font-size: 16px;">
+                    <small style="display: block; margin-top: 5px; color: #6b7280;">معمولاً ۱۸ (مثل پالیگان)</small>
                 </div>
 
                 <!-- گزینه‌های پیشرفته -->
-                <div class="advanced-options">
-                    <button type="button" id="toggleAdvanced" class="btn-toggle">
-                        <i class="fas fa-cog"></i>
-                        گزینه‌های پیشرفته
+                <div class="advanced-options" style="margin: 30px 0;">
+                    <button type="button" id="toggleAdvanced" class="btn-toggle" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #9ca3af; padding: 14px 20px; border-radius: 16px; width: 100%; text-align: right; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.3s ease;">
+                        <i class="fas fa-cog" style="color: #8247e5;"></i>
+                        <span>گزینه‌های پیشرفته</span>
+                        <i class="fas fa-chevron-down" style="margin-right: auto; transition: transform 0.3s ease;"></i>
                     </button>
                     
-                    <div id="advancedPanel" class="advanced-panel hidden">
-                        <div class="form-group">
-                            <label>
-                                <input type="checkbox" id="mintable" checked>
-                                قابل mint کردن (Mintable)
+                    <div id="advancedPanel" class="advanced-panel hidden" style="margin-top: 15px; padding: 20px; background: rgba(0,0,0,0.2); border-radius: 16px; display: none;">
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label style="display: flex; align-items: center; gap: 10px; color: #9ca3af;">
+                                <input type="checkbox" id="mintable" checked style="width: 18px; height: 18px;">
+                                <span>قابل mint کردن (Mintable)</span>
                             </label>
                         </div>
                         
-                        <div class="form-group">
-                            <label>
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label style="display: flex; align-items: center; gap: 10px; color: #9ca3af;">
                                 <input type="checkbox" id="burnable">
-                                قابل سوزاندن (Burnable)
+                                <span>قابل سوزاندن (Burnable)</span>
                             </label>
                         </div>
                         
-                        <div class="form-group">
-                            <label>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="display: flex; align-items: center; gap: 10px; color: #9ca3af;">
                                 <input type="checkbox" id="pausable">
-                                قابلیت توقف (Pausable)
+                                <span>قابلیت توقف (Pausable)</span>
                             </label>
                         </div>
                     </div>
                 </div>
 
                 <!-- دکمه ساخت توکن -->
-                <button type="submit" id="createToken" class="btn-create" disabled>
+                <button type="submit" id="createToken" class="btn-create" disabled style="background: linear-gradient(135deg, #6b21a5, #8247e5); color: white; border: none; padding: 18px 32px; border-radius: 16px; font-size: 18px; font-weight: 600; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s ease; opacity: 0.5;">
                     <i class="fas fa-magic"></i>
                     <span>ساخت توکن</span>
                 </button>
@@ -117,67 +199,130 @@
         </div>
 
         <!-- کارت اطلاعات تراکنش -->
-        <div class="card" id="transactionCard" style="display: none;">
-            <h3>وضعیت تراکنش</h3>
+        <div class="card" id="transactionCard" style="display: none; background: rgba(26, 28, 35, 0.8); backdrop-filter: blur(10px); border-radius: 24px; padding: 30px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px;">
+            <h3 style="font-size: 20px; margin-bottom: 20px;">وضعیت تراکنش</h3>
             <div class="transaction-status">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
+                <div class="progress-bar" style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin: 20px 0;">
+                    <div class="progress-fill" id="progressFill" style="height: 100%; background: linear-gradient(90deg, #6b21a5, #8247e5); width: 0%; transition: width 0.3s ease;"></div>
                 </div>
-                <p id="transactionMessage">در حال ارسال تراکنش...</p>
-                <p id="transactionHash" class="tx-hash"></p>
+                <p id="transactionMessage" style="color: #9ca3af; text-align: center;">در حال ارسال تراکنش...</p>
+                <p id="transactionHash" class="tx-hash" style="color: #8247e5; font-size: 14px; word-break: break-all; margin-top: 10px; text-align: center;"></p>
             </div>
         </div>
 
         <!-- کارت توکن ساخته شده -->
-        <div class="card" id="resultCard" style="display: none;">
-            <h3>✅ توکن با موفقیت ساخته شد</h3>
-            <div class="token-info">
-                <p><strong>نام:</strong> <span id="resultName"></span></p>
-                <p><strong>نماد:</strong> <span id="resultSymbol"></span></p>
-                <p><strong>آدرس قرارداد:</strong> 
-                    <span id="resultAddress" class="contract-address"></span>
-                    <button id="copyAddress" class="btn-icon">
+        <div class="card" id="resultCard" style="display: none; background: rgba(26, 28, 35, 0.8); backdrop-filter: blur(10px); border-radius: 24px; padding: 30px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px;">
+            <h3 style="font-size: 20px; margin-bottom: 20px; color: #10b981;">✅ توکن با موفقیت ساخته شد</h3>
+            <div class="token-info" style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 16px; margin: 20px 0;">
+                <p style="margin: 10px 0; display: flex; align-items: center; gap: 10px;"><strong style="min-width: 100px;">نام:</strong> <span id="resultName"></span></p>
+                <p style="margin: 10px 0; display: flex; align-items: center; gap: 10px;"><strong style="min-width: 100px;">نماد:</strong> <span id="resultSymbol"></span></p>
+                <p style="margin: 10px 0; display: flex; align-items: center; gap: 10px;">
+                    <strong style="min-width: 100px;">آدرس:</strong> 
+                    <span id="resultAddress" class="contract-address" style="color: #8247e5; font-family: monospace; font-size: 14px; word-break: break-all;"></span>
+                    <button id="copyAddress" class="btn-icon" style="background: transparent; border: none; color: #9ca3af; cursor: pointer;">
                         <i class="far fa-copy"></i>
                     </button>
                 </p>
-                <p><strong>هزینه:</strong> <span id="resultCost">0.49 POL</span></p>
+                <p style="margin: 10px 0; display: flex; align-items: center; gap: 10px;"><strong style="min-width: 100px;">هزینه:</strong> <span id="resultCost">~0.49 POL</span></p>
             </div>
-            <div class="action-buttons">
-                <a href="#" id="polygonScanLink" target="_blank" class="btn-secondary">
+            <div class="action-buttons" style="display: flex; gap: 10px; margin-top: 20px;">
+                <a href="#" id="polygonScanLink" target="_blank" class="btn-secondary" style="flex: 1; padding: 14px; border-radius: 16px; background: rgba(255,255,255,0.05); color: #9ca3af; text-align: center; text-decoration: none; border: 1px solid rgba(255,255,255,0.1);">
                     <i class="fas fa-external-link-alt"></i>
-                    مشاهده در پالیگان‌اسکن
+                    مشاهده در اسکن
                 </a>
-                <button id="createAnother" class="btn-primary">
+                <button id="createAnother" class="btn-primary" style="flex: 1; padding: 14px; border-radius: 16px; background: linear-gradient(135deg, #6b21a5, #8247e5); color: white; border: none; cursor: pointer;">
                     <i class="fas fa-plus"></i>
-                    ساخت توکن جدید
+                    توکن جدید
                 </button>
             </div>
         </div>
 
-        <!-- راهنما -->
-        <div class="faq-section">
-            <h3>سوالات متداول</h3>
-            <div class="faq-item">
-                <div class="faq-question">
+        <!-- بخش راهنما (FAQ) -->
+        <div class="faq-section" style="margin-top: 30px;">
+            <h3 style="font-size: 18px; margin-bottom: 15px; color: #9ca3af;">سوالات متداول</h3>
+            
+            <div class="faq-item" style="background: rgba(255,255,255,0.03); border-radius: 16px; margin-bottom: 10px; overflow: hidden;">
+                <div class="faq-question" style="padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
                     <span>هزینه ساخت توکن چقدر است؟</span>
-                    <i class="fas fa-chevron-down"></i>
+                    <i class="fas fa-chevron-down" style="transition: transform 0.3s ease;"></i>
                 </div>
-                <div class="faq-answer">
-                    هزینه گس در شبکه پالیگان بسیار کم است و معمولاً کمتر از ۰.۵ POL (حدود ۰.۱ دلار) می‌شود.
+                <div class="faq-answer" style="max-height: 0; overflow: hidden; transition: all 0.3s ease; color: #9ca3af; font-size: 14px;">
+                    <p style="padding: 0 20px 20px 20px;">هزینه گس در شبکه پالیگان بسیار کم است و معمولاً کمتر از ۰.۵ POL (حدود ۰.۱ دلار) می‌شود. این هزینه به شبکه پرداخت می‌شود نه به ما.</p>
                 </div>
             </div>
-            <div class="faq-item">
-                <div class="faq-question">
-                    <span>چقدر طول می‌کشد؟</span>
-                    <i class="fas fa-chevron-down"></i>
+            
+            <div class="faq-item" style="background: rgba(255,255,255,0.03); border-radius: 16px; margin-bottom: 10px; overflow: hidden;">
+                <div class="faq-question" style="padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+                    <span>چگونه توکن را در کیف پول ببینم؟</span>
+                    <i class="fas fa-chevron-down" style="transition: transform 0.3s ease;"></i>
                 </div>
-                <div class="faq-answer">
-                    تراکنش‌ها در پالیگان معمولاً چند ثانیه تا یک دقیقه طول می‌کشند.
+                <div class="faq-answer" style="max-height: 0; overflow: hidden; transition: all 0.3s ease; color: #9ca3af; font-size: 14px;">
+                    <p style="padding: 0 20px 20px 20px;">بعد از ساخت، آدرس قرارداد را کپی کنید و در متامسک روی "Import tokens" کلیک کنید و آدرس را وارد کنید.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item" style="background: rgba(255,255,255,0.03); border-radius: 16px; margin-bottom: 10px; overflow: hidden;">
+                <div class="faq-question" style="padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+                    <span>چقدر طول می‌کشد؟</span>
+                    <i class="fas fa-chevron-down" style="transition: transform 0.3s ease;"></i>
+                </div>
+                <div class="faq-answer" style="max-height: 0; overflow: hidden; transition: all 0.3s ease; color: #9ca3af; font-size: 14px;">
+                    <p style="padding: 0 20px 20px 20px;">تراکنش‌ها در پالیگان معمولاً ۲-۵ ثانیه طول می‌کشند. کل فرآیند کمتر از یک دقیقه است.</p>
                 </div>
             </div>
         </div>
+
+        <!-- فوتر -->
+        <footer style="text-align: center; padding: 30px 0; color: #6b7280; font-size: 12px;">
+            <p>ساخته شده با ❤️ برای شبکه پالیگان</p>
+            <p style="margin-top: 5px;">⚡ کمترین کارمزد در بلاکچین</p>
+        </footer>
     </div>
 
+    <!-- اسکریپت اصلی -->
     <script src="script.js"></script>
+    
+    <!-- اسکریپت اضافی برای بهبود تجربه موبایل -->
+    <script>
+        // بهبود نمایش منوی پیشرفته
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleAdvanced = document.getElementById('toggleAdvanced');
+            const advancedPanel = document.getElementById('advancedPanel');
+            
+            if (toggleAdvanced && advancedPanel) {
+                toggleAdvanced.addEventListener('click', function() {
+                    if (advancedPanel.style.display === 'none' || advancedPanel.style.display === '') {
+                        advancedPanel.style.display = 'block';
+                        this.querySelector('.fa-chevron-down').style.transform = 'rotate(180deg)';
+                    } else {
+                        advancedPanel.style.display = 'none';
+                        this.querySelector('.fa-chevron-down').style.transform = 'rotate(0deg)';
+                    }
+                });
+            }
+            
+            // FAQ accordion
+            document.querySelectorAll('.faq-question').forEach(question => {
+                question.addEventListener('click', function() {
+                    const answer = this.nextElementSibling;
+                    const icon = this.querySelector('.fa-chevron-down');
+                    
+                    if (answer.style.maxHeight && answer.style.maxHeight !== '0px') {
+                        answer.style.maxHeight = '0';
+                        icon.style.transform = 'rotate(0deg)';
+                    } else {
+                        answer.style.maxHeight = answer.scrollHeight + 20 + 'px';
+                        icon.style.transform = 'rotate(180deg)';
+                    }
+                });
+            });
+        });
+        
+        // تشخیص محیط موبایل برای نمایش راهنمای اتصال
+        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            console.log('موبایل تشخیص داده شد');
+            // می‌تونی اینجا یه پیام خاص برای موبایل نشون بدی
+        }
+    </script>
 </body>
-                                     </html>
+                </html>
