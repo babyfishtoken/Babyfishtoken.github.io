@@ -1,50 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Professional Wallet Connect</title>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Professional Wallet Connect</title>
 </head>
 
-<body>
+<body style="background:#0f172a;color:white;font-family:sans-serif;text-align:center;padding-top:100px;">
 
-<button id="connect">Connect Wallet</button>
+<h2>Polygon Wallet Connect</h2>
+
+<!-- دکمه حرفه‌ای -->
+<w3m-button></w3m-button>
 
 <script type="module">
-import { createWeb3Modal } from "https://unpkg.com/@web3modal/wagmi@latest/dist/index.js";
-import { defaultWagmiConfig } from "https://unpkg.com/@web3modal/wagmi@latest/dist/index.js";
-import { WagmiConfig, useAccount } from "https://esm.sh/wagmi";
-import { polygon } from "https://esm.sh/wagmi/chains";
+import { createWeb3Modal, defaultWagmiConfig } from "https://unpkg.com/@web3modal/wagmi@latest/dist/index.js";
+import { polygon, polygonAmoy } from "https://esm.sh/wagmi/chains";
 
-const projectId = "e34ed7a1bc89c2d09b29031a07c92813"; // اینجا Project ID بگذار
+const projectId = "96f13374b0fe2f629a925617de0a2ba3";
 
 const metadata = {
-  name: "My Website",
-  description: "My Web3 App",
-  url: "https://example.com",
+  name: "My Polygon Website",
+  description: "Web3 Polygon App",
+  url: "babyfishtoken.github.io",
   icons: []
 };
 
-const chains = [polygon];
+const chains = [polygon, polygonAmoy];
 
-const config = defaultWagmiConfig({
+const wagmiConfig = defaultWagmiConfig({
   chains,
   projectId,
   metadata
 });
 
 createWeb3Modal({
-  wagmiConfig: config,
+  wagmiConfig,
   projectId,
   chains
 });
-
-document.getElementById("connect").onclick = () => {
-  const modal = document.querySelector("w3m-button");
-  modal.click();
-};
 </script>
-
-<w3m-button></w3m-button>
 
 </body>
 </html>
