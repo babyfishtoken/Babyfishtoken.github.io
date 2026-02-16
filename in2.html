@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>اتصال به کیف پول - مثل CreateMyToken</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0B0F1C;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        /* کارت اصلی - دقیقاً مثل CreateMyToken */
+        .wallet-modal {
+            max-width: 420px;
+            width: 100%;
+            background: #141A29;
+            border-radius: 32px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid #242C3A;
+        }
+
+        /* هدر */
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid #242C3A;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .logo img {
+            width: 32px;
+            height: 32px;
+        }
+
+        .logo span {
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .modal-header h2 {
+            color: white;
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .modal-header p {
+            color: #7E8A9A;
+            font-size: 14px;
+        }
+
+        /* بخش اتصال کیف پول */
+        .connect-section {
+            padding: 16px 24px;
+            border-bottom: 1px solid #242C3A;
+        }
+
+        .section-title {
+            color: #7E8A9A;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        /* دکمه‌های اصلی کیف پول */
+        .wallet-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .wallet-button {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: #1E2638;
+            border: 1px solid #2A3442;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .wallet-button:active {
+            background: #2A3442;
+            transform: scale(0.99);
+        }
+
+        .wallet-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        /* آیکون‌های اختصاصی کیف پول */
+        .wallet-icon.browser { background: #3B82F6; color: white; }
+        .wallet-icon.walletconnect { background: #3B99FC; color: white; }
+        .wallet-icon.base { background: #0052FF; color: white; }
+        .wallet-icon.rainbow { background: linear-gradient(135deg, #FF6B6B, #4ECDC4); color: white; }
+
+        .wallet-info {
+            flex: 1;
+            text-align: right;
+        }
+
+        .wallet-name {
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .wallet-name i {
+            color: #3B82F6;
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .wallet-desc {
+            color: #7E8A9A;
+            font-size: 13px;
+            margin-top: 2px;
+        }
+
+        /* بخش توضیحات ولت */
+        .wallet-info-section {
+            padding: 24px;
+            border-bottom: 1px solid #242C3A;
+            background: #0F1622;
+        }
+
+        .info-title {
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .info-text {
+            color: #7E8A9A;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .action-btn.primary {
+            background: #3B82F6;
+            color: white;
+            border: none;
+        }
+
+        .action-btn.primary:active {
+            background: #2563EB;
+            transform: scale(0.98);
+        }
+
+        .action-btn.secondary {
+            background: transparent;
+            color: #7E8A9A;
+            border: 1px solid #2A3442;
+        }
+
+        .action-btn.secondary:active {
+            background: #1E2638;
+            transform: scale(0.98);
+        }
+
+        /* مودال همه کیف پول‌ها */
+        .all-wallets-modal {
+            max-width: 420px;
+            width: 100%;
+            background: #141A29;
+            border-radius: 32px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid #242C3A;
+            margin-top: 20px;
+        }
+
+        .all-wallets-header {
+            padding: 24px;
+            border-bottom: 1px solid #242C3A;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .all-wallets-header h3 {
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            color: #7E8A9A;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .search-box {
+            margin: 16px 24px;
+            position: relative;
+        }
+
+        .search-box i {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7E8A9A;
+            font-size: 16px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 16px 45px 16px 16px;
+            background: #1E2638;
+            border: 1px solid #2A3442;
+            border-radius: 16px;
+            color: white;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .search-box input::placeholder {
+            color: #7E8A9A;
+        }
+
+        .wallets-list {
+            padding: 0 24px 24px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .wallet-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            cursor: pointer;
+            border-radius: 16px;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .wallet-item:active {
+            background: #1E2638;
+        }
+
+        .wallet-item-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .wallet-item-icon.binance { background: #F3BA2F; color: #0B0F1C; }
+        .wallet-item-icon.metamask { background: #F6851B; color: white; }
+        .wallet-item-icon.safepal { background: #0078FF; color: white; }
+        .wallet-item-icon.trust { background: #3375BB; color: white; }
+        .wallet-item-icon.fireblocks { background: #FF4B4B; color: white; }
+        .wallet-item-icon.okx { background: #0A0A0A; color: white; }
+        .wallet-item-icon.tokenpocket { background: #2980FE; color: white; }
+        .wallet-item-icon.bitget { background: #02B170; color: white; }
+        .wallet-item-icon.uniswap { background: #FF007A; color: white; }
+
+        .wallet-item-info {
+            flex: 1;
+            text-align: right;
+        }
+
+        .wallet-item-name {
+            color: white;
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        .wallet-item-name small {
+            color: #7E8A9A;
+            font-size: 12px;
+            margin-right: 8px;
+        }
+
+        /* اطلاعات کیف پول متصل */
+        .connected-info {
+            padding: 24px;
+            background: #0F1622;
+            border-radius: 24px;
+            margin: 24px;
+            display: none;
+        }
+
+        .connected-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .connected-header i {
+            font-size: 28px;
+            color: #3B82F6;
+            background: #1E2638;
+            padding: 12px;
+            border-radius: 14px;
+        }
+
+        .connected-header h4 {
+            color: white;
+            font-size: 18px;
+        }
+
+        .connected-detail {
+            background: #1E2638;
+            padding: 16px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+        }
+
+        .detail-label {
+            color: #7E8A9A;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            color: white;
+            font-size: 14px;
+            font-family: monospace;
+            word-break: break-all;
+        }
+
+        .disconnect-button {
+            width: 100%;
+            padding: 16px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 14px;
+            color: #EF4444;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            margin-top: 16px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .disconnect-button:active {
+            background: rgba(239, 68, 68, 0.2);
+            transform: scale(0.98);
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div style="display: flex; flex-direction: column; gap: 20px; width: 100%; align-items: center;">
+        <!-- مودال اول - صفحه اصلی اتصال -->
+        <div class="wallet-modal">
+            <div class="modal-header">
+                <div class="logo">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233B82F6'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/%3E%3C/svg%3E" alt="logo">
+                    <span>CreateMyToken</span>
+                </div>
+                <h2>Polygon Token Creator</h2>
+                <p>Create and deploy your own ERC20 token</p>
+            </div>
+
+            <div class="connect-section">
+                <div class="section-title">Connect a Wallet</div>
+                <div class="wallet-grid">
+                    <!-- Browser Wallet -->
+                    <div class="wallet-button" onclick="connectWallet('browser')">
+                        <div class="wallet-icon browser"><i class="fas fa-globe"></i></div>
+                        <div class="wallet-info">
+                            <div class="wallet-name">Browser Wallet</div>
+                            <div class="wallet-desc">Popular</div>
+                        </div>
+                    </div>
+
+                    <!-- WalletConnect -->
+                    <div class="wallet-button" onclick="connectWallet('walletconnect')">
+                        <div class="wallet-icon walletconnect"><i class="fas fa-qrcode"></i></div>
+                        <div class="wallet-info">
+                            <div class="wallet-name">WalletConnect</div>
+                            <div class="wallet-desc">Mobile wallets</div>
+                        </div>
+                    </div>
+
+                    <!-- Base Account -->
+                    <div class="wallet-button" onclick="connectWallet('base')">
+                        <div class="wallet-icon base"><i class="fas fa-database"></i></div>
+                        <div class="wallet-info">
+                            <div class="wallet-name">Base Account</div>
+                            <div class="wallet-desc">Smart wallet</div>
+                        </div>
+                    </div>
+
+                    <!-- Rainbow -->
+                    <div class="wallet-button" onclick="connectWallet('rainbow')">
+                        <div class="wallet-icon rainbow"><i class="fas fa-rainbow"></i></div>
+                        <div class="wallet-info">
+                            <div class="wallet-name">Rainbow</div>
+                            <div class="wallet-desc">Popular</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wallet-info-section">
+                <div class="info-title">What is a Wallet?</div>
+                <div class="info-text">
+                    A wallet is used to send, receive, store, and display digital assets. 
+                    It's also a new way to log in, without needing to create new accounts 
+                    and passwords on every website.
+                </div>
+                <div class="action-buttons">
+                    <button class="action-btn primary" onclick="window.open('https://metamask.io/download/', '_blank')">Get a Wallet</button>
+                    <button class="action-btn secondary" onclick="showAllWallets()">Learn More</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- مودال دوم - لیست همه کیف پول‌ها -->
+        <div class="all-wallets-modal" id="allWalletsModal">
+            <div class="all-wallets-header">
+                <h3>All Wallets</h3>
+                <div class="close-btn" onclick="hideAllWallets()">×</div>
+            </div>
+            
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search wallet" id="walletSearch" onkeyup="searchWallets()">
+            </div>
+
+            <div class="wallets-list" id="walletsList">
+                <!-- لیست کیف پول‌ها -->
+                <div class="wallet-item" onclick="connectWallet('binance')">
+                    <div class="wallet-item-icon binance"><i class="fab fa-bitcoin"></i></div>
+                    <div class="wallet-item-info">
+                        <div class="wallet-item-name">Binance <small>BSC</small></div>
+                    </div>
+                </div>
+
+                <div class="wallet-item" onclick="connectWallet('metamask')">
+                    <div class="wallet-item-icon metamask"><i class="fab fa-firefox"></i></div>
+                    <div class="wallet-item-info">
+                        <div class="wallet-item-name">MetaMask</div>
+                    </div>
+                </div>
+
+                <div class="wallet-item" onclick="connectWallet('safepal')">
+                    <div class="wallet-item-icon safepal"><i class="fas fa-shield-alt"></i></div>
+                    <div class="wallet-item-info">
+                        <div class="wallet-item-name">SafePal</div>
+                    </div>
+                </div>
+
+                <div class="wallet-item" onclick="connectWallet('trust')">
+                    <div class="wallet-item-icon trust"><i class="fas fa-check-circle"></i></div>
+                    <div class="wallet-item-info">
+                        <div class="wallet-item-name">Trust Wallet</div>
+                    </div>
+                </div>
+
+                <div class="wallet-item" onclick="connectWallet('fireblocks')">
+                    <div class="wallet-item-icon fireblocks"><i class="fas fa-fire"></i></div>
+                    <div class="wallet-item-info">
+                        <div class="wallet-item-name">Fireblocks</div>
+                    </div>
+                </div>
+
+                <div class="wallet-item" onclick="connectWallet('okx')">
+                    <div class="wallet-item-icon okx"><i class="fas fa-chart-line"></i></div>
+                    <div class="wallet-item-info">
+                        <div class="wallet-item-name">OKX Wallet</div>
+                    </div>
+                </div>
+
+                <div class="wallet-item" onclick="connectWallet('tokenpocket')">
+                    <div class="wallet-item-icon tokenpocket"><i class="fas fa-ticket-alt"></i></div>
+                    <div class="wallet-item-info">
+                        <div class="wallet-item-name">TokenPocket</div>
+                    </div>
+                </div>
+
+                <div class="wallet-item" onclick="connectWallet('bitget')">
+                    <div class="wallet-item-icon bitget"><i class="fas fa-bolt"></i></div>
+                    <div class="wallet-item-info">
+                        <div class="wallet-item-name">Bitget Wallet</div>
+                    </div>
+                </div>
+
+                <div class="wallet-item" onclick="connectWallet('uniswap')">
+                    <div class="wallet-item-icon uniswap"><i class="fab fa-unity"></i></div>
+                    <div class="wallet-item-info">
+                        <div class="wallet-item-name">Uniswap</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- کارت اطلاعات کیف پول متصل -->
+        <div class="wallet-modal" id="connectedWalletCard" style="display: none;">
+            <div class="connected-info" style="display: block; margin: 0; border-radius: 32px;">
+                <div class="connected-header">
+                    <i class="fas fa-check-circle"></i>
+                    <h4>کیف پول متصل شد</h4>
+                </div>
+                
+                <div class="connected-detail">
+                    <div class="detail-label">آدرس کیف پول</div>
+                    <div class="detail-value" id="connectedAddress">0x72...3f4e</div>
+                </div>
+
+                <div class="connected-detail">
+                    <div class="detail-label">شبکه</div>
+                    <div class="detail-value" id="connectedNetwork">Polygon Mainnet</div>
+                </div>
+
+                <div class="connected-detail">
+                    <div class="detail-label">موجودی</div>
+                    <div class="detail-value" id="connectedBalance">1.25 MATIC</div>
+                </div>
+
+                <button class="disconnect-button" onclick="disconnectWallet()">
+                    <i class="fas fa-power-off"></i>
+                    قطع اتصال
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // تابع نمایش همه کیف پول‌ها
+        function showAllWallets() {
+            document.getElementById('allWalletsModal').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function hideAllWallets() {
+            // در موبایل نیازی به پنهان کردن نیست
+        }
+
+        // جستجوی کیف پول
+        function searchWallets() {
+            const searchTerm = document.getElementById('walletSearch').value.toLowerCase();
+            const wallets = document.querySelectorAll('.wallet-item');
+            
+            wallets.forEach(wallet => {
+                const name = wallet.querySelector('.wallet-item-name').textContent.toLowerCase();
+                if (name.includes(searchTerm)) {
+                    wallet.style.display = 'flex';
+                } else {
+                    wallet.style.display = 'none';
+                }
+            });
+        }
+
+        // تابع اتصال کیف پول
+        async function connectWallet(type) {
+            const mainModal = document.querySelector('.wallet-modal');
+            const connectedCard = document.getElementById('connectedWalletCard');
+            
+            // شبیه‌سازی اتصال
+            document.querySelectorAll('.wallet-modal')[0].style.display = 'none';
+            document.getElementById('allWalletsModal').style.display = 'none';
+            connectedCard.style.display = 'block';
+            
+            // نمایش اطلاعات نمونه
+            document.getElementById('connectedAddress').textContent = '0x72' + Math.random().toString(36).substring(2, 6) + '...' + Math.random().toString(36).substring(2, 6);
+            
+            // اتصال واقعی بر اساس نوع
+            if (type === 'metamask' || type === 'browser') {
+                if (typeof window.ethereum !== 'undefined') {
+                    try {
+                        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                        document.getElementById('connectedAddress').textContent = accounts[0];
+                        document.getElementById('connectedNetwork').textContent = 'Polygon Mainnet';
+                        document.getElementById('connectedBalance').textContent = '1.25 MATIC';
+                    } catch (error) {
+                        alert('خطا در اتصال به MetaMask');
+                    }
+                } else {
+                    alert('لطفا MetaMask را نصب کنید');
+                }
+            } else if (type === 'walletconnect') {
+                alert('در حال اتصال با WalletConnect... کد QR نمایش داده می‌شود');
+            }
+        }
+
+        // قطع اتصال
+        function disconnectWallet() {
+            document.getElementById('connectedWalletCard').style.display = 'none';
+            document.querySelectorAll('.wallet-modal')[0].style.display = 'block';
+            document.getElementById('allWalletsModal').style.display = 'block';
+        }
+
+        // بررسی وجود MetaMask
+        window.addEventListener('load', () => {
+            if (typeof window.ethereum !== 'undefined') {
+                console.log('MetaMask نصب است');
+            }
+        });
+    </script>
+</body>
+  </html>
