@@ -1,82 +1,130 @@
 <!DOCTYPE html>
-<html>
+<html lang="fa" dir="rtl">
 <head>
-    <title>اتصال به Infura</title>
-    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.1/dist/web3.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اتصال کیف پول با اینفورا</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+    <style>
+        body { font-family: system-ui; background: #0B0F1C; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #141A29; padding: 40px; border-radius: 32px; width: 400px; border: 1px solid #242C3A; }
+        h2 { color: white; margin: 0 0 8px; }
+        p { color: #7E8A9A; margin-bottom: 30px; }
+        button { width: 100%; padding: 16px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border: none; border-radius: 16px; color: white; font-size: 18px; font-weight: bold; cursor: pointer; margin-bottom: 20px; }
+        .info { background: #1E2638; border-radius: 16px; padding: 20px; display: none; }
+        .info div { margin-bottom: 15px; }
+        .label { color: #7E8A9A; font-size: 12px; }
+        .value { color: white; word-break: break-all; background: #0F1622; padding: 10px; border-radius: 8px; margin-top: 5px; }
+    </style>
 </head>
 <body>
-    <h3>اتصال به Infura</h3>
-    <p>Project ID: 934a2ae012c840dea039c5c2571bce16</p>
-    
-    <button onclick="connectToInfura()">بررسی اتصال به اینفورا</button>
-    <button onclick="getBlockNumber()">دریافت آخرین بلاک</button>
-    <button onclick="getBalance()">دریافت موجودی (Vitalik)</button>
-    
-    <div id="result" style="margin-top:20px; padding:10px; border:1px solid #ccc;"></div>
+    <div class="card">
+        <h2>🚀 CreateMyToken</h2>
+        <p>اتصال کیف پول با زیرساخت اینفورا</p>
+        
+        <button onclick="connectWallet()">
+            <span id="btnText">اتصال به کیف پول</span>
+        </button>
+
+        <div class="info" id="walletInfo">
+            <div>
+                <div class="label">📌 آدرس کیف پول</div>
+                <div class="value" id="address">-</div>
+            </div>
+            <div>
+                <div class="label">⛓️ شبکه (از اینفورا)</div>
+                <div class="value" id="network">-</div>
+            </div>
+            <div>
+                <div class="label">💰 موجودی (از اینفورا)</div>
+                <div class="value" id="balance">-</div>
+            </div>
+            <button onclick="disconnect()" style="background: rgba(239,68,68,0.1); color: #ef4444; margin-top: 10px;">قطع اتصال</button>
+        </div>
+    </div>
 
     <script>
-        // Project ID شما
-        const projectId = '934a2ae012c840dea039c5c2571bce16';
+        // Project ID اینفورا (همونی که فرستادی)
+        const INFURA_ID = '934a2ae012c840dea039c5c2571bce16';
         
-        // اتصال به شبکه‌های مختلف اینفورا
-        const networks = {
-            ethereum: `https://mainnet.infura.io/v3/${projectId}`,
-            polygon: `https://polygon-mainnet.infura.io/v3/${projectId}`,
-            polygonAmoy: `https://polygon-amoy.infura.io/v3/${projectId}`  // همونی که فرستادید
-        };
+        // اتصال به اینفورا (برای خواندن اطلاعات)
+        const infuraProvider = `https://polygon-mainnet.infura.io/v3/${INFURA_ID}`;
+        const infuraWeb3 = new Web3(infuraProvider);
         
-        let web3;
-        
-        function connectToInfura() {
+        let userAccount = null;
+        let walletProvider = null;
+
+        async function connectWallet() {
             try {
-                // اتصال به polygon (چون شما لینک polygon رو فرستادید)
-                web3 = new Web3(new Web3.providers.HttpProvider(networks.polygon));
+                // 1. اتصال به کیف پول (MetaMask)
+                if (!window.ethereum) {
+                    alert('لطفا MetaMask را نصب کنید');
+                    return;
+                }
                 
-                // تست اتصال
-                web3.eth.net.isListening()
-                    .then(() => {
-                        document.getElementById('result').innerHTML = '✅ اتصال به اینفورا برقرار شد (Polygon)';
-                    })
-                    .catch(err => {
-                        document.getElementById('result').innerHTML = '❌ خطا در اتصال: ' + err.message;
-                    });
+                document.getElementById('btnText').innerText = 'در حال اتصال...';
+                
+                // درخواست دسترسی به حساب
+                const accounts = await window.ethereum.request({ 
+                    method: 'eth_requestAccounts' 
+                });
+                
+                userAccount = accounts[0];
+                walletProvider = window.ethereum;
+
+                // 2. دریافت اطلاعات از اینفورا (نه از کیف پول)
+                await updateInfoFromInfura();
+
+                // 3. نمایش اطلاعات
+                document.getElementById('walletInfo').style.display = 'block';
+                document.getElementById('btnText').innerText = '✅ متصل شد';
+
+                // 4. گوش دادن به تغییرات
+                window.ethereum.on('accountsChanged', handleAccountsChanged);
+                window.ethereum.on('chainChanged', () => window.location.reload());
+
             } catch (error) {
-                document.getElementById('result').innerHTML = '❌ خطا: ' + error.message;
+                console.error(error);
+                alert('خطا در اتصال: ' + error.message);
+                document.getElementById('btnText').innerText = 'اتصال به کیف پول';
             }
         }
-        
-        function getBlockNumber() {
-            if (!web3) {
-                alert('ابتدا اتصال را بررسی کنید');
-                return;
+
+        async function updateInfoFromInfura() {
+            if (!userAccount) return;
+
+            try {
+                // دریافت اطلاعات از اینفورا
+                const network = await infuraWeb3.eth.net.getNetworkType();
+                const balance = await infuraWeb3.eth.getBalance(userAccount);
+                const balanceInEth = infuraWeb3.utils.fromWei(balance, 'ether');
+
+                // نمایش
+                document.getElementById('address').innerText = 
+                    userAccount.substring(0, 6) + '...' + userAccount.substring(38);
+                document.getElementById('network').innerText = network + ' (Polygon)';
+                document.getElementById('balance').innerText = 
+                    parseFloat(balanceInEth).toFixed(4) + ' MATIC';
+
+            } catch (error) {
+                console.error('خطا در دریافت اطلاعات از اینفورا:', error);
             }
-            
-            web3.eth.getBlockNumber()
-                .then(blockNumber => {
-                    document.getElementById('result').innerHTML = `📦 آخرین شماره بلاک: ${blockNumber}`;
-                })
-                .catch(err => {
-                    document.getElementById('result').innerHTML = '❌ خطا: ' + err.message;
-                });
         }
-        
-        function getBalance() {
-            if (!web3) {
-                alert('ابتدا اتصال را بررسی کنید');
-                return;
+
+        function handleAccountsChanged(accounts) {
+            if (accounts.length === 0) {
+                disconnect();
+            } else {
+                userAccount = accounts[0];
+                updateInfoFromInfura();
             }
-            
-            // آدرس Vitalik Buterin
-            const address = '0xab5801a7d398351b8be11c439e05c5b3259aec9b';
-            
-            web3.eth.getBalance(address)
-                .then(balance => {
-                    const balanceInEth = web3.utils.fromWei(balance, 'ether');
-                    document.getElementById('result').innerHTML = `💰 موجودی آدرس ${address}: <br> ${balanceInEth} ETH`;
-                })
-                .catch(err => {
-                    document.getElementById('result').innerHTML = '❌ خطا: ' + err.message;
-                });
+        }
+
+        function disconnect() {
+            userAccount = null;
+            walletProvider = null;
+            document.getElementById('walletInfo').style.display = 'none';
+            document.getElementById('btnText').innerText = 'اتصال به کیف پول';
         }
     </script>
 </body>
