@@ -3,16 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>اتصال به کیف پول با Web3Modal</title>
+    <title>اتصال به کیف پول - CreateMyToken</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- کتابخانه‌ها -->
-    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.1/dist/web3.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/web3modal@1.9.8/dist/index.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+    <!-- React و کتابخانه‌های مورد نیاز -->
+    <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+    
+    <!-- Wagmi و RainbowKit -->
+    <script src="https://cdn.jsdelivr.net/npm/@rainbow-me/rainbowkit@1.0.0/dist/index.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/wagmi@1.3.0/dist/index.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/viem@1.10.0/dist/umd/index.js"></script>
     
     <style>
         * {
@@ -31,9 +34,12 @@
             padding: 16px;
         }
 
-        .container {
-            max-width: 500px;
+        #root {
             width: 100%;
+            max-width: 500px;
+        }
+
+        .container {
             background: #141A29;
             border-radius: 32px;
             padding: 32px;
@@ -43,7 +49,7 @@
 
         h1 {
             color: white;
-            font-size: 24px;
+            font-size: 28px;
             margin-bottom: 8px;
         }
 
@@ -53,42 +59,17 @@
             margin-bottom: 32px;
         }
 
-        #connect-btn {
-            width: 100%;
-            padding: 18px;
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            border: none;
-            border-radius: 18px;
-            color: white;
-            font-family: 'Inter', sans-serif;
-            font-size: 18px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 20px;
-        }
-
-        #connect-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px -10px #3b82f6;
-        }
-
-        #connect-btn:active {
-            transform: scale(0.98);
+        .connect-button-container {
+            margin-bottom: 24px;
         }
 
         .wallet-info {
             background: #1E2638;
             border-radius: 20px;
             padding: 24px;
-            margin-top: 20px;
-            display: none;
+            margin-top: 24px;
             text-align: right;
+            display: none;
         }
 
         .info-item {
@@ -123,180 +104,109 @@
             margin-top: 16px;
             border: none;
             font-family: 'Inter', sans-serif;
-            transition: all 0.2s ease;
         }
 
         .disconnect-btn:hover {
             background: rgba(239, 68, 68, 0.2);
         }
-
-        .disconnect-btn:active {
-            transform: scale(0.98);
-        }
-
-        .network-badge {
-            display: inline-block;
-            background: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
-            padding: 4px 8px;
-            border-radius: 30px;
-            font-size: 11px;
-            margin-right: 8px;
-        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🚀 CreateMyToken</h1>
-        <p class="subtitle">اتصال به کیف پول با Web3Modal</p>
-        
-        <button id="connect-btn">
-            <i class="fas fa-wallet"></i>
-            <span>اتصال به کیف پول</span>
-        </button>
-
-        <div class="wallet-info" id="wallet-info">
-            <div class="info-item">
-                <div class="info-label">آدرس کیف پول</div>
-                <div class="info-value" id="wallet-address">-</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">شبکه</div>
-                <div class="info-value" id="wallet-network">-</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">موجودی</div>
-                <div class="info-value" id="wallet-balance">-</div>
-            </div>
-            <button class="disconnect-btn" id="disconnect-btn">
-                <i class="fas fa-power-off"></i>
-                قطع اتصال
-            </button>
-        </div>
-    </div>
+    <div id="root"></div>
 
     <script>
-        // تنظیم Web3Modal با Project ID شما
-        const providerOptions = {
-            walletconnect: {
-                package: WalletConnectProvider,
-                options: {
-                    infuraId: "934a2ae012c840dea039c5c2571bce16"  // Project ID شما
-                }
-            }
-        };
+        const { configureChains, createConfig, WagmiConfig, useAccount, useBalance, useNetwork, useDisconnect } = wagmi;
+        const { mainnet, polygon, optimism, arbitrum, bsc, avalanche } = viem.chains;
+        const { publicProvider } = wagmi.providers.public;
+        const { RainbowKitProvider, ConnectButton, connectorsForWallets, wallet } = RainbowKit;
+        
+        // تنظیم شبکه‌ها با Project ID شما
+        const projectId = '934a2ae012c840dea039c5c2571bce16';
+        
+        const { chains, publicClient } = configureChains(
+            [mainnet, polygon, optimism, arbitrum, bsc, avalanche],
+            [publicProvider()]
+        );
 
-        const web3Modal = new Web3Modal.default({
-            cacheProvider: true,
-            providerOptions,
-            theme: {
-                background: "rgb(20, 26, 41)",
-                main: "rgb(255, 255, 255)",
-                secondary: "rgb(126, 138, 154)",
-                border: "rgba(255, 255, 255, 0.1)",
-                hover: "rgba(255, 255, 255, 0.05)"
-            }
+        const wallets = [
+            wallet.metaMask({ projectId, chains }),
+            wallet.walletConnect({ projectId, chains }),
+            wallet.rainbow({ projectId, chains }),
+            wallet.trust({ projectId, chains }),
+            wallet.ledger({ projectId, chains }),
+            wallet.coinbase({ appName: 'CreateMyToken', chains }),
+            wallet.brave({ projectId, chains }),
+            wallet.safe({ chains }),
+        ];
+
+        const connectors = connectorsForWallets(wallets);
+
+        const config = createConfig({
+            autoConnect: true,
+            connectors,
+            publicClient
         });
 
-        const connectBtn = document.getElementById('connect-btn');
-        const walletInfo = document.getElementById('wallet-info');
-        const addressEl = document.getElementById('wallet-address');
-        const networkEl = document.getElementById('wallet-network');
-        const balanceEl = document.getElementById('wallet-balance');
-        const disconnectBtn = document.getElementById('disconnect-btn');
+        // کامپوننت اصلی
+        function App() {
+            const { address, isConnected } = useAccount();
+            const { data: balance } = useBalance({ address });
+            const { chain } = useNetwork();
+            const { disconnect } = useDisconnect();
 
-        let provider = null;
-        let web3Provider = null;
+            return React.createElement('div', { className: 'container' },
+                React.createElement('h1', null, '🚀 CreateMyToken'),
+                React.createElement('p', { className: 'subtitle' }, 'اتصال به کیف پول با RainbowKit'),
+                
+                React.createElement('div', { className: 'connect-button-container' },
+                    React.createElement(ConnectButton, {
+                        label: 'اتصال به کیف پول',
+                        showBalance: false
+                    })
+                ),
+                
+                isConnected && React.createElement('div', { className: 'wallet-info', style: { display: 'block' } },
+                    React.createElement('div', { className: 'info-item' },
+                        React.createElement('div', { className: 'info-label' }, 'آدرس کیف پول'),
+                        React.createElement('div', { className: 'info-value' }, address)
+                    ),
+                    React.createElement('div', { className: 'info-item' },
+                        React.createElement('div', { className: 'info-label' }, 'شبکه'),
+                        React.createElement('div', { className: 'info-value' }, chain?.name || 'ناشناخته')
+                    ),
+                    React.createElement('div', { className: 'info-item' },
+                        React.createElement('div', { className: 'info-label' }, 'موجودی'),
+                        React.createElement('div', { className: 'info-value' }, 
+                            balance ? `${parseFloat(balance.formatted).toFixed(4)} ${balance.symbol}` : '0'
+                        )
+                    ),
+                    React.createElement('button', { 
+                        className: 'disconnect-btn',
+                        onClick: disconnect 
+                    }, 
+                        React.createElement('i', { className: 'fas fa-power-off' }),
+                        ' قطع اتصال'
+                    )
+                )
+            );
+        }
 
-        async function connectWallet() {
-            try {
-                const instance = await web3Modal.connect();
-                
-                web3Provider = new ethers.providers.Web3Provider(instance);
-                provider = instance;
-                
-                const signer = web3Provider.getSigner();
-                const address = await signer.getAddress();
-                const network = await web3Provider.getNetwork();
-                const balance = await web3Provider.getBalance(address);
-                
-                // نمایش آدرس
-                addressEl.textContent = address;
-                
-                // نمایش نام شبکه
-                const networkNames = {
-                    1: 'Ethereum Mainnet',
-                    3: 'Ropsten',
-                    4: 'Rinkeby',
-                    5: 'Goerli',
-                    42: 'Kovan',
-                    56: 'Binance Smart Chain',
-                    97: 'BSC Testnet',
-                    137: 'Polygon Mainnet',
-                    80001: 'Mumbai',
-                    43114: 'Avalanche C-Chain',
-                    42161: 'Arbitrum One',
-                    10: 'Optimism'
-                };
-                
-                const networkName = networkNames[network.chainId] || `Network ID: ${network.chainId}`;
-                networkEl.innerHTML = `${networkName} <span class="network-badge">Chain ID: ${network.chainId}</span>`;
-                
-                // نمایش موجودی
-                const balanceInEth = ethers.utils.formatEther(balance);
-                balanceEl.textContent = parseFloat(balanceInEth).toFixed(4) + ' ETH';
-                
-                walletInfo.style.display = 'block';
-                connectBtn.querySelector('span').textContent = 'اتصال مجدد';
-
-                // رویدادها
-                instance.on('accountsChanged', (accounts) => {
-                    if (accounts.length > 0) {
-                        addressEl.textContent = accounts[0];
-                    } else {
-                        disconnectWallet();
+        // رندر برنامه
+        function Root() {
+            return React.createElement(WagmiConfig, { config },
+                React.createElement(RainbowKitProvider, { chains, theme: {
+                    colors: {
+                        accentColor: '#3b82f6',
+                        accentColorForeground: 'white',
                     }
-                });
-
-                instance.on('chainChanged', async (chainId) => {
-                    const network = await web3Provider.getNetwork();
-                    const networkName = networkNames[network.chainId] || `Network ID: ${network.chainId}`;
-                    networkEl.innerHTML = `${networkName} <span class="network-badge">Chain ID: ${network.chainId}</span>`;
-                });
-
-                instance.on('disconnect', () => {
-                    disconnectWallet();
-                });
-
-            } catch (error) {
-                console.error('خطا:', error);
-                alert('خطا در اتصال به کیف پول: ' + (error.message || 'خطای ناشناخته'));
-                
-                // برگردوندن دکمه به حالت اول
-                connectBtn.querySelector('span').textContent = 'اتصال به کیف پول';
-            }
+                } },
+                    React.createElement(App, null)
+                )
+            );
         }
 
-        function disconnectWallet() {
-            web3Modal.clearCachedProvider();
-            provider = null;
-            web3Provider = null;
-            
-            walletInfo.style.display = 'none';
-            connectBtn.querySelector('span').textContent = 'اتصال به کیف پول';
-            
-            addressEl.textContent = '-';
-            networkEl.textContent = '-';
-            balanceEl.textContent = '-';
-        }
-
-        connectBtn.addEventListener('click', connectWallet);
-        disconnectBtn.addEventListener('click', disconnectWallet);
-
-        // اتصال خودکار اگر قبلاً متصل بوده
-        if (web3Modal.cachedProvider) {
-            connectWallet();
-        }
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(Root));
     </script>
 </body>
-                  </html>
+</html>
