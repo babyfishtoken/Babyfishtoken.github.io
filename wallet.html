@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Connect Wallet Polygon</title>
+
+<style>
+body{
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.card{
+  background: #1e293b;
+  padding: 30px;
+  border-radius: 14px;
+  text-align: center;
+  width: 320px;
+}
+
+button{
+  background: linear-gradient(90deg,#9333ea,#6366f1);
+  border: none;
+  padding: 12px 20px;
+  color: white;
+  font-size: 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: 10px;
+  width: 100%;
+}
+
+button:hover{
+  opacity: 0.9;
+}
+
+#wallet{
+  margin-top: 15px;
+  font-size: 14px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h2>Connect Wallet</h2>
+  <button id="connect">Connect</button>
+  <button id="disconnect" style="display:none;">Disconnect</button>
+  <p id="wallet">Not connected</p>
+</div>
+
+<script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+<script src="https://unpkg.com/web3modal"></script>
+<script src="https://unpkg.com/@walletconnect/web3-provider"></script>
+
+<script>
+let web3Modal;
+let provider;
+
+const polygonMainnet = {
+  chainId: "0x89",
+  chainName: "Polygon",
+  nativeCurrency: {
+    name: "MATIC",
+    symbol: "MATIC",
+    decimals: 18
+  },
+  rpcUrls: ["https://polygon-mainnet.infura.io/v3/934a2ae012c840dea039c5c2571bce16"],
+  blockExplorerUrls: ["https://polygonscan.com"]
+};
+
+function shortAddress(addr){
+  return addr.slice(0,6) + "..." + addr.slice(-4);
+}
+
+async function init(){
+  const providerOptions = {
+    walletconnect:{
+      package: window.WalletConnectProvider.default,
+      options:{
+        rpc:{
+          137:"https://polygon-mainnet.infura.io/v3/934a2ae012c840dea039c5c2571bce16"
+        }
+      }
+    }
+  };
+
+  web3Modal = new window.Web3Modal.default({
+    cacheProvider:false,
+    providerOptions
+  });
+}
+
+async function switchToPolygon(){
+  if(!window.ethereum) return;
+
+  try{
+    await window.ethereum.request({
+      method:"wallet_switchEthereumChain",
+      params:[{chainId:"0x89"}]
+    });
+  }catch(e){
+    if(e.code === 4902){
+      await window.ethereum.request({
+        method:"wallet_addEthereumChain",
+        params:[polygonMainnet]
+      });
+    }
+  }
+}
+
+async function connectWallet(){
+  try{
+    await switchToPolygon();
+
+    provider = await web3Modal.connect();
+    const ethersProvider = new ethers.providers.Web3Provider(provider);
+
+    const signer = ethersProvider.getSigner();
+    const address = await signer.getAddress();
+
+    document.getElementById("wallet").innerText =
+      shortAddress(address);
+
+    document.getElementById("connect").style.display="none";
+    document.getElementById("disconnect").style.display="block";
+
+  }catch(e){
+    console.log(e);
+  }
+}
+
+async function disconnect(){
+  if(provider?.close){
+    await provider.close();
+  }
+  provider = null;
+
+  document.getElementById("wallet").innerText="Not connected";
+  document.getElementById("connect").style.display="block";
+  document.getElementById("disconnect").style.display="none";
+}
+
+document.getElementById("connect").onclick = connectWallet;
+document.getElementById("disconnect").onclick = disconnect;
+
+init();
+</script>
+
+</body>
+</html>
