@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اتصال به کیف پول - کریپتو</title>
+    
+    <!-- فونت‌ها و استایل‌ها -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- کتابخانه‌های مورد نیاز -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3modal@1.9.8/dist/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background: linear-gradient(135deg, #0b1120 0%, #192132 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+        }
+
+        /* کارت اصلی */
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 32px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* هدر */
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            transform: rotate(-5deg);
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: rotate(0deg);
+        }
+
+        .logo i {
+            font-size: 40px;
+            color: white;
+        }
+
+        h1 {
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        /* دکمه اتصال - مشابه CreateMyToken */
+        .connect-btn {
+            width: 100%;
+            padding: 18px 24px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-family: 'Vazirmatn', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .connect-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px -15px #3b82f6;
+        }
+
+        .connect-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .connect-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-icon {
+            font-size: 24px;
+            transition: transform 0.3s ease;
+        }
+
+        .connect-btn:hover .btn-icon {
+            transform: translateX(-5px) rotate(10deg);
+        }
+
+        /* انیمیشن لودینگ */
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* کارت اطلاعات کیف پول */
+        .wallet-info {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 24px;
+            margin-top: 24px;
+            display: none;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .info-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .info-header i {
+            font-size: 28px;
+            color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+            padding: 12px;
+            border-radius: 16px;
+        }
+
+        .info-header h3 {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .info-item {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .info-label {
+            color: #94a3b8;
+            font-size: 12px;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .info-value {
+            color: white;
+            font-size: 14px;
+            font-family: monospace;
+            word-break: break-all;
+        }
+
+        .balance {
+            font-size: 24px;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        .network-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .disconnect-btn {
+            width: 100%;
+            padding: 14px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 16px;
+            color: #ef4444;
+            font-family: 'Vazirmatn', sans-serif;
+            font-size: 16px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 16px;
+        }
+
+        .disconnect-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .features {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 24px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .features i {
+            color: #3b82f6;
+            margin-left: 4px;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            margin-top: 16px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <div class="logo">
+                    <i class="fas fa-link"></i>
+                </div>
+                <h1>اتصال به کیف پول</h1>
+                <p class="subtitle">مثل CreateMyToken، سریع و امن</p>
+            </div>
+
+            <!-- دکمه اتصال -->
+            <button class="connect-btn" id="connectWalletBtn">
+                <i class="fas fa-wallet btn-icon"></i>
+                <span id="btnText">اتصال به کیف پول</span>
+                <div class="loading-spinner" id="loadingSpinner"></div>
+            </button>
+
+            <!-- ویژگی‌ها -->
+            <div class="features">
+                <span><i class="fas fa-shield-alt"></i> امن</span>
+                <span><i class="fas fa-bolt"></i> سریع</span>
+                <span><i class="fas fa-wallet"></i> Multi-Wallet</span>
+            </div>
+
+            <!-- کارت اطلاعات کیف پول -->
+            <div class="wallet-info" id="walletInfo">
+                <div class="info-header">
+                    <i class="fas fa-check-circle"></i>
+                    <h3>کیف پول متصل شد</h3>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="fas fa-tag"></i>
+                        آدرس کیف پول
+                    </div>
+                    <div class="info-value" id="walletAddress">0x...</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="fas fa-globe"></i>
+                        شبکه
+                    </div>
+                    <div class="info-value">
+                        <span class="network-badge" id="networkName">
+                            <i class="fas fa-circle" style="color: #10b981; font-size: 8px;"></i>
+                            در حال بارگذاری...
+                        </span>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="fas fa-coins"></i>
+                        موجودی
+                    </div>
+                    <div class="info-value balance" id="walletBalance">0 ETH</div>
+                </div>
+
+                <button class="disconnect-btn" id="disconnectBtn">
+                    <i class="fas fa-power-off"></i>
+                    قطع اتصال
+                </button>
+            </div>
+
+            <!-- پیام خطا -->
+            <div class="error-message" id="errorMessage"></div>
+        </div>
+    </div>
+
+    <script>
+        // تنظیمات Web3Modal
+        const providerOptions = {
+            walletconnect: {
+                package: window.WalletConnectProvider ? WindowWalletConnectProvider : undefined,
+                options: {
+                    infuraId: "YOUR_INFURA_ID" // برای پروژه واقعی باید ثبت نام کنید
+                }
+            }
+        };
+
+        const web3Modal = new Web3Modal.default({
+            cacheProvider: true,
+            providerOptions,
+            theme: {
+                background: "rgb(11, 17, 32)",
+                main: "rgb(255, 255, 255)",
+                secondary: "rgb(148, 163, 184)",
+                border: "rgba(255, 255, 255, 0.1)",
+                hover: "rgba(255, 255, 255, 0.05)"
+            }
+        });
+
+        // عناصر DOM
+        const connectBtn = document.getElementById('connectWalletBtn');
+        const btnText = document.getElementById('btnText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const walletInfo = document.getElementById('walletInfo');
+        const walletAddress = document.getElementById('walletAddress');
+        const networkName = document.getElementById('networkName');
+        const walletBalance = document.getElementById('walletBalance');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const errorMessage = document.getElementById('errorMessage');
+
+        let provider = null;
+        let signer = null;
+        let address = null;
+
+        // تابع نمایش خطا
+        function showError(message) {
+            errorMessage.style.display = 'block';
+            errorMessage.textContent = message;
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        // تابع قطع اتصال
+        async function disconnect() {
+            if (web3Modal) {
+                web3Modal.clearCachedProvider();
+            }
+            provider = null;
+            signer = null;
+            address = null;
+            
+            // آپدیت UI
+            walletInfo.style.display = 'none';
+            btnText.textContent = 'اتصال به کیف پول';
+            connectBtn.disabled = false;
+            loadingSpinner.style.display = 'none';
+        }
+
+        // تابع دریافت موجودی
+        async function getBalance(address, provider) {
+            try {
+                const balance = await provider.getBalance(address);
+                return ethers.utils.formatEther(balance);
+            } catch (error) {
+                console.error('خطا در دریافت موجودی:', error);
+                return '0';
+            }
+        }
+
+        // تابع دریافت نام شبکه
+        function getNetworkName(chainId) {
+            const networks = {
+                1: 'Ethereum Mainnet',
+                3: 'Ropsten Testnet',
+                4: 'Rinkeby Testnet',
+                5: 'Goerli Testnet',
+                42: 'Kovan Testnet',
+                56: 'Binance Smart Chain',
+                97: 'BSC Testnet',
+                137: 'Polygon Mainnet',
+                80001: 'Mumbai Testnet',
+                43114: 'Avalanche C-Chain',
+                42161: 'Arbitrum One',
+                10: 'Optimism'
+            };
+            return networks[chainId] || `شبکه ${chainId}`;
+        }
+
+        // تابع آپدیت اطلاعات
+        async function updateWalletInfo() {
+            if (!provider || !address) return;
+
+            try {
+                // آپدیت آدرس
+                const shortAddress = `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+                walletAddress.textContent = shortAddress;
+                walletAddress.setAttribute('title', address);
+
+                // دریافت شبکه
+                const network = await provider.getNetwork();
+                const networkNameText = getNetworkName(network.chainId);
+                networkName.innerHTML = `<i class="fas fa-circle" style="color: #10b981; font-size: 8px;"></i> ${networkNameText}`;
+
+                // دریافت موجودی
+                const balance = await getBalance(address, provider);
+                walletBalance.textContent = `${parseFloat(balance).toFixed(4)} ETH`;
+
+            } catch (error) {
+                console.error('خطا در آپدیت اطلاعات:', error);
+            }
+        }
+
+        // تابع اتصال به کیف پول
+        async function connectWallet() {
+            try {
+                // نمایش لودینگ
+                connectBtn.disabled = true;
+                btnText.style.display = 'none';
+                loadingSpinner.style.display = 'block';
+
+                // اتصال به کیف پول
+                const instance = await web3Modal.connect();
+                
+                // ایجاد provider
+                const ethersProvider = new ethers.providers.Web3Provider(instance);
+                provider = ethersProvider;
+                
+                // دریافت signer و آدرس
+                signer = provider.getSigner();
+                address = await signer.getAddress();
+
+                // آپدیت UI
+                walletInfo.style.display = 'block';
+                btnText.style.display = 'inline';
+                loadingSpinner.style.display = 'none';
+                btnText.textContent = 'اتصال مجدد';
+
+                // آپدیت اطلاعات
+                await updateWalletInfo();
+
+                // گوش دادن به تغییرات
+                instance.on('accountsChanged', async (accounts) => {
+                    if (accounts.length > 0) {
+                        address = accounts[0];
+                        await updateWalletInfo();
+                    } else {
+                        disconnect();
+                    }
+                });
+
+                instance.on('chainChanged', async () => {
+                    await updateWalletInfo();
+                });
+
+                instance.on('disconnect', () => {
+                    disconnect();
+                });
+
+            } catch (error) {
+                console.error('خطا در اتصال:', error);
+                
+                if (error.message.includes('User denied')) {
+                    showError('اتصال توسط کاربر لغو شد');
+                } else if (error.message.includes('No provider')) {
+                    showError('کیف پولی نصب نیست. لطفا MetaMask نصب کنید');
+                    window.open('https://metamask.io/download.html', '_blank');
+                } else {
+                    showError('خطا در اتصال به کیف پول');
+                }
+
+                // برگرداندن دکمه به حالت اول
+                connectBtn.disabled = false;
+                btnText.style.display = 'inline';
+                loadingSpinner.style.display = 'none';
+            }
+        }
+
+        // رویدادهای کلیک
+        connectBtn.addEventListener('click', connectWallet);
+        disconnectBtn.addEventListener('click', disconnect);
+
+        // بررسی اتصال قبلی
+        if (web3Modal.cachedProvider) {
+            connectWallet();
+        }
+    </script>
+</body>
+  </html>
