@@ -1,21 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Professional Wallet Connect</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wallet Connect</title>
 </head>
 
-<body style="background:#0f172a;color:white;font-family:sans-serif;text-align:center;padding-top:100px;">
+<body style="background:#0f172a;color:white;text-align:center;padding-top:120px;font-family:sans-serif;">
 
 <h2>Polygon Wallet Connect</h2>
 
-<!-- دکمه حرفه‌ای -->
-<w3m-button></w3m-button>
+<div id="wallet-btn"></div>
 
 <script type="module">
-import { createWeb3Modal, defaultWagmiConfig } from "https://unpkg.com/@web3modal/wagmi@latest/dist/index.js";
-import { polygon, polygonAmoy } from "https://esm.sh/wagmi/chains";
+import { createWeb3Modal, defaultWagmiConfig } 
+from "https://esm.sh/@web3modal/wagmi";
+
+import { polygon, polygonAmoy } 
+from "https://esm.sh/wagmi/chains";
 
 const projectId = "96f13374b0fe2f629a925617de0a2ba3";
 
@@ -39,6 +41,11 @@ createWeb3Modal({
   projectId,
   chains
 });
+
+// دکمه را دستی می‌سازیم
+const btn = document.createElement("w3m-button");
+document.getElementById("wallet-btn").appendChild(btn);
+
 </script>
 
 </body>
