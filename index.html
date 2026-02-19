@@ -1,563 +1,83 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ساخت توکن پالیگان | شبیه ریمیکس</title>
-    
-    <!-- فونت و آیکون -->
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Web3Modal نسخه 2 (بدون نیاز به Project ID) -->
-    <script src="https://cdn.jsdelivr.net/npm/web3modal@1.9.9/dist/index.js"></script>
-    
-    <!-- WalletConnect Provider -->
-    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
-    
-    <!-- ethers.js -->
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Vazirmatn', sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #0b0e1a 0%, #1a1f2e 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 450px;
-            width: 100%;
-        }
-        
-        .card {
-            background: #1e2434;
-            border-radius: 24px;
-            padding: 30px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            border: 1px solid #2e3547;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .header i {
-            font-size: 48px;
-            color: #a855f7;
-            margin-bottom: 15px;
-        }
-        
-        .header h1 {
-            color: white;
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-        
-        .header p {
-            color: #8b949e;
-            font-size: 14px;
-        }
-        
-        /* دکمه اتصال - شبیه ریمیکس */
-        .remix-button {
-            background: #2a3142;
-            color: white;
-            border: 1px solid #3a4358;
-            padding: 15px 20px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 500;
-            width: 100%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.3s;
-            margin-bottom: 20px;
-        }
-        
-        .remix-button:hover {
-            background: #323b4f;
-            border-color: #a855f7;
-        }
-        
-        .remix-button i {
-            font-size: 20px;
-            color: #a855f7;
-        }
-        
-        /* کادر اطلاعات کیف پول - شبیه ریمیکس */
-        .wallet-panel {
-            background: #1a1f2d;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 25px;
-            border: 1px solid #2a3142;
-        }
-        
-        .wallet-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .wallet-icon {
-            width: 40px;
-            height: 40px;
-            background: #2a3142;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .wallet-icon i {
-            font-size: 20px;
-            color: #a855f7;
-        }
-        
-        .wallet-details {
-            flex: 1;
-        }
-        
-        .wallet-name {
-            color: white;
-            font-weight: 600;
-        }
-        
-        .wallet-address {
-            color: #8b949e;
-            font-size: 12px;
-            font-family: monospace;
-        }
-        
-        .network-badge {
-            background: #2a3142;
-            color: #8b949e;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 12px;
-        }
-        
-        .disconnect-link {
-            color: #ef4444;
-            font-size: 13px;
-            cursor: pointer;
-            text-align: left;
-            margin-top: 10px;
-            display: inline-block;
-        }
-        
-        .disconnect-link:hover {
-            text-decoration: underline;
-        }
-        
-        /* فرم */
-        .form-group {
-            margin-bottom: 18px;
-        }
-        
-        .form-group label {
-            display: block;
-            color: #8b949e;
-            margin-bottom: 6px;
-            font-size: 13px;
-        }
-        
-        .form-control {
-            width: 100%;
-            padding: 12px 15px;
-            background: #1a1f2d;
-            border: 1px solid #2a3142;
-            border-radius: 10px;
-            color: white;
-            font-size: 14px;
-        }
-        
-        .form-control:focus {
-            outline: none;
-            border-color: #a855f7;
-        }
-        
-        .create-btn {
-            background: linear-gradient(135deg, #a855f7, #7e3af2);
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            width: 100%;
-            cursor: pointer;
-            margin: 20px 0 10px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        
-        .create-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .create-btn:not(:disabled):hover {
-            background: linear-gradient(135deg, #9333ea, #6b21a8);
-        }
-        
-        /* کادر تراکنش */
-        .tx-status {
-            background: #1a1f2d;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
-            border: 1px solid #2a3142;
-            display: none;
-        }
-        
-        .tx-status.active {
-            display: block;
-        }
-        
-        .tx-progress {
-            height: 4px;
-            background: #2a3142;
-            border-radius: 2px;
-            margin: 10px 0;
-            overflow: hidden;
-        }
-        
-        .tx-progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #a855f7, #7e3af2);
-            width: 0%;
-            transition: width 0.3s;
-        }
-        
-        /* مودال کیف پول شبیه ریمیکس */
-        .note {
-            color: #8b949e;
-            font-size: 12px;
-            text-align: center;
-            margin-top: 15px;
-            padding: 10px;
-            background: #1a1f2d;
-            border-radius: 8px;
-        }
-    </style>
+  <title>Token Creator</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <div class="card">
-            <div class="header">
-                <i class="fas fa-cube"></i>
-                <h1>توکن‌ساز پالیگان</h1>
-                <p>مثل ریمیکس، همه کیف پول‌ها رو پشتیبانی می‌کنه</p>
-            </div>
-            
-            <!-- دکمه اتصال -->
-            <button id="connectButton" class="remix-button">
-                <i class="fas fa-plug"></i>
-                اتصال کیف پول
-            </button>
-            
-            <!-- پنل اطلاعات کیف پول (پنهان در ابتدا) -->
-            <div id="walletPanel" class="wallet-panel" style="display: none;">
-                <div class="wallet-header">
-                    <div class="wallet-icon">
-                        <i class="fas fa-wallet"></i>
-                    </div>
-                    <div class="wallet-details">
-                        <div class="wallet-name" id="walletName">متصل شد</div>
-                        <div class="wallet-address" id="walletAddress">0x...</div>
-                    </div>
-                    <div class="network-badge" id="networkBadge">Polygon</div>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: #8b949e; font-size: 12px;">موجودی: <span id="walletBalance">0</span> POL</span>
-                    <a id="disconnectBtn" class="disconnect-link">قطع اتصال</a>
-                </div>
-            </div>
-            
-            <!-- فرم -->
-            <form id="tokenForm">
-                <div class="form-group">
-                    <label>نام توکن</label>
-                    <input type="text" class="form-control" id="tokenName" placeholder="مثال: My Token" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>نماد توکن</label>
-                    <input type="text" class="form-control" id="tokenSymbol" placeholder="مثال: MTK" maxlength="5" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>عرضه کل</label>
-                    <input type="number" class="form-control" id="totalSupply" placeholder="مثال: 1000000" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>اعشار</label>
-                    <input type="number" class="form-control" id="decimals" value="18" min="0" max="18">
-                </div>
-                
-                <!-- وضعیت تراکنش -->
-                <div id="txStatus" class="tx-status">
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-                        <i class="fas fa-spinner fa-spin" style="color: #a855f7;"></i>
-                        <span id="txMessage" style="color: white;">در حال آماده‌سازی...</span>
-                    </div>
-                    <div class="tx-progress">
-                        <div id="txProgress" class="tx-progress-bar"></div>
-                    </div>
-                </div>
-                
-                <button type="submit" id="createBtn" class="create-btn" disabled>
-                    <i class="fas fa-magic"></i>
-                    ساخت توکن
-                </button>
-            </form>
-            
-            <div class="note">
-                <i class="fas fa-info-circle"></i> برای اتصال کلیک کن، کادر مشکی باز میشه. متامسک، تراست ولت، کوین‌بیس و همه کیف پول‌ها پشتیبانی می‌شن.
-            </div>
-        </div>
-    </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // ==================== تنظیمات Web3Modal نسخه پایدار ====================
-            
-            let web3Modal;
-            let provider;
-            let signer;
-            let userAddress;
-            
-            // المان‌های DOM
-            const connectBtn = document.getElementById('connectButton');
-            const walletPanel = document.getElementById('walletPanel');
-            const walletName = document.getElementById('walletName');
-            const walletAddress = document.getElementById('walletAddress');
-            const walletBalance = document.getElementById('walletBalance');
-            const networkBadge = document.getElementById('networkBadge');
-            const disconnectBtn = document.getElementById('disconnectBtn');
-            const createBtn = document.getElementById('createBtn');
-            const tokenForm = document.getElementById('tokenForm');
-            const txStatus = document.getElementById('txStatus');
-            const txMessage = document.getElementById('txMessage');
-            const txProgress = document.getElementById('txProgress');
-            
-            // ==================== مقداردهی Web3Modal ====================
-            
-            function initWeb3Modal() {
-                try {
-                    // تنظیم providerهای مختلف
-                    const providerOptions = {
-                        // WalletConnect (برای موبایل)
-                        walletconnect: {
-                            package: window.WalletConnectProvider ? window.WalletConnectProvider.default : null,
-                            options: {
-                                rpc: {
-                                    137: 'https://polygon-rpc.com',
-                                    80001: 'https://rpc-mumbai.maticvigil.com',
-                                    1: 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
-                                },
-                                bridge: 'https://bridge.walletconnect.org',
-                                qrcodeModalOptions: {
-                                    mobileLinks: ['metamask', 'trust', 'rainbow']
-                                }
-                            }
-                        }
-                    };
-                    
-                    // ایجاد Web3Modal
-                    web3Modal = new window.Web3Modal.default({
-                        cacheProvider: true,        // ذخیره اتصال قبلی
-                        providerOptions: providerOptions,
-                        theme: 'dark',               // تم مشکی
-                        disableInjectedProvider: false,
-                        network: 'mainnet'
-                    });
-                    
-                    console.log('✅ Web3Modal آماده است');
-                    
-                    // بررسی اتصال قبلی
-                    if (web3Modal.cachedProvider) {
-                        setTimeout(() => connectWallet(), 500);
-                    }
-                    
-                } catch (error) {
-                    console.error('❌ خطا در Web3Modal:', error);
-                    alert('خطا در بارگذاری کیف پول، صفحه را رفرش کنید.');
-                }
-            }
-            
-            // ==================== توابع کیف پول ====================
-            
-            async function connectWallet() {
-                try {
-                    connectBtn.disabled = true;
-                    connectBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال اتصال...';
-                    
-                    // باز کردن مودال
-                    const instance = await web3Modal.connect();
-                    
-                    // ایجاد provider
-                    provider = new ethers.providers.Web3Provider(instance);
-                    signer = provider.getSigner();
-                    
-                    // دریافت آدرس
-                    const accounts = await provider.listAccounts();
-                    userAddress = accounts[0];
-                    
-                    // دریافت شبکه
-                    const network = await provider.getNetwork();
-                    
-                    // دریافت موجودی
-                    const balance = await provider.getBalance(userAddress);
-                    const balanceFormatted = parseFloat(ethers.utils.formatEther(balance)).toFixed(4);
-                    
-                    // دریافت نام کیف پول
-                    let providerName = 'کیف پول';
-                    if (instance.isMetaMask) providerName = 'MetaMask';
-                    else if (instance.isTrust) providerName = 'Trust Wallet';
-                    else if (instance.isCoinbaseWallet) providerName = 'Coinbase Wallet';
-                    else if (instance.walletConnect) providerName = 'WalletConnect';
-                    
-                    // به‌روزرسانی UI
-                    walletName.textContent = providerName;
-                    walletAddress.textContent = `${userAddress.substring(0, 6)}...${userAddress.substring(38)}`;
-                    walletBalance.textContent = balanceFormatted;
-                    
-                    // بررسی شبکه
-                    if (network.chainId === 137) {
-                        networkBadge.textContent = 'Polygon Mainnet';
-                        networkBadge.style.background = '#059669';
-                    } else if (network.chainId === 80001) {
-                        networkBadge.textContent = 'Polygon Mumbai';
-                        networkBadge.style.background = '#d97706';
-                    } else {
-                        networkBadge.textContent = `Chain: ${network.chainId}`;
-                        networkBadge.style.background = '#dc2626';
-                    }
-                    
-                    // نمایش پنل
-                    connectBtn.style.display = 'none';
-                    walletPanel.style.display = 'block';
-                    createBtn.disabled = false;
-                    
-                    // ذخیره در localStorage
-                    localStorage.setItem('walletConnected', 'true');
-                    
-                    // Event listeners برای تغییرات
-                    instance.on('accountsChanged', (accounts) => {
-                        if (accounts.length === 0) disconnect();
-                        else window.location.reload();
-                    });
-                    
-                    instance.on('chainChanged', () => window.location.reload());
-                    
-                } catch (error) {
-                    console.error('خطا:', error);
-                    if (error.message !== 'Modal closed by user') {
-                        alert('خطا در اتصال: ' + error.message);
-                    }
-                } finally {
-                    connectBtn.disabled = false;
-                    connectBtn.innerHTML = '<i class="fas fa-plug"></i> اتصال کیف پول';
-                }
-            }
-            
-            async function disconnect() {
-                try {
-                    if (web3Modal) {
-                        await web3Modal.clearCachedProvider();
-                    }
-                    
-                    // پاک کردن متغیرها
-                    provider = null;
-                    signer = null;
-                    userAddress = null;
-                    
-                    // به‌روزرسانی UI
-                    connectBtn.style.display = 'flex';
-                    walletPanel.style.display = 'none';
-                    createBtn.disabled = true;
-                    
-                    localStorage.removeItem('walletConnected');
-                    
-                } catch (error) {
-                    console.error('خطا در قطع اتصال:', error);
-                }
-            }
-            
-            // ==================== رویدادها ====================
-            
-            connectBtn.addEventListener('click', connectWallet);
-            disconnectBtn.addEventListener('click', disconnect);
-            
-            // ساخت توکن
-            tokenForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                if (!userAddress) {
-                    alert('لطفاً ابتدا کیف پول را متصل کنید');
-                    return;
-                }
-                
-                const name = document.getElementById('tokenName').value;
-                const symbol = document.getElementById('tokenSymbol').value;
-                const supply = document.getElementById('totalSupply').value;
-                const decimals = document.getElementById('decimals').value;
-                
-                // نمایش وضعیت
-                txStatus.classList.add('active');
-                txMessage.textContent = '⏳ در حال آماده‌سازی...';
-                txProgress.style.width = '30%';
-                
-                try {
-                    // شبیه‌سازی
-                    txMessage.textContent = '⏳ در حال تایید در کیف پول...';
-                    txProgress.style.width = '60%';
-                    await new Promise(r => setTimeout(r, 2000));
-                    
-                    txMessage.textContent = '⏳ در حال پردازش...';
-                    txProgress.style.width = '90%';
-                    await new Promise(r => setTimeout(r, 2000));
-                    
-                    txMessage.textContent = '✅ ساخته شد!';
-                    txProgress.style.width = '100%';
-                    
-                    const mockAddress = '0x' + Math.random().toString(16).substring(2, 42);
-                    
-                    setTimeout(() => {
-                        alert(`✅ توکن ${name} (${symbol}) ساخته شد!\nآدرس: ${mockAddress}`);
-                        txStatus.classList.remove('active');
-                        txProgress.style.width = '0%';
-                    }, 1000);
-                    
-                } catch (error) {
-                    txMessage.textContent = '❌ خطا: ' + error.message;
-                }
-            });
-            
-            // شروع
-            initWeb3Modal();
-        });
-    </script>
+<h2>Polygon Token Creator</h2>
+
+<button onclick="connectWallet()">Connect Wallet</button>
+
+<br><br>
+
+<input id="name" placeholder="Token Name">
+<br><br>
+<input id="symbol" placeholder="Token Symbol">
+<br><br>
+
+<button onclick="createToken()">Create Token</button>
+
+<h3 id="result"></h3>
+
+<script>
+
+const factoryAddress = "0x9033926CE8EfFBD2435c560844abe50E895018DF";
+
+const factoryABI = [
+  {
+    "inputs":[
+      {"internalType":"string","name":"name","type":"string"},
+      {"internalType":"string","name":"symbol","type":"string"}
+    ],
+    "name":"createToken",
+    "outputs":[{"internalType":"address","name":"","type":"address"}],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  }
+];
+
+let contract;
+
+async function connectWallet() {
+  if (window.ethereum) {
+    await window.ethereum.request({ method: "eth_requestAccounts" });
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+
+    contract = new ethers.Contract(factoryAddress, factoryABI, signer);
+
+    alert("Wallet Connected");
+  } else {
+    alert("Please install MetaMask");
+  }
+}
+
+async function createToken() {
+  if (!contract) {
+    alert("Connect wallet first");
+    return;
+  }
+
+  const name = document.getElementById("name").value;
+  const symbol = document.getElementById("symbol").value;
+
+  try {
+    const tx = await contract.createToken(name, symbol);
+    document.getElementById("result").innerText = "Waiting for transaction...";
+    const receipt = await tx.wait();
+
+    document.getElementById("result").innerText = "Token Created!";
+
+  } catch (err) {
+    console.log(err);
+    document.getElementById("result").innerText = "Error";
+  }
+}
+
+</script>
+
 </body>
-                        </html>
+</html>
