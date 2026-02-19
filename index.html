@@ -8,21 +8,20 @@
 
 <h2>Polygon Token Creator</h2>
 
-<button onclick="connectWallet()">Connect Wallet</button>
+<button id="connectBtn">Connect Wallet</button>
+<p id="wallet"></p>
 
-<br><br>
+<hr>
 
-<input id="name" placeholder="Token Name">
-<br><br>
-<input id="symbol" placeholder="Token Symbol">
-<br><br>
+<input id="name" placeholder="Token Name"><br><br>
+<input id="symbol" placeholder="Token Symbol"><br><br>
+<input id="supply" placeholder="Total Supply"><br><br>
 
 <button onclick="createToken()">Create Token</button>
 
 <h3 id="result"></h3>
 
 <script>
-
 const factoryAddress = "0x9033926CE8EfFBD2435c560844abe50E895018DF";
 
 const factoryABI = [
@@ -38,24 +37,41 @@ const factoryABI = [
   }
 ];
 
-let contract;
+let signer, contract, user;
 
 async function connectWallet() {
-  if (window.ethereum) {
-    await window.ethereum.request({ method: "eth_requestAccounts" });
 
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
-
-    contract = new ethers.Contract(factoryAddress, factoryABI, signer);
-
-    alert("Wallet Connected");
-  } else {
-    alert("Please install MetaMask");
+  if (!window.ethereum) {
+    alert("Install MetaMask");
+    return;
   }
+
+  const accounts = await window.ethereum.request({
+    method: "eth_requestAccounts"
+  });
+
+  user = accounts[0];
+
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  signer = provider.getSigner();
+
+  // چک شبکه Polygon
+  const network = await provider.getNetwork();
+  if (network.chainId !== 137) {
+    alert("Switch to Polygon network");
+    return;
+  }
+
+  contract = new ethers.Contract(factoryAddress, factoryABI, signer);
+
+  document.getElementById("wallet").innerText =
+    "Connected: " + user;
 }
 
+document.getElementById("connectBtn").onclick = connectWallet;
+
 async function createToken() {
+
   if (!contract) {
     alert("Connect wallet first");
     return;
@@ -64,19 +80,20 @@ async function createToken() {
   const name = document.getElementById("name").value;
   const symbol = document.getElementById("symbol").value;
 
+  document.getElementById("result").innerText =
+    "Waiting for transaction...";
+
   try {
     const tx = await contract.createToken(name, symbol);
-    document.getElementById("result").innerText = "Waiting for transaction...";
     const receipt = await tx.wait();
 
-    document.getElementById("result").innerText = "Token Created!";
-
+    document.getElementById("result").innerText =
+      "Token Created Successfully!";
   } catch (err) {
     console.log(err);
-    document.getElementById("result").innerText = "Error";
+    document.getElementById("result").innerText = "Error!";
   }
 }
-
 </script>
 
 </body>
