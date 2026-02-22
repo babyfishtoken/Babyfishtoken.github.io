@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>استخر نقدینگی | مشکی مات و طلایی</title>
+    <title>استخر نقدینگی | بنفش · طلایی · مشکی · طوسی</title>
     <!-- فونت‌های اینتر و وزیر -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,7 +18,7 @@
 
         body {
             font-family: 'Vazirmatn', 'Inter', sans-serif;
-            background: #0f1215;
+            background: #121216;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -28,23 +28,23 @@
             color: #e0e4e9;
         }
 
-        /* کارت اصلی - مشکی مات واقعی با عمق */
+        /* کارت اصلی - ترکیب بنفش تیره و طوسی با لبه‌های تیز (8px) */
         .main-card {
             max-width: 1260px;
             width: 100%;
-            background: #1a1e24;
-            border-radius: 28px;
-            box-shadow: 0 30px 50px -20px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(180, 145, 60, 0.15);
+            background: #1a1b23;
+            border-radius: 12px;  /* لبه‌های تیز و حرفه‌ای */
+            box-shadow: 0 30px 50px -20px rgba(0, 0, 0, 0.9), 0 0 0 1px #2f2b3a;
             overflow: hidden;
             padding: 2.8rem 2.8rem 0 2.8rem;
-            border: 1px solid #2d353f;
+            border: 1px solid #353040;
         }
 
         section {
             margin-bottom: 3.2rem;
         }
 
-        /* ========== تیتر و زیرتیتر - طلای گرم و مات ========== */
+        /* ========== تیتر و زیرتیتر - بنفش ملایم و طلایی ========== */
         .hero {
             text-align: center;
             margin-bottom: 3.2rem;
@@ -54,23 +54,23 @@
             font-size: clamp(2.7rem, 8vw, 4.2rem);
             font-weight: 650;
             letter-spacing: -0.02em;
-            color: #e4b138;
+            color: #d09e3b;  /* طلایی */
             line-height: 1.2;
             margin-bottom: 0.6rem;
-            text-shadow: 0 4px 12px rgba(200, 155, 40, 0.15);
+            text-shadow: 0 2px 8px rgba(180, 130, 220, 0.3);
         }
 
         .hero .subhead {
             font-size: 1.2rem;
             font-weight: 340;
-            color: #9aa9b8;
+            color: #b9a9cf;  /* بنفش روشن */
             max-width: 600px;
             margin: 0 auto;
             padding-bottom: 0.8rem;
-            border-bottom: 1px solid #323e4b;
+            border-bottom: 1px solid #3f3550;
         }
 
-        /* ========== دکمه اصلی - با عمق و بافت مات ========== */
+        /* ========== دکمه اصلی - بنفش تیره با طلایی ========== */
         .cta-container {
             display: flex;
             justify-content: center;
@@ -78,15 +78,15 @@
         }
 
         .cta-button {
-            background: #232a33;
-            border: 1px solid #c9a13b;
-            border-radius: 16px;
+            background: #262034;
+            border: 1.5px solid #c99f3a;
+            border-radius: 10px;  /* تیز و مدرن */
             padding: 0.9rem 2.5rem 0.9rem 2.5rem;
             font-size: 1.4rem;
             font-weight: 520;
-            color: #e4b645;
+            color: #e0b863;
             cursor: pointer;
-            box-shadow: 0 6px 0 #0f1318, 0 8px 18px -8px #000000;
+            box-shadow: 0 5px 0 #0c0a10, 0 8px 18px -8px #000000;
             transition: all 0.15s ease;
             display: inline-flex;
             align-items: center;
@@ -99,45 +99,45 @@
         }
 
         .cta-button:hover {
-            background: #2b333f;
+            background: #312a42;
             border-color: #dbb144;
             color: #edc75b;
             transform: translateY(-2px);
-            box-shadow: 0 8px 0 #0f1318, 0 12px 24px -10px #000;
+            box-shadow: 0 7px 0 #0c0a10, 0 12px 24px -10px #000;
         }
 
         .cta-button:active {
-            transform: translateY(4px);
-            box-shadow: 0 2px 0 #0f1318, 0 5px 14px -8px #000;
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #0c0a10, 0 5px 14px -8px #000;
         }
 
         .highlight-percent {
-            background: #c9a13b;
-            color: #12171e;
+            background: #c5923a;
+            color: #14101d;
             padding: 0.2rem 1.2rem;
-            border-radius: 30px;
+            border-radius: 20px;
             font-weight: 600;
             font-size: 1.1rem;
             border: 1px solid #e0b958;
             box-shadow: inset 0 1px 3px #f5dd9e;
         }
 
-        /* ========== قوانین - کارت با لایه‌بندی تیره ========== */
+        /* ========== قوانین - طوسی-بنفش با جزئیات طلایی ========== */
         .rules-section {
-            background: #1f262e;
-            border-radius: 24px;
+            background: #21212b;
+            border-radius: 10px;  /* تیز */
             padding: 2.2rem 2.5rem;
-            border: 1px solid #323e4b;
-            box-shadow: inset 0 1px 2px rgba(255,255,255,0.03), 0 10px 20px -18px #000;
+            border: 1px solid #3f3553;
+            box-shadow: inset 0 1px 2px rgba(170, 130, 240, 0.05), 0 10px 20px -18px #000;
             margin-bottom: 3rem;
         }
 
         .rules-title {
             font-size: 1.25rem;
             font-weight: 620;
-            color: #e2b13f;
+            color: #cb9d41;
             margin-bottom: 1.3rem;
-            border-right: 4px solid #b58d32;
+            border-right: 4px solid #9f7b34;
             padding-right: 1.2rem;
         }
 
@@ -152,10 +152,10 @@
             align-items: baseline;
             gap: 0.8rem;
             font-size: 1rem;
-            color: #bcc8d5;
+            color: #cbbde0;  /* بنفش روشن */
             font-weight: 350;
             padding-bottom: 0.7rem;
-            border-bottom: 1px solid #303b47;
+            border-bottom: 1px solid #3a3149;
         }
 
         .rule-item:last-child {
@@ -165,22 +165,22 @@
         .rule-bullet {
             width: 6px;
             height: 6px;
-            background: #caa33e;
+            background: #cb9f3c;
             border-radius: 1px;
             transform: rotate(45deg);
             flex-shrink: 0;
             margin-left: 0.4rem;
         }
 
-        /* ========== درباره سایت - عمق و لایه‌بندی بیشتر ========== */
+        /* ========== درباره سایت - ترکیب بنفش تیره و طوسی ========== */
         .about-section {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 2.2rem;
-            background: #1c232b;
-            border-radius: 26px;
+            background: #1e1d28;
+            border-radius: 12px;
             padding: 2.5rem 2.8rem;
-            border: 1px solid #34404d;
+            border: 1px solid #413753;
             box-shadow: 0 15px 25px -22px #000;
             margin-bottom: 2.5rem;
         }
@@ -188,14 +188,14 @@
         .about-text h2 {
             font-size: 2rem;
             font-weight: 620;
-            color: #e2b13f;
+            color: #cf9f3b;
             margin-bottom: 1.2rem;
         }
 
         .about-text p {
             font-size: 1.1rem;
             line-height: 1.8;
-            color: #b4c2d1;
+            color: #c2b3da;  /* بنفش خیلی روشن */
             font-weight: 330;
         }
 
@@ -204,11 +204,11 @@
             flex-direction: column;
             justify-content: center;
             gap: 1.3rem;
-            background: #161e27;
-            border-radius: 24px;
+            background: #16141f;
+            border-radius: 10px;
             padding: 2rem 2.2rem;
-            border: 1px solid #33404e;
-            box-shadow: inset 0 1px 2px rgba(255,255,240,0.02), 0 8px 18px -20px #000;
+            border: 1px solid #443c57;
+            box-shadow: inset 0 1px 2px rgba(210, 170, 250, 0.02), 0 8px 18px -20px #000;
         }
 
         .stat-item {
@@ -219,50 +219,50 @@
 
         .stat-icon {
             font-size: 1.9rem;
-            background: #212b37;
+            background: #2a2337;
             width: 56px;
             height: 56px;
-            border-radius: 20px;
+            border-radius: 12px;  /* تیز */
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #e0b03b;
-            border: 1px solid #405261;
+            color: #d4a03a;
+            border: 1px solid #5a4b70;
             box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
         }
 
         .stat-text {
             font-weight: 500;
             font-size: 1.15rem;
-            color: #d0deed;
+            color: #daceec;  /* بنفش خیلی روشن */
         }
 
         /* ========== فوتر با کپی‌رایت ========== */
         .footer-copyright {
             text-align: center;
             padding: 1.6rem 0.5rem 2rem 0.5rem;
-            border-top: 1px solid #313e4b;
-            color: #8c9baa;
+            border-top: 1px solid #3d344f;
+            color: #ab99c7;
             font-size: 0.92rem;
             font-weight: 320;
             margin: 0 -2.8rem;
             padding-left: 2.8rem;
             padding-right: 2.8rem;
-            background: #151c24;
+            background: #17141f;
         }
 
         .footer-copyright span {
             font-weight: 430;
-            color: #be9b42;
+            color: #bd943d;
         }
 
         /* ========== ریسپانسیو ========== */
         @media screen and (max-width: 700px) {
             body { padding: 1rem; }
-            .main-card { padding: 1.8rem 1.5rem 0 1.5rem; border-radius: 24px; }
+            .main-card { padding: 1.8rem 1.5rem 0 1.5rem; border-radius: 10px; }
             .hero h1 { font-size: 2.2rem; }
             .hero .subhead { font-size: 1rem; }
-            .cta-button { font-size: 1.2rem; padding: 0.7rem 1.8rem; }
+            .cta-button { font-size: 1.2rem; padding: 0.7rem 1.8rem; border-radius: 8px; }
             .highlight-percent { font-size: 0.95rem; padding: 0.1rem 0.9rem; }
             .about-section { grid-template-columns: 1fr; padding: 1.8rem; }
             .rules-section { padding: 1.5rem 1.8rem; }
@@ -278,7 +278,7 @@
             <div class="subhead">مدیریت نقدینگی با بهره‌وری بالا · کاملاً شفاف و سریع</div>
         </section>
 
-        <!-- دکمه اصلی با عمق و بافت مات -->
+        <!-- دکمه اصلی - بنفش و طلایی -->
         <div class="cta-container">
             <button class="cta-button" onclick="alert('ایجاد استخر (نسخه آزمایشی)')">
                 <span>➕ ایجاد استخر</span>
@@ -324,9 +324,9 @@
 
         <!-- کپی‌رایت -->
         <div class="footer-copyright">
-            © ۲۰۲۵ استخر نقدینگی هوشمند. تمامی حقوق محفوظ است. | طراحی مشکی مات و طلایی
-            <span>— v4.2</span>
+            © ۲۰۲۵ استخر نقدینگی هوشمند. تمامی حقوق محفوظ است. | طراحی بنفش · طلایی · مشکی · طوسی
+            <span>— v5.0</span>
         </div>
     </div>
 </body>
-                                       </html>
+    </html>
