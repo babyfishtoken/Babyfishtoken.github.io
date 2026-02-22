@@ -1,1094 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wallet Connect</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Token Balance Checker</title>
 </head>
+<body style="background:#0f172a;color:white;font-family:sans-serif;padding:20px;text-align:center;">
 
-<body style="background:#0f172a;color:white;text-align:center;padding-top:120px;font-family:sans-serif;">
+<h2>🔍 بررسی موجودی توکن</h2>
 
-<h2>Polygon Wallet Connect</h2>
-
+<!-- دکمه اتصال کیف پول -->
 <div id="wallet-btn"></div>
+<div id="walletAddress" style="margin:10px;color:#94a3b8;font-size:14px;"></div>
+
+<!-- فرم جستجو -->
+<div style="max-width:400px;margin:20px auto;">
+    <select id="networkSelect" style="width:100%;padding:10px;margin-bottom:10px;background:#1e293b;color:white;border:1px solid #334155;border-radius:8px;">
+        <option value="1">اتریوم (Ethereum)</option>
+        <option value="137" selected>پالیگان (Polygon)</option>
+        <option value="56">BSC</option>
+    </select>
+    
+    <input type="text" id="tokenAddress" placeholder="آدرس توکن (0x...)" value="0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174" style="width:100%;padding:10px;margin-bottom:10px;background:#1e293b;color:white;border:1px solid #334155;border-radius:8px;">
+    
+    <button id="checkBtn" onclick="checkBalance()" disabled style="width:100%;padding:12px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;">بررسی موجودی</button>
+</div>
+
+<!-- نتیجه -->
+<div id="result" style="margin-top:20px;"></div>
 
 <script type="module">
-import { createWeb3Modal, defaultWagmiConfig } 
-from "https://esm.sh/@web3modal/wagmi";
+import { createWeb3Modal, defaultWagmiConfig } from "https://esm.sh/@web3modal/wagmi";
+import { mainnet, polygon, bsc } from "https://esm.sh/wagmi/chains";
+import { getAccount, watchAccount } from "https://esm.sh/wagmi/actions";
+import { readContract } from "https://esm.sh/wagmi/actions";
+import { formatUnits } from "https://esm.sh/viem";
 
-import { polygon, polygonAmoy } 
-from "https://esm.sh/wagmi/chains";
-
+// ==================== تنظیمات ====================
 const projectId = "96f13374b0fe2f629a925617de0a2ba3";
-
-const metadata = {
-  name: "My Polygon Website",
-  description: "Web3 Polygon App",
-  url: "babyfishtoken.github.io",
-  icons: []
-};
-
-const chains = [polygon, polygonAmoy];
+const chains = [mainnet, polygon, bsc];
 
 const wagmiConfig = defaultWagmiConfig({
-  chains,
-  projectId,
-  metadata
+    chains,
+    projectId,
+    metadata: { name: "Token Checker", description: "", url: window.location.href, icons: [] }
 });
 
-createWeb3Modal({
-  wagmiConfig,
-  projectId,
-  chains
-});
-
-// دکمه را دستی می‌سازیم
+// ایجاد دکمه
+createWeb3Modal({ wagmiConfig, projectId, chains });
 const btn = document.createElement("w3m-button");
 document.getElementById("wallet-btn").appendChild(btn);
 
+// ==================== ABI توکن ====================
+const ERC20_ABI = [
+    { "constant": true, "inputs": [], "name": "symbol", "outputs": [{"name": "", "type": "string"}], "type": "function" },
+    { "constant": true, "inputs": [], "name": "decimals", "outputs": [{"name": "", "type": "uint8"}], "type": "function" },
+    { "constant": true, "inputs": [{"name": "_owner", "type": "address"}], "name": "balanceOf", "outputs": [{"name": "balance", "type": "uint256"}], "type": "function" }
+];
+
+// ==================== مپ شبکه ====================
+const chainMap = { '1': mainnet, '137': polygon, '56': bsc };
+
+// ==================== وضعیت کیف پول ====================
+let currentAccount = null;
+
+watchAccount(wagmiConfig, {
+    onChange(account) {
+        if (account?.address) {
+            currentAccount = account.address;
+            document.getElementById('walletAddress').innerText = `✅ ${account.address.slice(0,6)}...${account.address.slice(38)}`;
+            document.getElementById('checkBtn').disabled = false;
+        } else {
+            currentAccount = null;
+            document.getElementById('walletAddress').innerText = '';
+            document.getElementById('checkBtn').disabled = true;
+            document.getElementById('result').innerHTML = '';
+        }
+    }
+});
+
+// ==================== بررسی موجودی ====================
+window.checkBalance = async function() {
+    const tokenAddress = document.getElementById('tokenAddress').value.trim();
+    const network = document.getElementById('networkSelect').value;
+    
+    if (!tokenAddress || !tokenAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
+        document.getElementById('result').innerHTML = '<div style="color:#ef4444;">❌ آدرس نامعتبر</div>';
+        return;
+    }
+    
+    if (!currentAccount) {
+        document.getElementById('result').innerHTML = '<div style="color:#ef4444;">❌ کیف پول متصل نیست</div>';
+        return;
+    }
+    
+    document.getElementById('result').innerHTML = '<div>⏳ در حال بررسی...</div>';
+    
+    try {
+        const chain = chainMap[network];
+        const [symbol, decimals, balance] = await Promise.all([
+            readContract(wagmiConfig, { address: tokenAddress, abi: ERC20_ABI, functionName: 'symbol', chainId: chain.id }),
+            readContract(wagmiConfig, { address: tokenAddress, abi: ERC20_ABI, functionName: 'decimals', chainId: chain.id }),
+            readContract(wagmiConfig, { address: tokenAddress, abi: ERC20_ABI, functionName: 'balanceOf', args: [currentAccount], chainId: chain.id })
+        ]);
+        
+        const formattedBalance = formatUnits(balance, decimals);
+        const balanceNum = parseFloat(formattedBalance);
+        
+        if (balanceNum > 0) {
+            document.getElementById('result').innerHTML = `
+                <div style="background:#1e293b;padding:20px;border-radius:8px;">
+                    <div style="color:#94a3b8;">${symbol}</div>
+                    <div style="font-size:32px;font-weight:bold;color:#3b82f6;">${balanceNum.toLocaleString()}</div>
+                    <div style="color:#22c55e;">✅ موجود در کیف پول</div>
+                </div>
+            `;
+        } else {
+            document.getElementById('result').innerHTML = `
+                <div style="background:#1e293b;padding:20px;border-radius:8px;">
+                    <div style="color:#94a3b8;">${symbol}</div>
+                    <div style="font-size:32px;font-weight:bold;color:#ef4444;">0</div>
+                    <div style="color:#ef4444;">❌ در کیف پول نیست</div>
+                </div>
+            `;
+        }
+    } catch (error) {
+        document.getElementById('result').innerHTML = `<div style="color:#ef4444;">❌ خطا: ${error.message.slice(0,50)}</div>`;
+    }
+}
 </script>
 
 </body>
-</html><!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>کیف پول من | لیست توکن‌ها</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: system-ui, -apple-system, sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            min-height: 100vh;
-            color: white;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 16px;
-            backdrop-filter: blur(10px);
-            margin-bottom: 30px;
-        }
-        
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .stat-card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 16px;
-            padding: 25px;
-            backdrop-filter: blur(10px);
-        }
-        
-        .stat-label {
-            color: #94a3b8;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-        
-        .stat-value {
-            font-size: 32px;
-            font-weight: bold;
-        }
-        
-        .stat-value small {
-            font-size: 14px;
-            color: #94a3b8;
-            font-weight: normal;
-        }
-        
-        .tokens-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }
-        
-        .token-card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            padding: 20px;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-        
-        .token-card:hover {
-            transform: translateY(-5px);
-            background: rgba(255,255,255,0.1);
-            border-color: #667eea;
-        }
-        
-        .token-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        
-        .token-logo {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: bold;
-        }
-        
-        .token-info {
-            flex: 1;
-        }
-        
-        .token-symbol {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .token-name {
-            color: #94a3b8;
-            font-size: 13px;
-        }
-        
-        .token-balance {
-            font-size: 24px;
-            font-weight: bold;
-            margin: 10px 0 5px;
-        }
-        
-        .token-value {
-            color: #94a3b8;
-            font-size: 14px;
-        }
-        
-        .badge {
-            background: rgba(102, 126, 234, 0.2);
-            color: #667eea;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            display: inline-block;
-            margin-top: 10px;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 60px;
-        }
-        
-        .spinner {
-            border: 4px solid rgba(255,255,255,0.1);
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid #ef4444;
-            color: #ef4444;
-            padding: 15px;
-            border-radius: 12px;
-            margin: 20px 0;
-            text-align: center;
-        }
-        
-        .success {
-            background: rgba(34, 197, 94, 0.1);
-            border: 1px solid #22c55e;
-            color: #22c55e;
-            padding: 15px;
-            border-radius: 12px;
-            margin: 20px 0;
-            text-align: center;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 60px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 20px;
-            margin-top: 30px;
-        }
-        
-        .empty-state h3 {
-            margin: 20px 0 10px;
-            color: white;
-        }
-        
-        .empty-state p {
-            color: #94a3b8;
-        }
-        
-        .network-badge {
-            background: rgba(255,255,255,0.1);
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-size: 14px;
-        }
-        
-        footer {
-            text-align: center;
-            margin-top: 50px;
-            color: #64748b;
-            font-size: 12px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <div class="logo">🔍 توکن‌یاب</div>
-            <div id="wallet-btn"></div>
-        </header>
-        
-        <div id="walletInfo" style="display: none;">
-            <div class="stats">
-                <div class="stat-card">
-                    <div class="stat-label">آدرس کیف پول</div>
-                    <div class="stat-value" id="walletAddress">0x...</div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-label">شبکه</div>
-                    <div class="stat-value" id="networkName">polygon</div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-label">تعداد توکن‌ها</div>
-                    <div class="stat-value" id="tokenCount">0</div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-label">ارزش کل (USD)</div>
-                    <div class="stat-value" id="totalValue">$0</div>
-                </div>
-            </div>
-            
-            <div class="loading" id="loadingTokens">
-                <div class="spinner"></div>
-                <p>در حال دریافت اطلاعات توکن‌ها از Moralis API...</p>
-                <p style="font-size: 13px; color: #94a3b8; margin-top: 10px;">این فرآیند چند ثانیه طول می‌کشد</p>
-            </div>
-            
-            <div id="error" class="error" style="display: none;"></div>
-            
-            <div id="tokensContainer">
-                <div class="empty-state" id="emptyState">
-                    <div style="font-size: 48px;">👛</div>
-                    <h3>هنوز کیف پول متصل نیست</h3>
-                    <p>لطفاً ابتدا کیف پول خود را متصل کنید</p>
-                </div>
-                
-                <div class="tokens-grid" id="tokensGrid" style="display: none;"></div>
-            </div>
-        </div>
-        
-        <div id="tokenDetailModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 1000; justify-content: center; align-items: center;">
-            <div style="background: #1e293b; border-radius: 24px; padding: 30px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h2 id="modalTokenName" style="font-size: 24px;"></h2>
-                    <button onclick="closeModal()" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;">✕</button>
-                </div>
-                
-                <div style="text-align: center; margin: 20px 0;">
-                    <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: bold; margin: 0 auto 15px;" id="modalTokenLogo">?</div>
-                    <div style="font-size: 32px; font-weight: bold;" id="modalTokenBalance">0</div>
-                    <div style="color: #94a3b8; margin-top: 5px;" id="modalTokenValue">$0</div>
-                </div>
-                
-                <div style="background: rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; margin: 20px 0;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                        <span style="color: #94a3b8;">آدرس قرارداد:</span>
-                        <span style="font-family: monospace;" id="modalTokenAddress">0x...</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                        <span style="color: #94a3b8;">نماد:</span>
-                        <span id="modalTokenSymbol">???</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                        <span style="color: #94a3b8;">اعشار:</span>
-                        <span id="modalTokenDecimals">18</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #94a3b8;">شبکه:</span>
-                        <span id="modalTokenChain">polygon</span>
-                    </div>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <button onclick="copyToClipboard(this.dataset.address)" data-address="" id="modalCopyBtn" style="background: rgba(102, 126, 234, 0.2); color: #667eea; border: none; padding: 12px; border-radius: 12px; cursor: pointer; font-weight: bold;">📋 کپی آدرس</button>
-                    <a href="#" id="modalExplorerLink" target="_blank" style="background: rgba(255,255,255,0.1); color: white; text-decoration: none; padding: 12px; border-radius: 12px; text-align: center; font-weight: bold;">🔗 مشاهده در اکسپلورر</a>
-                </div>
-            </div>
-        </div>
-        
-        <footer>
-            ⚡ قدرت گرفته از Moralis API | نمایش توکن‌های کیف پول
-        </footer>
-    </div>
-
-    <script type="import">
-        import { createWeb3Modal, defaultWagmiConfig } from "https://esm.sh/@web3modal/wagmi";
-        import { polygon, polygonAmoy } from "https://esm.sh/wagmi/chains";
-        import { getAccount, watchAccount } from "https://esm.sh/wagmi/actions";
-        import { formatEther } from "https://esm.sh/viem";
-        
-        // ==================== کانفیگ ====================
-        const projectId = "96f13374b0fe2f629a925617de0a2ba3";
-        const MORALIS_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6ImU1NzhjODg4LTMwNGYtNDVjYy1hOWYxLWU0OGEyMDNmNTcxNiIsIm9yZ0lkIjoiNTAxNzgxIiwidXNlcklkIjoiNTE2MzA2IiwidHlwZUlkIjoiNDEzNDQ2MzctYTBmMy00YWUyLTkwNjEtZjA0NjI3ZGUzZjVkIiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3NzE3MzYxMzcsImV4cCI6NDkyNzQ5NjEzN30.1DXMrflFDZngmc9e-IlWjlO7Pjxbg4URR6C9u3E3tXI';
-        const MORALIS_BASE_URL = 'https://deep-index.moralis.io/api/v2.2';
-        
-        const metadata = {
-            name: "Polygon Token Viewer",
-            description: "مشاهده توکن‌های کیف پول",
-            url: window.location.href,
-            icons: []
-        };
-        
-        const chains = [polygon, polygonAmoy];
-        const wagmiConfig = defaultWagmiConfig({ chains, projectId, metadata });
-        
-        // ==================== اتصال کیف پول ====================
-        createWeb3Modal({ wagmiConfig, projectId, chains });
-        
-        // دکمه کیف پول
-        const btn = document.createElement("w3m-button");
-        document.getElementById("wallet-btn").appendChild(btn);
-        
-        // ==================== متغیرهای گلوبال ====================
-        let currentAccount = null;
-        let currentChain = 'polygon';
-        
-        // ==================== مپ کردن نام شبکه ====================
-        const chainMap = {
-            137: 'polygon',
-            80002: 'polygon-amoy'
-        };
-        
-        // ==================== watching account ====================
-        watchAccount(wagmiConfig, {
-            onChange(account) {
-                console.log('Account changed:', account);
-                if (account?.address) {
-                    currentAccount = account.address;
-                    document.getElementById('walletInfo').style.display = 'block';
-                    document.getElementById('walletAddress').innerText = account.address;
-                    document.getElementById('emptyState').style.display = 'none';
-                    
-                    // دریافت chainId
-                    if (account.chainId) {
-                        currentChain = chainMap[account.chainId] || 'polygon';
-                        document.getElementById('networkName').innerText = currentChain;
-                    }
-                    
-                    // دریافت توکن‌ها
-                    fetchWalletTokens(account.address, currentChain);
-                } else {
-                    // کیف پول قطع شد
-                    currentAccount = null;
-                    document.getElementById('walletInfo').style.display = 'none';
-                    document.getElementById('emptyState').style.display = 'block';
-                    document.getElementById('tokensGrid').style.display = 'none';
-                }
-            }
-        });
-        
-        // ==================== دریافت توکن‌های کیف پول ====================
-        async function fetchWalletTokens(address, chain) {
-            showLoading();
-            
-            try {
-                // دریافت لیست توکن‌ها از Moralis
-                const response = await fetch(`${MORALIS_BASE_URL}/${address}/erc20?chain=${chain}`, {
-                    method: 'GET',
-                    headers: {
-                        'accept': 'application/json',
-                        'X-API-Key': MORALIS_API_KEY
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`خطا در دریافت اطلاعات: ${response.status}`);
-                }
-                
-                const tokens = await response.json();
-                console.log('Tokens received:', tokens);
-                
-                if (tokens && tokens.length > 0) {
-                    displayTokens(tokens, chain);
-                    document.getElementById('tokenCount').innerText = tokens.length;
-                } else {
-                    showEmptyTokens();
-                }
-                
-            } catch (error) {
-                console.error('Error fetching tokens:', error);
-                showError(error.message);
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        // ==================== نمایش توکن‌ها ====================
-        function displayTokens(tokens, chain) {
-            const grid = document.getElementById('tokensGrid');
-            grid.innerHTML = '';
-            
-            let totalValue = 0;
-            
-            for (const token of tokens) {
-                // محاسبه موجودی
-                const balance = formatEther(BigInt(token.balance || '0'));
-                const balanceNum = parseFloat(balance);
-                
-                // محاسبه ارزش (اگه قیمت داشته باشه)
-                let value = 0;
-                if (token.usd_price) {
-                    value = balanceNum * parseFloat(token.usd_price);
-                    totalValue += value;
-                }
-                
-                const card = document.createElement('div');
-                card.className = 'token-card';
-                card.onclick = () => showTokenDetail(token, chain);
-                
-                card.innerHTML = `
-                    <div class="token-header">
-                        <div class="token-logo">${token.symbol?.charAt(0) || '?'}</div>
-                        <div class="token-info">
-                            <div class="token-symbol">${token.symbol || '???'}</div>
-                            <div class="token-name">${token.name || 'Unknown'}</div>
-                        </div>
-                    </div>
-                    <div class="token-balance">${balanceNum.toFixed(4)} ${token.symbol}</div>
-                    <div class="token-value">≈ $${value.toFixed(2)}</div>
-                    ${token.possible_spam ? '<div class="badge">⚠️ احتمالی اسپم</div>' : ''}
-                `;
-                
-                grid.appendChild(card);
-            }
-            
-            document.getElementById('totalValue').innerText = `$${totalValue.toFixed(2)}`;
-            document.getElementById('emptyState').style.display = 'none';
-            grid.style.display = 'grid';
-        }
-        
-        // ==================== نمایش جزئیات توکن ====================
-        function showTokenDetail(token, chain) {
-            const balance = formatEther(BigInt(token.balance || '0'));
-            const balanceNum = parseFloat(balance);
-            const value = token.usd_price ? (balanceNum * parseFloat(token.usd_price)).toFixed(2) : '0';
-            
-            document.getElementById('modalTokenName').innerText = `${token.name || 'Unknown'} (${token.symbol || '???'})`;
-            document.getElementById('modalTokenLogo').innerText = token.symbol?.charAt(0) || '?';
-            document.getElementById('modalTokenBalance').innerText = `${balanceNum.toFixed(6)} ${token.symbol}`;
-            document.getElementById('modalTokenValue').innerText = `≈ $${value}`;
-            document.getElementById('modalTokenAddress').innerText = token.token_address || token.address;
-            document.getElementById('modalTokenSymbol').innerText = token.symbol || '???';
-            document.getElementById('modalTokenDecimals').innerText = token.decimals || '18';
-            document.getElementById('modalTokenChain').innerText = chain;
-            
-            const copyBtn = document.getElementById('modalCopyBtn');
-            copyBtn.dataset.address = token.token_address || token.address;
-            
-            const explorerLink = document.getElementById('modalExplorerLink');
-            if (chain === 'polygon') {
-                explorerLink.href = `https://polygonscan.com/token/${token.token_address || token.address}`;
-            } else {
-                explorerLink.href = `https://amoy.polygonscan.com/token/${token.token_address || token.address}`;
-            }
-            
-            document.getElementById('tokenDetailModal').style.display = 'flex';
-        }
-        
-        // ==================== توابع کمکی ====================
-        function showLoading() {
-            document.getElementById('loadingTokens').style.display = 'block';
-            document.getElementById('error').style.display = 'none';
-            document.getElementById('tokensGrid').style.display = 'none';
-        }
-        
-        function hideLoading() {
-            document.getElementById('loadingTokens').style.display = 'none';
-        }
-        
-        function showError(message) {
-            document.getElementById('error').style.display = 'block';
-            document.getElementById('error').innerText = message;
-            document.getElementById('tokensGrid').style.display = 'none';
-            document.getElementById('emptyState').style.display = 'block';
-            document.getElementById('emptyState').innerHTML = `
-                <div style="font-size: 48px;">❌</div>
-                <h3>خطا در دریافت اطلاعات</h3>
-                <p>${message}</p>
-            `;
-        }
-        
-        function showEmptyTokens() {
-            document.getElementById('tokensGrid').style.display = 'none';
-            document.getElementById('emptyState').style.display = 'block';
-            document.getElementById('emptyState').innerHTML = `
-                <div style="font-size: 48px;">🪙</div>
-                <h3>هیچ توکنی یافت نشد</h3>
-                <p>این کیف پول توکنی در شبکه Polygon ندارد</p>
-            `;
-        }
-        
-        window.closeModal = function() {
-            document.getElementById('tokenDetailModal').style.display = 'none';
-        };
-        
-        window.copyToClipboard = function(address) {
-            navigator.clipboard.writeText(address).then(() => {
-                alert('آدرس کپی شد!');
-            });
-        };
-    </script>
-</body>
-                            </html><!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بررسی توکن در کیف پول</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: system-ui, -apple-system, sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            min-height: 100vh;
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .container {
-            max-width: 500px;
-            width: 100%;
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            padding: 30px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .subtitle {
-            color: #94a3b8;
-            font-size: 14px;
-            margin-bottom: 30px;
-        }
-        
-        .wallet-section {
-            background: rgba(255,255,255,0.03);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 25px;
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        
-        #wallet-btn {
-            margin: 15px 0;
-            min-height: 50px;
-        }
-        
-        .wallet-address {
-            background: rgba(0,0,0,0.3);
-            padding: 10px;
-            border-radius: 30px;
-            font-family: monospace;
-            font-size: 14px;
-            color: #94a3b8;
-            word-break: break-all;
-        }
-        
-        .search-section {
-            background: rgba(255,255,255,0.03);
-            border-radius: 16px;
-            padding: 20px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        
-        .input-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #cbd5e1;
-            font-size: 14px;
-        }
-        
-        input, select {
-            width: 100%;
-            padding: 14px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            color: white;
-            font-size: 15px;
-            direction: ltr;
-        }
-        
-        input:focus, select:focus {
-            outline: none;
-            border-color: #667eea;
-            background: rgba(255,255,255,0.1);
-        }
-        
-        input::placeholder {
-            color: #475569;
-        }
-        
-        button {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        button:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
-        
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .result {
-            margin-top: 25px;
-            padding: 20px;
-            border-radius: 16px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .balance-info {
-            text-align: center;
-        }
-        
-        .token-symbol {
-            font-size: 18px;
-            color: #94a3b8;
-            margin-bottom: 10px;
-        }
-        
-        .balance-amount {
-            font-size: 42px;
-            font-weight: bold;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin: 10px 0;
-        }
-        
-        .not-found {
-            color: #ef4444;
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .spinner {
-            border: 3px solid rgba(255,255,255,0.1);
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .error {
-            color: #ef4444;
-            text-align: center;
-            padding: 15px;
-            background: rgba(239, 68, 68, 0.1);
-            border-radius: 12px;
-            margin-top: 20px;
-        }
-        
-        .note {
-            color: #94a3b8;
-            font-size: 12px;
-            margin-top: 20px;
-            text-align: center;
-        }
-        
-        .example-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px dashed #667eea;
-            color: #94a3b8;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            cursor: pointer;
-            margin-top: 10px;
-            display: inline-block;
-        }
-        
-        .example-btn:hover {
-            background: rgba(102, 126, 234, 0.2);
-            color: white;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>🔍 بررسی توکن در کیف پول</h1>
-        <p class="subtitle">وارد کردن آدرس کانترکت و بررسی موجودی در کیف پول متصل شما</p>
-        
-        <!-- بخش اتصال کیف پول -->
-        <div class="wallet-section">
-            <div id="wallet-btn"></div>
-            <div id="walletAddress" class="wallet-address" style="display: none;"></div>
-        </div>
-        
-        <!-- بخش جستجو -->
-        <div class="search-section">
-            <div class="input-group">
-                <label>📝 شبکه</label>
-                <select id="networkSelect">
-                    <option value="eth" selected>اتریوم (Ethereum)</option>
-                    <option value="polygon">پالیگان (Polygon)</option>
-                    <option value="bsc">بایننس اسمارت چین (BSC)</option>
-                    <option value="arbitrum">آربیتروم (Arbitrum)</option>
-                    <option value="optimism">اپتیمیسم (Optimism)</option>
-                    <option value="base">بیس (Base)</option>
-                </select>
-            </div>
-            
-            <div class="input-group">
-                <label>📝 آدرس کانترکت توکن</label>
-                <input type="text" id="tokenAddress" placeholder="0x..." value="0x6982508145454ce325ddbe47a25d4ec3d2311933">
-                <div style="text-align: left; margin-top: 5px;">
-                    <span class="example-btn" onclick="document.getElementById('tokenAddress').value='0x6982508145454ce325ddbe47a25d4ec3d2311933'">🔵 نمونه: PEPE</span>
-                </div>
-            </div>
-            
-            <button id="checkBtn" disabled>بررسی موجودی</button>
-        </div>
-        
-        <!-- بخش نتیجه -->
-        <div id="result" style="display: none;"></div>
-        
-        <!-- بخش خطا -->
-        <div id="error" class="error" style="display: none;"></div>
-        
-        <div class="note">
-            ⚡ ابتدا کیف پول خود را متصل کنید، سپس آدرس توکن را وارد کنید
-        </div>
-    </div>
-
-    <script type="import">
-        import { createWeb3Modal, defaultWagmiConfig } from "https://esm.sh/@web3modal/wagmi";
-        import { mainnet, polygon, bsc, arbitrum, optimism, base } from "https://esm.sh/wagmi/chains";
-        import { getAccount, watchAccount } from "https://esm.sh/wagmi/actions";
-        import { readContract } from "https://esm.sh/wagmi/actions";
-        import { formatUnits } from "https://esm.sh/viem";
-        
-        // ==================== کانفیگ ====================
-        const projectId = "96f13374b0fe2f629a925617de0a2ba3";
-        
-        const metadata = {
-            name: "Token Balance Checker",
-            description: "بررسی موجودی توکن در کیف پول",
-            url: window.location.href,
-            icons: []
-        };
-        
-        const chains = [mainnet, polygon, bsc, arbitrum, optimism, base];
-        
-        const wagmiConfig = defaultWagmiConfig({
-            chains,
-            projectId,
-            metadata
-        });
-        
-        // ==================== اتصال کیف پول ====================
-        createWeb3Modal({
-            wagmiConfig,
-            projectId,
-            chains
-        });
-        
-        // دکمه کیف پول
-        const btn = document.createElement("w3m-button");
-        document.getElementById("wallet-btn").appendChild(btn);
-        
-        // ==================== متغیرها ====================
-        let currentAccount = null;
-        
-        // ==================== watching account ====================
-        watchAccount(wagmiConfig, {
-            onChange(account) {
-                console.log('Account changed:', account);
-                
-                if (account?.address) {
-                    // کیف پول وصل شد
-                    currentAccount = account.address;
-                    document.getElementById('walletAddress').style.display = 'block';
-                    document.getElementById('walletAddress').innerHTML = `🔷 ${account.address.substring(0, 6)}...${account.address.substring(38)}`;
-                    document.getElementById('checkBtn').disabled = false;
-                    
-                    // پنهان کردن خطاها
-                    document.getElementById('error').style.display = 'none';
-                } else {
-                    // کیف پول قطع شد
-                    currentAccount = null;
-                    document.getElementById('walletAddress').style.display = 'none';
-                    document.getElementById('checkBtn').disabled = true;
-                    document.getElementById('result').style.display = 'none';
-                }
-            }
-        });
-        
-        // ==================== ABI مینیمال برای ERC20 ====================
-        const ERC20_ABI = [
-            {
-                "constant": true,
-                "inputs": [],
-                "name": "name",
-                "outputs": [{"name": "", "type": "string"}],
-                "type": "function"
-            },
-            {
-                "constant": true,
-                "inputs": [],
-                "name": "symbol",
-                "outputs": [{"name": "", "type": "string"}],
-                "type": "function"
-            },
-            {
-                "constant": true,
-                "inputs": [],
-                "name": "decimals",
-                "outputs": [{"name": "", "type": "uint8"}],
-                "type": "function"
-            },
-            {
-                "constant": true,
-                "inputs": [{"name": "_owner", "type": "address"}],
-                "name": "balanceOf",
-                "outputs": [{"name": "balance", "type": "uint256"}],
-                "type": "function"
-            }
-        ];
-        
-        // ==================== مپ کردن شبکه به wagmi ====================
-        const chainMap = {
-            'eth': mainnet,
-            'polygon': polygon,
-            'bsc': bsc,
-            'arbitrum': arbitrum,
-            'optimism': optimism,
-            'base': base
-        };
-        
-        // ==================== بررسی موجودی ====================
-        document.getElementById('checkBtn').addEventListener('click', checkBalance);
-        
-        async function checkBalance() {
-            const tokenAddress = document.getElementById('tokenAddress').value.trim();
-            const network = document.getElementById('networkSelect').value;
-            
-            if (!tokenAddress) {
-                showError('لطفاً آدرس توکن را وارد کنید');
-                return;
-            }
-            
-            if (!tokenAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
-                showError('فرمت آدرس معتبر نیست');
-                return;
-            }
-            
-            if (!currentAccount) {
-                showError('لطفاً ابتدا کیف پول خود را متصل کنید');
-                return;
-            }
-            
-            // نمایش لودینگ
-            showLoading();
-            
-            try {
-                const chain = chainMap[network];
-                
-                // دریافت اطلاعات توکن
-                const [symbol, decimals, balance] = await Promise.all([
-                    readContract(wagmiConfig, {
-                        address: tokenAddress,
-                        abi: ERC20_ABI,
-                        functionName: 'symbol',
-                        chainId: chain.id
-                    }),
-                    readContract(wagmiConfig, {
-                        address: tokenAddress,
-                        abi: ERC20_ABI,
-                        functionName: 'decimals',
-                        chainId: chain.id
-                    }),
-                    readContract(wagmiConfig, {
-                        address: tokenAddress,
-                        abi: ERC20_ABI,
-                        functionName: 'balanceOf',
-                        args: [currentAccount],
-                        chainId: chain.id
-                    })
-                ]);
-                
-                // فرمت کردن موجودی
-                const formattedBalance = formatUnits(balance, decimals);
-                const balanceNumber = parseFloat(formattedBalance);
-                
-                // نمایش نتیجه
-                showResult(symbol, balanceNumber, formattedBalance);
-                
-            } catch (error) {
-                console.error('Error:', error);
-                
-                if (error.message.includes('execution reverted')) {
-                    showError('توکن یافت نشد یا آدرس اشتباه است');
-                } else if (error.message.includes('network')) {
-                    showError('خطا در شبکه. لطفاً شبکه صحیح را انتخاب کنید');
-                } else {
-                    showError('خطا در دریافت اطلاعات: ' + error.message);
-                }
-            }
-        }
-        
-        function showResult(symbol, balance, rawBalance) {
-            const resultDiv = document.getElementById('result');
-            
-            if (balance > 0) {
-                resultDiv.innerHTML = `
-                    <div class="result">
-                        <div class="balance-info">
-                            <div class="token-symbol">نماد توکن: ${symbol}</div>
-                            <div class="balance-amount">${balance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 6})}</div>
-                            <div style="color: #22c55e; margin-top: 10px;">✅ این توکن در کیف پول شما موجود است</div>
-                            <div style="color: #94a3b8; font-size: 12px; margin-top: 15px;">موجودی خام: ${rawBalance}</div>
-                        </div>
-                    </div>
-                `;
-            } else {
-                resultDiv.innerHTML = `
-                    <div class="result">
-                        <div class="balance-info">
-                            <div class="token-symbol">نماد توکن: ${symbol}</div>
-                            <div class="not-found">
-                                ⚠️ موجودی: 0 ${symbol}
-                                <div style="font-size: 14px; margin-top: 10px;">این توکن در کیف پول شما نیست</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-            
-            resultDiv.style.display = 'block';
-            document.getElementById('error').style.display = 'none';
-        }
-        
-        function showLoading() {
-            const resultDiv = document.getElementById('result');
-            resultDiv.style.display = 'block';
-            resultDiv.innerHTML = `
-                <div class="result">
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        <p>در حال بررسی موجودی...</p>
-                    </div>
-                </div>
-            `;
-            document.getElementById('error').style.display = 'none';
-        }
-        
-        function showError(message) {
-            const errorDiv = document.getElementById('error');
-            errorDiv.style.display = 'block';
-            errorDiv.innerHTML = `❌ ${message}`;
-            document.getElementById('result').style.display = 'none';
-        }
-        
-        // جستجو با اینتر
-        document.getElementById('tokenAddress').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && currentAccount) {
-                checkBalance();
-            }
-        });
-    </script>
-</body>
-                    </html>
+</html>
