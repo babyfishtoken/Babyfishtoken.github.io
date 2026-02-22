@@ -14,9 +14,9 @@ body{
   text-align:center;
   padding:20px;
 }
-input,select,button{
+input,button{
   padding:12px;
-  margin:8px;
+  margin:10px;
   border-radius:10px;
   border:none;
   width:90%;
@@ -33,12 +33,9 @@ input,select,button{
 
 <body>
 
-<h2>🔎 بررسی توکن تازه</h2>
+<h2>🔎 پیدا کردن توکن تازه</h2>
 
-<select id="network">
-  <option value="bsc">BSC</option>
-  <option value="eth">Ethereum</option>
-</select>
+<button onclick="connect()">اتصال کیف پول</button>
 
 <br>
 
@@ -52,17 +49,19 @@ input,select,button{
 
 <script>
 
-// RPC های پایدار مخصوص موبایل
-const RPCS = {
-  bsc: [
-    "https://bsc-dataseed1.binance.org",
-    "https://rpc.ankr.com/bsc"
-  ],
-  eth: [
-    "https://eth.llamarpc.com",
-    "https://rpc.ankr.com/eth"
-  ]
-};
+let provider;
+
+async function connect(){
+  if(!window.ethereum){
+    alert("لطفاً کیف پول مثل Metamask نصب کن");
+    return;
+  }
+
+  await window.ethereum.request({ method: "eth_requestAccounts" });
+  provider = new ethers.providers.Web3Provider(window.ethereum);
+
+  document.getElementById("out").innerHTML="✅ کیف پول متصل شد";
+}
 
 const ABI = [
   "function name() view returns (string)",
@@ -70,64 +69,43 @@ const ABI = [
   "function decimals() view returns (uint8)"
 ];
 
-async function tryProvider(url, address){
-  const provider = new ethers.providers.JsonRpcProvider(url);
-  const token = new ethers.Contract(address, ABI, provider);
-
-  let name="Unknown";
-  let symbol="???";
-  let decimals=18;
-
-  try{ name = await token.name(); }catch{}
-  try{ symbol = await token.symbol(); }catch{}
-  try{ decimals = await token.decimals(); }catch{}
-
-  return {name, symbol, decimals};
-}
-
 async function loadToken(){
 
-  const net = document.getElementById("network").value;
   const addr = document.getElementById("address").value.trim();
   const out = document.getElementById("out");
 
-  if(!navigator.onLine){
-    out.innerHTML="❌ اینترنت قطع است";
+  if(!provider){
+    alert("اول کیف پول را وصل کن");
     return;
   }
 
-  if(!addr){
-    alert("آدرس را وارد کن");
-    return;
-  }
+  out.innerHTML="⏳ در حال خواندن از بلاکچین...";
 
-  out.innerHTML="⏳ در حال اتصال به بلاکچین...";
+  try{
+    const token = new ethers.Contract(addr, ABI, provider);
 
-  const rpcList = RPCS[net];
+    let name="Unknown";
+    let symbol="???";
+    let decimals=18;
 
-  for(let i=0;i<rpcList.length;i++){
-    try{
-      const data = await tryProvider(rpcList[i], addr);
+    try{ name = await token.name(); }catch{}
+    try{ symbol = await token.symbol(); }catch{}
+    try{ decimals = await token.decimals(); }catch{}
 
-      out.innerHTML = `
+    out.innerHTML = `
       <div class="box">
-        <h3>${data.name} (${data.symbol})</h3>
-        اعشار: ${data.decimals}<br>
-        شبکه: ${net}<br><br>
+        <h3>${name} (${symbol})</h3>
+        اعشار: ${decimals}<br>
         ✔️ توکن شناسایی شد
       </div>
-      `;
+    `;
 
-      return;
-
-    }catch(e){
-      console.log("RPC failed:", rpcList[i]);
-    }
+  }catch(e){
+    console.log(e);
+    out.innerHTML="❌ این قرارداد توکن نیست";
   }
-
-  out.innerHTML="❌ توکن یافت نشد یا شبکه اشتباه است";
 }
-</script>
 
+</script>
 </body>
 </html>
