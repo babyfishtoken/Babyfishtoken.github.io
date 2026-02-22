@@ -1,51 +1,86 @@
 <!DOCTYPE html>
 <html lang="fa">
 <head>
-<meta charset="UTF-8" />
-<title>جستجوی توکن</title>
+<meta charset="UTF-8">
+<title>توکن‌های تازه لانچ شده</title>
+
+<style>
+body{
+  font-family:tahoma;
+  background:#0f172a;
+  color:white;
+  text-align:center;
+}
+.card{
+  background:#1e293b;
+  margin:15px;
+  padding:15px;
+  border-radius:10px;
+}
+button{
+  padding:10px;
+  margin:10px;
+  border-radius:8px;
+  border:none;
+}
+</style>
 </head>
+
 <body>
 
-<h2>جستجوی توکن</h2>
+<h2>🔥 توکن‌های تازه لانچ شده</h2>
 
-<input id="search" placeholder="نام یا آدرس توکن" />
-<button onclick="searchToken()">جستجو</button>
+<select id="network">
+  <option value="bsc">BSC</option>
+  <option value="ethereum">Ethereum</option>
+  <option value="polygon">Polygon</option>
+</select>
+
+<br>
+
+<button onclick="loadNew()">نمایش جدیدترین‌ها</button>
 
 <div id="result"></div>
 
 <script>
-async function searchToken() {
-  const query = document.getElementById("search").value;
-  const resultDiv = document.getElementById("result");
+async function loadNew(){
+  const net=document.getElementById("network").value;
+  const result=document.getElementById("result");
+  result.innerHTML="در حال دریافت...";
 
-  resultDiv.innerHTML = "در حال جستجو...";
+  try{
+    const res=await fetch(`https://api.dexscreener.com/latest/dex/pairs/${net}`);
+    const data=await res.json();
 
-  try {
-    const res = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${query}`);
-    const data = await res.json();
-
-    if (!data.pairs || data.pairs.length === 0) {
-      resultDiv.innerHTML = "توکن پیدا نشد";
+    if(!data.pairs){
+      result.innerHTML="چیزی یافت نشد";
       return;
     }
 
-    let html = "";
+    // مرتب سازی بر اساس زمان ایجاد (جدیدترین)
+    const sorted=data.pairs
+      .filter(p=>p.pairCreatedAt)
+      .sort((a,b)=>b.pairCreatedAt - a.pairCreatedAt)
+      .slice(0,20);
 
-    data.pairs.slice(0, 10).forEach(pair => {
-      html += `
-        <div style="border:1px solid #ccc; margin:10px; padding:10px;">
-          <b>${pair.baseToken.name}</b> (${pair.baseToken.symbol})<br>
-          شبکه: ${pair.chainId}<br>
-          آدرس: ${pair.baseToken.address}<br>
-          قیمت: $${pair.priceUsd || 0}<br>
-        </div>
+    let html="";
+
+    sorted.forEach(p=>{
+      html+=`
+      <div class="card">
+        <h3>${p.baseToken.name} (${p.baseToken.symbol})</h3>
+        قیمت: $${p.priceUsd || 0}<br>
+        لیکوئیدیتی: $${p.liquidity?.usd || 0}<br>
+        زمان ساخت: ${new Date(p.pairCreatedAt).toLocaleString()}<br>
+        آدرس: <small>${p.baseToken.address}</small>
+      </div>
       `;
     });
 
-    resultDiv.innerHTML = html;
+    result.innerHTML=html;
 
-  } catch (e) {
-    resultDiv.innerHTML = "خطا در جستجو";
+  }catch(e){
+    result.innerHTML="خطا در دریافت اطلاعات";
   }
 }
 </script>
