@@ -2,77 +2,132 @@
 <html lang="fa">
 <head>
 <meta charset="UTF-8">
-<title>Token Loader</title>
+<title>تشخیص توکن</title>
 
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
 
 <style>
-body{background:#111;color:#fff;font-family:tahoma;text-align:center}
-input,select,button{padding:10px;margin:10px;border-radius:8px}
+body{
+  background:#0f172a;
+  color:white;
+  font-family:tahoma;
+  text-align:center;
+  padding:20px;
+}
+input,select,button{
+  padding:12px;
+  margin:8px;
+  border-radius:10px;
+  border:none;
+  width:90%;
+  max-width:400px;
+}
+.box{
+  background:#1e293b;
+  padding:15px;
+  border-radius:10px;
+  margin-top:20px;
+}
 </style>
 </head>
+
 <body>
 
-<h2>توکن تازه خود را وارد کن</h2>
+<h2>🔎 بررسی توکن تازه</h2>
 
 <select id="network">
-<option value="bsc">BSC</option>
-<option value="eth">Ethereum</option>
+  <option value="bsc">BSC</option>
+  <option value="eth">Ethereum</option>
 </select>
 
 <br>
 
-<input id="addr" placeholder="آدرس قرارداد">
+<input id="address" placeholder="آدرس قرارداد توکن">
 
 <br>
 
-<button onclick="load()">دریافت</button>
+<button onclick="loadToken()">بررسی</button>
 
 <div id="out"></div>
 
 <script>
-const RPC={
-  bsc:"https://bsc-dataseed.binance.org/",
-  eth:"https://eth.llamarpc.com"
+
+// RPC های پایدار مخصوص موبایل
+const RPCS = {
+  bsc: [
+    "https://bsc-dataseed1.binance.org",
+    "https://rpc.ankr.com/bsc"
+  ],
+  eth: [
+    "https://eth.llamarpc.com",
+    "https://rpc.ankr.com/eth"
+  ]
 };
 
-const ABI=[
- "function name() view returns (string)",
- "function symbol() view returns (string)",
- "function decimals() view returns (uint8)"
+const ABI = [
+  "function name() view returns (string)",
+  "function symbol() view returns (string)",
+  "function decimals() view returns (uint8)"
 ];
 
-async function load(){
-  const net=document.getElementById("network").value;
-  const address=document.getElementById("addr").value.trim();
-  const out=document.getElementById("out");
+async function tryProvider(url, address){
+  const provider = new ethers.providers.JsonRpcProvider(url);
+  const token = new ethers.Contract(address, ABI, provider);
 
-  if(!address){
-    alert("آدرس وارد کن");
+  let name="Unknown";
+  let symbol="???";
+  let decimals=18;
+
+  try{ name = await token.name(); }catch{}
+  try{ symbol = await token.symbol(); }catch{}
+  try{ decimals = await token.decimals(); }catch{}
+
+  return {name, symbol, decimals};
+}
+
+async function loadToken(){
+
+  const net = document.getElementById("network").value;
+  const addr = document.getElementById("address").value.trim();
+  const out = document.getElementById("out");
+
+  if(!navigator.onLine){
+    out.innerHTML="❌ اینترنت قطع است";
     return;
   }
 
-  out.innerHTML="در حال خواندن از بلاکچین...";
-
-  try{
-    const provider=new ethers.providers.JsonRpcProvider(RPC[net]);
-    const token=new ethers.Contract(address,ABI,provider);
-
-    const name=await token.name();
-    const symbol=await token.symbol();
-    const decimals=await token.decimals();
-
-    out.innerHTML=`
-      <h3>${name} (${symbol})</h3>
-      اعشار: ${decimals}
-    `;
-
-  }catch(e){
-    console.log(e);
-    out.innerHTML="❌ خطا: آدرس اشتباه یا شبکه غلط";
+  if(!addr){
+    alert("آدرس را وارد کن");
+    return;
   }
+
+  out.innerHTML="⏳ در حال اتصال به بلاکچین...";
+
+  const rpcList = RPCS[net];
+
+  for(let i=0;i<rpcList.length;i++){
+    try{
+      const data = await tryProvider(rpcList[i], addr);
+
+      out.innerHTML = `
+      <div class="box">
+        <h3>${data.name} (${data.symbol})</h3>
+        اعشار: ${data.decimals}<br>
+        شبکه: ${net}<br><br>
+        ✔️ توکن شناسایی شد
+      </div>
+      `;
+
+      return;
+
+    }catch(e){
+      console.log("RPC failed:", rpcList[i]);
+    }
+  }
+
+  out.innerHTML="❌ توکن یافت نشد یا شبکه اشتباه است";
 }
 </script>
 
 </body>
-</html> 
+</html>
