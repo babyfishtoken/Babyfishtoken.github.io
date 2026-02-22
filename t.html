@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>استخر نقدینگی | طراحی حرفه‌ای</title>
-    <!-- فونت اینتر (جایگزین شیک برای فارسی و انگلیسی) -->
+    <title>استخر نقدینگی | طراحی مدرن</title>
+    <!-- فونت‌های اینتر و وزیر -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..700&display=swap" rel="stylesheet">
-    <!-- فونت فارسی وزیر (برای پشتیبانی بهتر از متن فارسی) -->
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
     <style>
         * {
@@ -18,151 +17,142 @@
         }
 
         body {
-            font-family: 'Vazirmatn', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(145deg, #f6f9fc 0%, #edf2f7 100%);
+            font-family: 'Vazirmatn', 'Inter', sans-serif;
+            background: #e4eef5;  /* زمینه ملایم و سرد */
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             direction: rtl;
             padding: 1.5rem;
-            color: #1e293b;
+            color: #1e3b4f;
         }
 
-        /* کارت اصلی صفحه - شیشه‌ای و لایه‌بندی شده */
+        /* کارت اصلی - حذف شیشه‌ای بودن بیش از حد، القای عمق با سایه */
         .main-card {
             max-width: 1280px;
             width: 100%;
-            background: rgba(255,255,255,0.7);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border-radius: 48px 48px 40px 40px;
+            background: #ffffff;
+            border-radius: 40px;
             box-shadow: 
-                0 25px 50px -12px rgba(0, 0, 0, 0.25),
-                inset 0 1px 2px rgba(255,255,255,0.8);
-            border: 1px solid rgba(255,255,255,0.6);
+                0 40px 60px -25px rgba(18, 52, 77, 0.35),
+                0 10px 20px -10px rgba(0,20,40,0.1);
             overflow: hidden;
-            padding: 2.5rem 2.5rem 0 2.5rem;
+            padding: 2.8rem 2.8rem 0 2.8rem;
+            transition: box-shadow 0.3s;
         }
 
-        /* هر سکشن تنفس دارد */
+        /* تمام سکشن‌ها فاصله استاندارد */
         section {
-            margin-bottom: 3rem;
+            margin-bottom: 3.2rem;
         }
 
-        /* سربرگ بالای صفحه (تیتر + توضیح) */
+        /* ========== تیتر و زیرتیتر ========== */
         .hero {
             text-align: center;
             margin-bottom: 3.5rem;
         }
 
         .hero h1 {
-            font-size: clamp(2.8rem, 10vw, 4.2rem);
-            font-weight: 700;
+            font-size: clamp(2.8rem, 9vw, 4.5rem);
+            font-weight: 650;
             letter-spacing: -0.02em;
-            background: linear-gradient(135deg, #0b2b44, #1f4b6e, #2a5f8a);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            line-height: 1.2;
-            margin-bottom: 0.5rem;
-            text-shadow: 0 2px 5px rgba(42,95,138,0.1);
+            color: #173042;  /* سرمه‌ای خالص */
+            line-height: 1.15;
+            margin-bottom: 0.75rem;
         }
 
         .hero .subhead {
-            font-size: 1.3rem;
+            font-size: 1.25rem;
             font-weight: 350;
-            color: #3a5e7a;
-            border-bottom: 1px solid rgba(42,95,138,0.2);
-            display: inline-block;
-            padding-bottom: 0.5rem;
-            max-width: 80%;
+            color: #3f627c;
+            max-width: 600px;
             margin: 0 auto;
-            backdrop-filter: blur(5px);
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(44, 85, 110, 0.25);
         }
 
-        /* بخش دکمه اصلی */
+        /* ========== دکمه اصلی (کاملاً بازطراحی شده) ========== */
         .cta-container {
             display: flex;
             justify-content: center;
-            margin-bottom: 3rem;
+            margin-bottom: 3.5rem;
         }
 
         .cta-button {
-            background: #0f2b3f;
-            background: linear-gradient(145deg, #1a3f58, #0b2f44);
-            border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 80px;
-            padding: 1.3rem 4rem;
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: white;
+            background: transparent;
+            border: 2px solid #183f56;        /* سرمه‌ای تیره و شیک */
+            border-radius: 100px;
+            padding: 1.1rem 3.5rem 1.1rem 3.5rem;
+            font-size: 1.6rem;
+            font-weight: 550;
+            color: #183f56;
             cursor: pointer;
-            box-shadow: 
-                0 20px 30px -12px rgba(10, 40, 60, 0.5),
-                0 4px 0 0 #0a1e2b,
-                inset 0 1px 4px rgba(255,255,255,0.4);
-            transition: all 0.15s ease;
+            box-shadow: 0 6px 0 #0c2a38;       /* سایه‌ی زیرکانه برای عمق */
+            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.2);
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            letter-spacing: 0.01em;
+            gap: 12px;
+            letter-spacing: 0.3px;
             outline: none;
             white-space: nowrap;
             flex-wrap: wrap;
+            background-color: #ffffff;
         }
 
         .cta-button:hover {
-            background: linear-gradient(145deg, #1f4b68, #12364d);
-            transform: translateY(-2px);
-            box-shadow: 0 25px 35px -10px #0f2f44, 0 6px 0 0 #0a1e2b;
+            transform: translateY(-3px);
+            box-shadow: 0 9px 0 #0c2a38;
+            background-color: #f7fbfd;
+            border-color: #1f506b;
+            color: #1f506b;
         }
 
         .cta-button:active {
-            transform: translateY(4px);
-            box-shadow: 0 10px 20px -8px #0f2f44, 0 2px 0 0 #0a1e2b;
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 #0c2a38;
+            transition: 0.08s;
         }
 
+        /* باکس درصد داخل دکمه */
         .highlight-percent {
-            background: #ffd966;
-            background: linear-gradient(145deg, #f9e79f, #f7dc6f);
-            color: #0b2f44;
-            padding: 0.2rem 1rem;
-            border-radius: 100px;
-            font-weight: 700;
-            margin-right: 0.5rem;
-            border: 1px solid rgba(255,255,255,0.7);
-            box-shadow: inset 0 1px 3px white;
+            background: #183f56;
+            color: #f0f8ff;
+            padding: 0.25rem 1.4rem;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 1.3rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: inset 0 1px 3px rgba(255,255,255,0.4);
+            letter-spacing: 0.5px;
+            white-space: nowrap;
         }
 
-        /* بخش قوانین (مینیمال و جدی) */
+        /* ========== قوانین (مینیمال با خطوط ظریف) ========== */
         .rules-section {
-            background: rgba(255, 255, 255, 0.4);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            border-radius: 32px;
-            padding: 1.8rem 2.2rem;
-            border: 1px solid rgba(255,255,255,0.7);
-            box-shadow: 0 8px 18px -10px rgba(0,32,64,0.2);
+            background: #f2f8fd;
+            border-radius: 28px;
+            padding: 2rem 2.5rem;
+            border: 1px solid #dbe8f2;
+            box-shadow: 0 8px 14px -12px rgba(28, 65, 87, 0.25);
             margin-bottom: 3rem;
         }
 
         .rules-title {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: #234a65;
-            margin-bottom: 1.2rem;
-            border-right: 5px solid #2b5f7a;
-            padding-right: 1rem;
+            color: #1c4c66;
+            margin-bottom: 1.3rem;
+            border-right: 4px solid #1c4c66;
+            padding-right: 1.2rem;
+            letter-spacing: 0.3px;
         }
 
         .rules-grid {
             display: flex;
             flex-direction: column;
-            gap: 0.8rem;
+            gap: 0.9rem;
         }
 
         .rule-item {
@@ -170,10 +160,10 @@
             align-items: baseline;
             gap: 0.8rem;
             font-size: 1rem;
-            color: #1d3f53;
+            color: #244c61;
             font-weight: 380;
-            border-bottom: 1px dashed rgba(31, 75, 110, 0.2);
-            padding-bottom: 0.7rem;
+            border-bottom: 1px solid #cbdbe7;
+            padding-bottom: 0.75rem;
         }
 
         .rule-item:last-child {
@@ -181,145 +171,133 @@
         }
 
         .rule-bullet {
-            width: 8px;
-            height: 8px;
-            background: #1f4b6e;
+            width: 6px;
+            height: 6px;
+            background: #1b4f68;
             border-radius: 1px;
             transform: rotate(45deg);
             flex-shrink: 0;
-            margin-left: 0.3rem;
-            opacity: 0.8;
+            margin-left: 0.4rem;
         }
 
-        /* بخش توضیحات درباره سایت (با ظاهر شفاف) */
+        /* ========== بخش درباره سایت (مینیمال و مسطح) ========== */
         .about-section {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            background: rgba(240, 248, 255, 0.5);
-            backdrop-filter: blur(4px);
-            border-radius: 40px;
-            padding: 2.5rem;
-            border: 1px solid rgba(255,255,255,0.8);
-            box-shadow: 0 10px 20px -15px rgba(0,20,30,0.3);
+            gap: 2.2rem;
+            background: #fafdff;
+            border-radius: 32px;
+            padding: 2.5rem 2.8rem;
+            border: 1px solid #d1e2ef;
+            box-shadow: 0 8px 16px -18px #10354a;
             margin-bottom: 2.5rem;
         }
 
         .about-text h2 {
             font-size: 2rem;
-            font-weight: 650;
-            color: #0f344b;
+            font-weight: 630;
+            color: #113545;
             margin-bottom: 1.2rem;
-            letter-spacing: -0.02em;
         }
 
         .about-text p {
             font-size: 1.1rem;
             line-height: 1.8;
-            color: #254e6b;
+            color: #2d4d62;
             font-weight: 350;
-            opacity: 0.9;
         }
 
         .about-stats {
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 1.8rem;
-            background: rgba(255,255,255,0.5);
-            border-radius: 32px;
-            padding: 2rem;
-            border: 1px solid white;
+            gap: 1.5rem;
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 2rem 2.2rem;
+            border: 1px solid #bfd8e9;
         }
 
         .stat-item {
             display: flex;
             align-items: center;
-            gap: 1.2rem;
+            gap: 1rem;
         }
 
         .stat-icon {
-            font-size: 2.2rem;
-            background: rgba(31, 75, 110, 0.15);
-            width: 60px;
-            height: 60px;
+            font-size: 2rem;
+            background: #eaf3fa;
+            width: 58px;
+            height: 58px;
             border-radius: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(2px);
-            border: 1px solid rgba(255,255,255,0.5);
+            color: #1a4e69;
+            border: 1px solid #bbd3e5;
         }
 
         .stat-text {
             font-weight: 500;
             font-size: 1.2rem;
-            color: #1d3d55;
+            color: #1f4155;
         }
 
-        /* کپی رایت فوتر */
+        /* ========== فوتر کپی‌رایت ========== */
         .footer-copyright {
             text-align: center;
-            padding: 1.5rem 0.5rem 2rem 0.5rem;
-            border-top: 1px solid rgba(31, 75, 110, 0.15);
-            color: #386581;
+            padding: 1.8rem 0.5rem 2.2rem 0.5rem;
+            border-top: 1px solid #c5d9e9;
+            color: #316177;
             font-size: 0.95rem;
             font-weight: 350;
-            letter-spacing: 0.3px;
-            backdrop-filter: blur(2px);
-            margin: 0 -2.5rem; /* برای پوشش کامل عرض کارت */
-            padding-left: 2.5rem;
-            padding-right: 2.5rem;
-            background: rgba(255,255,255,0.3);
+            margin: 0 -2.8rem; /* گسترش به عرض کارت */
+            padding-left: 2.8rem;
+            padding-right: 2.8rem;
+            background: #f0f8ff;
         }
 
         .footer-copyright span {
-            font-weight: 400;
-            color: #124257;
+            font-weight: 450;
+            color: #103d54;
         }
 
-        /* موبایل و ریسپانسیو */
+        /* ========== ریسپانسیو کامل ========== */
         @media screen and (max-width: 700px) {
-            body { padding: 0.7rem; }
-            .main-card { padding: 1.5rem 1.2rem 0 1.2rem; border-radius: 32px; }
-            .hero h1 { font-size: 2.4rem; }
-            .hero .subhead { font-size: 1rem; max-width: 95%; }
-            .cta-button { font-size: 1.3rem; padding: 1rem 2rem; white-space: normal; }
-            .highlight-percent { padding: 0.2rem 0.6rem; }
-            .about-section { grid-template-columns: 1fr; gap: 1.5rem; padding: 1.8rem; }
-            .rules-section { padding: 1.2rem 1.5rem; }
-            .rule-item { font-size: 0.9rem; }
-            .footer-copyright { margin: 0 -1.2rem; padding-left: 1.2rem; padding-right: 1.2rem; }
+            body { padding: 0.8rem; }
+            .main-card { padding: 1.8rem 1.5rem 0 1.5rem; border-radius: 32px; }
+            .hero h1 { font-size: 2.2rem; }
+            .hero .subhead { font-size: 1rem; }
+            .cta-button { font-size: 1.3rem; padding: 0.9rem 2rem; white-space: normal; }
+            .highlight-percent { font-size: 1rem; padding: 0.2rem 1rem; }
+            .about-section { grid-template-columns: 1fr; padding: 1.8rem; }
+            .rules-section { padding: 1.5rem 1.8rem; }
+            .footer-copyright { margin: 0 -1.5rem; padding-left: 1.5rem; padding-right: 1.5rem; }
         }
 
-        /* برای نمایش لپتاپ و دسکتاپ ظریف */
-        @media screen and (min-width: 1600px) {
-            .main-card { transform: scale(1.02); }
-        }
-
-        /* لمس زیبایی روی آیتم‌ها */
-        .main-card, .cta-button, .rules-section, .about-section {
-            transition: box-shadow 0.3s;
+        /* دست‌چین برای لپتاپ بزرگ */
+        @media screen and (min-width: 1500px) {
+            .main-card { margin: 2rem; }
         }
     </style>
 </head>
 <body>
     <div class="main-card">
-        <!-- بالای صفحه : تیتر سایت + زیرش توضیحات -->
+        <!-- تیتر و توضیحات (دقیقاً مثل قبل) -->
         <section class="hero">
             <h1>استخر نقدینگی هوشمند</h1>
             <div class="subhead">مدیریت نقدینگی با بهره‌وری بالا · کاملاً شفاف و سریع</div>
         </section>
 
-        <!-- دکمه اصلی: ایجاد استخر و دریافت ۲۰ درصد نقدینگی بیشتر -->
+        <!-- دکمه بازطراحی شده: مینیمال، با عمق و سایه‌های ظریف -->
         <div class="cta-container">
-            <button class="cta-button" onclick="alert('شروع فرآیند ایجاد استخر (نسخه آزمایشی)')">
+            <button class="cta-button" onclick="alert('ایجاد استخر (نسخه آزمایشی)')">
                 <span>➕ ایجاد استخر</span>
                 <span class="highlight-percent">۲۰٪ نقدینگی بیشتر</span>
             </button>
         </div>
 
-        <!-- چند خط قوانین و شرایط استفاده از سایت -->
+        <!-- قوانین و شرایط (متن ثابت) -->
         <section class="rules-section">
             <div class="rules-title">⚖️ قوانین و شرایط استفاده</div>
             <div class="rules-grid">
@@ -331,7 +309,7 @@
             </div>
         </section>
 
-        <!-- پایین صفحه: محل توضیحات درباره سایت -->
+        <!-- توضیحات درباره سایت -->
         <section class="about-section">
             <div class="about-text">
                 <h2>درباره استخر نقدینگی</h2>
@@ -355,13 +333,11 @@
             </div>
         </section>
 
-        <!-- پایین کادر صفحه: قانون کپی رایت -->
+        <!-- کپی‌رایت -->
         <div class="footer-copyright">
-            © ۲۰۲۵ استخر نقدینگی هوشمند. تمامی حقوق محفوظ است. | طراحی شده با رویکردی حرفه‌ای و مینیمال
-            <span>— v3.0.1</span>
+            © ۲۰۲۵ استخر نقدینگی هوشمند. تمامی حقوق محفوظ است. | طراحی مینیمال و حرفه‌ای
+            <span>— v3.1</span>
         </div>
     </div>
-
-    <!-- هیچ اسکریپت اضافی‌ای نیست؛ فقط برای زیبایی ظاهری و حس شیشه‌ای -->
 </body>
-  </html>
+</html>
