@@ -2,122 +2,77 @@
 <html lang="fa">
 <head>
 <meta charset="UTF-8">
-<title>انتخاب توکن برای ایجاد استخر</title>
+<title>Token Loader</title>
 
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
 
 <style>
-body{
-  font-family:tahoma;
-  background:#0f172a;
-  color:white;
-  text-align:center;
-}
-input,select,button{
-  padding:12px;
-  margin:10px;
-  border-radius:8px;
-  border:none;
-  width:300px;
-}
-.card{
-  background:#1e293b;
-  padding:20px;
-  border-radius:10px;
-  margin-top:20px;
-  display:inline-block;
-}
+body{background:#111;color:#fff;font-family:tahoma;text-align:center}
+input,select,button{padding:10px;margin:10px;border-radius:8px}
 </style>
 </head>
-
 <body>
 
-<h2>🔎 انتخاب توکن برای ایجاد استخر</h2>
+<h2>توکن تازه خود را وارد کن</h2>
 
 <select id="network">
-  <option value="bsc">BSC</option>
-  <option value="ethereum">Ethereum</option>
-  <option value="polygon">Polygon</option>
-  <option value="arbitrum">Arbitrum</option>
+<option value="bsc">BSC</option>
+<option value="eth">Ethereum</option>
 </select>
 
 <br>
 
-<input id="tokenAddress" placeholder="آدرس قرارداد توکن">
+<input id="addr" placeholder="آدرس قرارداد">
 
 <br>
 
-<button onclick="loadToken()">دریافت اطلاعات</button>
+<button onclick="load()">دریافت</button>
 
-<div id="result"></div>
+<div id="out"></div>
 
 <script>
-const RPC = {
-  bsc: "https://rpc.ankr.com/bsc",
-  ethereum: "https://rpc.ankr.com/eth",
-  polygon: "https://rpc.ankr.com/polygon",
-  arbitrum: "https://rpc.ankr.com/arbitrum"
+const RPC={
+  bsc:"https://bsc-dataseed.binance.org/",
+  eth:"https://eth.llamarpc.com"
 };
 
-const ABI = [
-  "function name() view returns (string)",
-  "function symbol() view returns (string)",
-  "function decimals() view returns (uint8)",
-  "function totalSupply() view returns (uint256)"
+const ABI=[
+ "function name() view returns (string)",
+ "function symbol() view returns (string)",
+ "function decimals() view returns (uint8)"
 ];
 
-let selectedToken = null;
-
-async function loadToken(){
-  const net = document.getElementById("network").value;
-  const address = document.getElementById("tokenAddress").value.trim();
-  const result = document.getElementById("result");
+async function load(){
+  const net=document.getElementById("network").value;
+  const address=document.getElementById("addr").value.trim();
+  const out=document.getElementById("out");
 
   if(!address){
-    alert("آدرس قرارداد وارد کن");
+    alert("آدرس وارد کن");
     return;
   }
 
-  result.innerHTML="در حال بررسی...";
+  out.innerHTML="در حال خواندن از بلاکچین...";
 
   try{
-    const provider = new ethers.providers.JsonRpcProvider(RPC[net]);
-    const contract = new ethers.Contract(address, ABI, provider);
+    const provider=new ethers.providers.JsonRpcProvider(RPC[net]);
+    const token=new ethers.Contract(address,ABI,provider);
 
-    const name = await contract.name();
-    const symbol = await contract.symbol();
-    const decimals = await contract.decimals();
-    const total = await contract.totalSupply();
+    const name=await token.name();
+    const symbol=await token.symbol();
+    const decimals=await token.decimals();
 
-    selectedToken = {address, net};
-
-    result.innerHTML = `
-      <div class="card">
-        <h3>${name} (${symbol})</h3>
-        شبکه: ${net}<br>
-        اعشار: ${decimals}<br>
-        عرضه کل: ${ethers.utils.formatUnits(total, decimals)}<br>
-        آدرس:<br>
-        <small>${address}</small><br><br>
-
-        <button onclick="createPool()">ایجاد استخر</button>
-      </div>
+    out.innerHTML=`
+      <h3>${name} (${symbol})</h3>
+      اعشار: ${decimals}
     `;
 
   }catch(e){
-    result.innerHTML="❌ توکن معتبر نیست یا شبکه اشتباه است";
+    console.log(e);
+    out.innerHTML="❌ خطا: آدرس اشتباه یا شبکه غلط";
   }
-}
-
-function createPool(){
-  if(!selectedToken){
-    alert("توکن انتخاب نشده");
-    return;
-  }
-
-  alert("مرحله بعد: انتخاب توکن دوم و افزودن نقدینگی");
 }
 </script>
 
 </body>
-</html>
+</html> 
