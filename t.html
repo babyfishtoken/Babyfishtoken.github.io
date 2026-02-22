@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>استخر نقدینگی | طراحی حرفه‌ای</title>
+    <!-- فونت اینتر (جایگزین شیک برای فارسی و انگلیسی) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..700&display=swap" rel="stylesheet">
+    <!-- فونت فارسی وزیر (برای پشتیبانی بهتر از متن فارسی) -->
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Vazirmatn', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(145deg, #f6f9fc 0%, #edf2f7 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            direction: rtl;
+            padding: 1.5rem;
+            color: #1e293b;
+        }
+
+        /* کارت اصلی صفحه - شیشه‌ای و لایه‌بندی شده */
+        .main-card {
+            max-width: 1280px;
+            width: 100%;
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 48px 48px 40px 40px;
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.25),
+                inset 0 1px 2px rgba(255,255,255,0.8);
+            border: 1px solid rgba(255,255,255,0.6);
+            overflow: hidden;
+            padding: 2.5rem 2.5rem 0 2.5rem;
+        }
+
+        /* هر سکشن تنفس دارد */
+        section {
+            margin-bottom: 3rem;
+        }
+
+        /* سربرگ بالای صفحه (تیتر + توضیح) */
+        .hero {
+            text-align: center;
+            margin-bottom: 3.5rem;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.8rem, 10vw, 4.2rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #0b2b44, #1f4b6e, #2a5f8a);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 1.2;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 5px rgba(42,95,138,0.1);
+        }
+
+        .hero .subhead {
+            font-size: 1.3rem;
+            font-weight: 350;
+            color: #3a5e7a;
+            border-bottom: 1px solid rgba(42,95,138,0.2);
+            display: inline-block;
+            padding-bottom: 0.5rem;
+            max-width: 80%;
+            margin: 0 auto;
+            backdrop-filter: blur(5px);
+        }
+
+        /* بخش دکمه اصلی */
+        .cta-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 3rem;
+        }
+
+        .cta-button {
+            background: #0f2b3f;
+            background: linear-gradient(145deg, #1a3f58, #0b2f44);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 80px;
+            padding: 1.3rem 4rem;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            box-shadow: 
+                0 20px 30px -12px rgba(10, 40, 60, 0.5),
+                0 4px 0 0 #0a1e2b,
+                inset 0 1px 4px rgba(255,255,255,0.4);
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            letter-spacing: 0.01em;
+            outline: none;
+            white-space: nowrap;
+            flex-wrap: wrap;
+        }
+
+        .cta-button:hover {
+            background: linear-gradient(145deg, #1f4b68, #12364d);
+            transform: translateY(-2px);
+            box-shadow: 0 25px 35px -10px #0f2f44, 0 6px 0 0 #0a1e2b;
+        }
+
+        .cta-button:active {
+            transform: translateY(4px);
+            box-shadow: 0 10px 20px -8px #0f2f44, 0 2px 0 0 #0a1e2b;
+        }
+
+        .highlight-percent {
+            background: #ffd966;
+            background: linear-gradient(145deg, #f9e79f, #f7dc6f);
+            color: #0b2f44;
+            padding: 0.2rem 1rem;
+            border-radius: 100px;
+            font-weight: 700;
+            margin-right: 0.5rem;
+            border: 1px solid rgba(255,255,255,0.7);
+            box-shadow: inset 0 1px 3px white;
+        }
+
+        /* بخش قوانین (مینیمال و جدی) */
+        .rules-section {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border-radius: 32px;
+            padding: 1.8rem 2.2rem;
+            border: 1px solid rgba(255,255,255,0.7);
+            box-shadow: 0 8px 18px -10px rgba(0,32,64,0.2);
+            margin-bottom: 3rem;
+        }
+
+        .rules-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #234a65;
+            margin-bottom: 1.2rem;
+            border-right: 5px solid #2b5f7a;
+            padding-right: 1rem;
+        }
+
+        .rules-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .rule-item {
+            display: flex;
+            align-items: baseline;
+            gap: 0.8rem;
+            font-size: 1rem;
+            color: #1d3f53;
+            font-weight: 380;
+            border-bottom: 1px dashed rgba(31, 75, 110, 0.2);
+            padding-bottom: 0.7rem;
+        }
+
+        .rule-item:last-child {
+            border-bottom: none;
+        }
+
+        .rule-bullet {
+            width: 8px;
+            height: 8px;
+            background: #1f4b6e;
+            border-radius: 1px;
+            transform: rotate(45deg);
+            flex-shrink: 0;
+            margin-left: 0.3rem;
+            opacity: 0.8;
+        }
+
+        /* بخش توضیحات درباره سایت (با ظاهر شفاف) */
+        .about-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            background: rgba(240, 248, 255, 0.5);
+            backdrop-filter: blur(4px);
+            border-radius: 40px;
+            padding: 2.5rem;
+            border: 1px solid rgba(255,255,255,0.8);
+            box-shadow: 0 10px 20px -15px rgba(0,20,30,0.3);
+            margin-bottom: 2.5rem;
+        }
+
+        .about-text h2 {
+            font-size: 2rem;
+            font-weight: 650;
+            color: #0f344b;
+            margin-bottom: 1.2rem;
+            letter-spacing: -0.02em;
+        }
+
+        .about-text p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #254e6b;
+            font-weight: 350;
+            opacity: 0.9;
+        }
+
+        .about-stats {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 1.8rem;
+            background: rgba(255,255,255,0.5);
+            border-radius: 32px;
+            padding: 2rem;
+            border: 1px solid white;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        .stat-icon {
+            font-size: 2.2rem;
+            background: rgba(31, 75, 110, 0.15);
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(2px);
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .stat-text {
+            font-weight: 500;
+            font-size: 1.2rem;
+            color: #1d3d55;
+        }
+
+        /* کپی رایت فوتر */
+        .footer-copyright {
+            text-align: center;
+            padding: 1.5rem 0.5rem 2rem 0.5rem;
+            border-top: 1px solid rgba(31, 75, 110, 0.15);
+            color: #386581;
+            font-size: 0.95rem;
+            font-weight: 350;
+            letter-spacing: 0.3px;
+            backdrop-filter: blur(2px);
+            margin: 0 -2.5rem; /* برای پوشش کامل عرض کارت */
+            padding-left: 2.5rem;
+            padding-right: 2.5rem;
+            background: rgba(255,255,255,0.3);
+        }
+
+        .footer-copyright span {
+            font-weight: 400;
+            color: #124257;
+        }
+
+        /* موبایل و ریسپانسیو */
+        @media screen and (max-width: 700px) {
+            body { padding: 0.7rem; }
+            .main-card { padding: 1.5rem 1.2rem 0 1.2rem; border-radius: 32px; }
+            .hero h1 { font-size: 2.4rem; }
+            .hero .subhead { font-size: 1rem; max-width: 95%; }
+            .cta-button { font-size: 1.3rem; padding: 1rem 2rem; white-space: normal; }
+            .highlight-percent { padding: 0.2rem 0.6rem; }
+            .about-section { grid-template-columns: 1fr; gap: 1.5rem; padding: 1.8rem; }
+            .rules-section { padding: 1.2rem 1.5rem; }
+            .rule-item { font-size: 0.9rem; }
+            .footer-copyright { margin: 0 -1.2rem; padding-left: 1.2rem; padding-right: 1.2rem; }
+        }
+
+        /* برای نمایش لپتاپ و دسکتاپ ظریف */
+        @media screen and (min-width: 1600px) {
+            .main-card { transform: scale(1.02); }
+        }
+
+        /* لمس زیبایی روی آیتم‌ها */
+        .main-card, .cta-button, .rules-section, .about-section {
+            transition: box-shadow 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-card">
+        <!-- بالای صفحه : تیتر سایت + زیرش توضیحات -->
+        <section class="hero">
+            <h1>استخر نقدینگی هوشمند</h1>
+            <div class="subhead">مدیریت نقدینگی با بهره‌وری بالا · کاملاً شفاف و سریع</div>
+        </section>
+
+        <!-- دکمه اصلی: ایجاد استخر و دریافت ۲۰ درصد نقدینگی بیشتر -->
+        <div class="cta-container">
+            <button class="cta-button" onclick="alert('شروع فرآیند ایجاد استخر (نسخه آزمایشی)')">
+                <span>➕ ایجاد استخر</span>
+                <span class="highlight-percent">۲۰٪ نقدینگی بیشتر</span>
+            </button>
+        </div>
+
+        <!-- چند خط قوانین و شرایط استفاده از سایت -->
+        <section class="rules-section">
+            <div class="rules-title">⚖️ قوانین و شرایط استفاده</div>
+            <div class="rules-grid">
+                <div class="rule-item"><span class="rule-bullet"></span>استفاده از استخرها به معنای پذیرش کامل شرایط پلتفرم است.</div>
+                <div class="rule-item"><span class="rule-bullet"></span>کارمزد تراکنش‌ها ۰.۳٪ و حداکثر تا سقف ۱۰۰ دلار محاسبه می‌شود.</div>
+                <div class="rule-item"><span class="rule-bullet"></span>برداشت نقدینگی فقط پس از ۴۸ ساعت از آخرین واریز امکان‌پذیر است.</div>
+                <div class="rule-item"><span class="rule-bullet"></span>در صورت نقض هر یک از بندها، حساب مسدود و نقدینگی مسترد نمی‌گردد.</div>
+                <div class="rule-item"><span class="rule-bullet"></span>مسئولیت ضرر و زیان ناشی از نوسانات بازار بر عهده سرمایه‌گذار است.</div>
+            </div>
+        </section>
+
+        <!-- پایین صفحه: محل توضیحات درباره سایت -->
+        <section class="about-section">
+            <div class="about-text">
+                <h2>درباره استخر نقدینگی</h2>
+                <p>
+                    استخر نقدینگی ما با بهره‌گیری از پروتکل‌های غیرمتمرکز و الگوریتم‌های پیشرفته، بستری امن و شفاف برای تامین مالی و مبادله دارایی‌های دیجیتال فراهم کرده است. تمرکز ما بر تجربه کاربری روان، کارمزد رقابتی و نقدینگی عمیق است. تیم ما از سال ۲۰۱۸ در حوزه بلاکچین فعالیت دارد و همواره شفافیت و امنیت را اولویت خود می‌داند.
+                </p>
+            </div>
+            <div class="about-stats">
+                <div class="stat-item">
+                    <div class="stat-icon">🔒</div>
+                    <div class="stat-text">امنیت لایه‌ای و ممیزی شده</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-text">تراکنش‌های آنی با کارمزد کم</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">🌐</div>
+                    <div class="stat-text">پشتیبانی از شبکه‌های اصلی اتریوم و بایننس</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- پایین کادر صفحه: قانون کپی رایت -->
+        <div class="footer-copyright">
+            © ۲۰۲۵ استخر نقدینگی هوشمند. تمامی حقوق محفوظ است. | طراحی شده با رویکردی حرفه‌ای و مینیمال
+            <span>— v3.0.1</span>
+        </div>
+    </div>
+
+    <!-- هیچ اسکریپت اضافی‌ای نیست؛ فقط برای زیبایی ظاهری و حس شیشه‌ای -->
+</body>
+  </html>
