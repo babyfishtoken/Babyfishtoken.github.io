@@ -2,7 +2,9 @@
 <html lang="fa">
 <head>
 <meta charset="UTF-8">
-<title>توکن‌های تازه لانچ شده</title>
+<title>انتخاب توکن برای ایجاد استخر</title>
+
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
 
 <style>
 body{
@@ -11,77 +13,109 @@ body{
   color:white;
   text-align:center;
 }
-.card{
-  background:#1e293b;
-  margin:15px;
-  padding:15px;
-  border-radius:10px;
-}
-button{
-  padding:10px;
+input,select,button{
+  padding:12px;
   margin:10px;
   border-radius:8px;
   border:none;
+  width:300px;
+}
+.card{
+  background:#1e293b;
+  padding:20px;
+  border-radius:10px;
+  margin-top:20px;
+  display:inline-block;
 }
 </style>
 </head>
 
 <body>
 
-<h2>🔥 توکن‌های تازه لانچ شده</h2>
+<h2>🔎 انتخاب توکن برای ایجاد استخر</h2>
 
 <select id="network">
   <option value="bsc">BSC</option>
   <option value="ethereum">Ethereum</option>
   <option value="polygon">Polygon</option>
+  <option value="arbitrum">Arbitrum</option>
 </select>
 
 <br>
 
-<button onclick="loadNew()">نمایش جدیدترین‌ها</button>
+<input id="tokenAddress" placeholder="آدرس قرارداد توکن">
+
+<br>
+
+<button onclick="loadToken()">دریافت اطلاعات</button>
 
 <div id="result"></div>
 
 <script>
-async function loadNew(){
-  const net=document.getElementById("network").value;
-  const result=document.getElementById("result");
-  result.innerHTML="در حال دریافت...";
+const RPC = {
+  bsc: "https://rpc.ankr.com/bsc",
+  ethereum: "https://rpc.ankr.com/eth",
+  polygon: "https://rpc.ankr.com/polygon",
+  arbitrum: "https://rpc.ankr.com/arbitrum"
+};
+
+const ABI = [
+  "function name() view returns (string)",
+  "function symbol() view returns (string)",
+  "function decimals() view returns (uint8)",
+  "function totalSupply() view returns (uint256)"
+];
+
+let selectedToken = null;
+
+async function loadToken(){
+  const net = document.getElementById("network").value;
+  const address = document.getElementById("tokenAddress").value.trim();
+  const result = document.getElementById("result");
+
+  if(!address){
+    alert("آدرس قرارداد وارد کن");
+    return;
+  }
+
+  result.innerHTML="در حال بررسی...";
 
   try{
-    const res=await fetch(`https://api.dexscreener.com/latest/dex/pairs/${net}`);
-    const data=await res.json();
+    const provider = new ethers.providers.JsonRpcProvider(RPC[net]);
+    const contract = new ethers.Contract(address, ABI, provider);
 
-    if(!data.pairs){
-      result.innerHTML="چیزی یافت نشد";
-      return;
-    }
+    const name = await contract.name();
+    const symbol = await contract.symbol();
+    const decimals = await contract.decimals();
+    const total = await contract.totalSupply();
 
-    // مرتب سازی بر اساس زمان ایجاد (جدیدترین)
-    const sorted=data.pairs
-      .filter(p=>p.pairCreatedAt)
-      .sort((a,b)=>b.pairCreatedAt - a.pairCreatedAt)
-      .slice(0,20);
+    selectedToken = {address, net};
 
-    let html="";
-
-    sorted.forEach(p=>{
-      html+=`
+    result.innerHTML = `
       <div class="card">
-        <h3>${p.baseToken.name} (${p.baseToken.symbol})</h3>
-        قیمت: $${p.priceUsd || 0}<br>
-        لیکوئیدیتی: $${p.liquidity?.usd || 0}<br>
-        زمان ساخت: ${new Date(p.pairCreatedAt).toLocaleString()}<br>
-        آدرس: <small>${p.baseToken.address}</small>
-      </div>
-      `;
-    });
+        <h3>${name} (${symbol})</h3>
+        شبکه: ${net}<br>
+        اعشار: ${decimals}<br>
+        عرضه کل: ${ethers.utils.formatUnits(total, decimals)}<br>
+        آدرس:<br>
+        <small>${address}</small><br><br>
 
-    result.innerHTML=html;
+        <button onclick="createPool()">ایجاد استخر</button>
+      </div>
+    `;
 
   }catch(e){
-    result.innerHTML="خطا در دریافت اطلاعات";
+    result.innerHTML="❌ توکن معتبر نیست یا شبکه اشتباه است";
   }
+}
+
+function createPool(){
+  if(!selectedToken){
+    alert("توکن انتخاب نشده");
+    return;
+  }
+
+  alert("مرحله بعد: انتخاب توکن دوم و افزودن نقدینگی");
 }
 </script>
 
