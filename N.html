@@ -2,7 +2,8 @@
 <html lang="fa">
 <head>
 <meta charset="UTF-8">
-<title>تشخیص توکن</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اتصال کیف پول و تشخیص توکن</title>
 
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
 
@@ -10,9 +11,9 @@
 body{
   background:#0f172a;
   color:white;
-  font-family:tahoma;
   text-align:center;
-  padding:20px;
+  font-family:sans-serif;
+  padding:30px;
 }
 input,button{
   padding:12px;
@@ -33,35 +34,68 @@ input,button{
 
 <body>
 
-<h2>🔎 پیدا کردن توکن تازه</h2>
+<h2>🔗 اتصال کیف پول و انتخاب توکن</h2>
 
-<button onclick="connect()">اتصال کیف پول</button>
-
-<br>
-
-<input id="address" placeholder="آدرس قرارداد توکن">
+<div id="wallet-btn"></div>
 
 <br>
 
-<button onclick="loadToken()">بررسی</button>
+<input id="token" placeholder="آدرس قرارداد توکن">
 
-<div id="out"></div>
+<br>
+
+<button onclick="loadToken()">دریافت اطلاعات</button>
+
+<div id="result"></div>
+
+
+<script type="module">
+import { createWeb3Modal, defaultWagmiConfig } 
+from "https://esm.sh/@web3modal/wagmi";
+
+import { polygon, polygonAmoy } 
+from "https://esm.sh/wagmi/chains";
+
+// ⚠️ projectId خودت
+const projectId = "96f13374b0fe2f629a925617de0a2ba3";
+
+const metadata = {
+  name: "My Polygon Website",
+  description: "Web3 Polygon App",
+  url: "https://babyfishtoken.github.io",
+  icons: []
+};
+
+const chains = [polygon, polygonAmoy];
+
+const wagmiConfig = defaultWagmiConfig({
+  chains,
+  projectId,
+  metadata
+});
+
+createWeb3Modal({
+  wagmiConfig,
+  projectId,
+  chains
+});
+
+// ساخت دکمه
+const btn = document.createElement("w3m-button");
+document.getElementById("wallet-btn").appendChild(btn);
+
+</script>
+
 
 <script>
-
 let provider;
 
-async function connect(){
-  if(!window.ethereum){
-    alert("لطفاً کیف پول مثل Metamask نصب کن");
-    return;
+// بعد از اتصال کیف پول
+window.addEventListener("load", () => {
+  if(window.ethereum){
+    provider = new ethers.providers.Web3Provider(window.ethereum);
   }
-
-  await window.ethereum.request({ method: "eth_requestAccounts" });
-  provider = new ethers.providers.Web3Provider(window.ethereum);
-
-  document.getElementById("out").innerHTML="✅ کیف پول متصل شد";
-}
+});
 
 const ABI = [
   "function name() view returns (string)",
@@ -71,17 +105,23 @@ const ABI = [
 
 async function loadToken(){
 
-  const addr = document.getElementById("address").value.trim();
-  const out = document.getElementById("out");
+  const addr = document.getElementById("token").value.trim();
+  const result = document.getElementById("result");
 
   if(!provider){
-    alert("اول کیف پول را وصل کن");
+    alert("ابتدا کیف پول را متصل کن");
     return;
   }
 
-  out.innerHTML="⏳ در حال خواندن از بلاکچین...";
+  if(!addr){
+    alert("آدرس توکن را وارد کن");
+    return;
+  }
+
+  result.innerHTML="⏳ در حال خواندن...";
 
   try{
+
     const token = new ethers.Contract(addr, ABI, provider);
 
     let name="Unknown";
@@ -92,7 +132,7 @@ async function loadToken(){
     try{ symbol = await token.symbol(); }catch{}
     try{ decimals = await token.decimals(); }catch{}
 
-    out.innerHTML = `
+    result.innerHTML = `
       <div class="box">
         <h3>${name} (${symbol})</h3>
         اعشار: ${decimals}<br>
@@ -102,10 +142,10 @@ async function loadToken(){
 
   }catch(e){
     console.log(e);
-    out.innerHTML="❌ این قرارداد توکن نیست";
+    result.innerHTML="❌ این قرارداد توکن نیست";
   }
 }
-
 </script>
+
 </body>
 </html>
