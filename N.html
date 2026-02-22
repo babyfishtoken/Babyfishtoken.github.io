@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>اتصال کیف پول و تشخیص توکن</title>
+<title>Wallet + Token</title>
 
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
 
@@ -56,7 +56,6 @@ from "https://esm.sh/@web3modal/wagmi";
 import { polygon, polygonAmoy } 
 from "https://esm.sh/wagmi/chains";
 
-// ⚠️ projectId خودت
 const projectId = "96f13374b0fe2f629a925617de0a2ba3";
 
 const metadata = {
@@ -74,29 +73,32 @@ const wagmiConfig = defaultWagmiConfig({
   metadata
 });
 
-createWeb3Modal({
+const modal = createWeb3Modal({
   wagmiConfig,
   projectId,
   chains
 });
 
-// ساخت دکمه
+// دکمه
 const btn = document.createElement("w3m-button");
 document.getElementById("wallet-btn").appendChild(btn);
 
+// ⭐ مهم: گرفتن provider واقعی بعد اتصال
+window.getProvider = async () => {
+  const state = modal.getState();
+  if(!state.selectedNetworkId){
+    return null;
+  }
+
+  const walletProvider = state.walletProvider;
+  if(!walletProvider) return null;
+
+  return new ethers.providers.Web3Provider(walletProvider);
+};
 </script>
 
 
 <script>
-let provider;
-
-// بعد از اتصال کیف پول
-window.addEventListener("load", () => {
-  if(window.ethereum){
-    provider = new ethers.providers.Web3Provider(window.ethereum);
-  }
-});
-
 const ABI = [
   "function name() view returns (string)",
   "function symbol() view returns (string)",
@@ -108,13 +110,15 @@ async function loadToken(){
   const addr = document.getElementById("token").value.trim();
   const result = document.getElementById("result");
 
-  if(!provider){
-    alert("ابتدا کیف پول را متصل کن");
+  if(!addr){
+    alert("آدرس وارد کن");
     return;
   }
 
-  if(!addr){
-    alert("آدرس توکن را وارد کن");
+  const provider = await window.getProvider();
+
+  if(!provider){
+    alert("ابتدا کیف پول را وصل کن");
     return;
   }
 
