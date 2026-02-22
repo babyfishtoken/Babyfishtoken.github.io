@@ -1,63 +1,51 @@
 <!DOCTYPE html>
 <html lang="fa">
 <head>
-  <meta charset="UTF-8" />
-  <title>Token Viewer</title>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+<meta charset="UTF-8" />
+<title>جستجوی توکن</title>
 </head>
 <body>
 
-<h2>مشاهده اطلاعات توکن</h2>
+<h2>جستجوی توکن</h2>
 
-<select id="network">
-  <option value="ethereum">Ethereum</option>
-  <option value="bsc">BSC</option>
-  <option value="polygon">Polygon</option>
-  <option value="arbitrum">Arbitrum</option>
-</select>
-
-<input id="tokenAddress" placeholder="Token Contract Address" />
-
-<button onclick="loadToken()">مشاهده</button>
+<input id="search" placeholder="نام یا آدرس توکن" />
+<button onclick="searchToken()">جستجو</button>
 
 <div id="result"></div>
 
 <script>
-const networks = {
-  ethereum: "https://rpc.ankr.com/eth",
-  bsc: "https://rpc.ankr.com/bsc",
-  polygon: "https://rpc.ankr.com/polygon",
-  arbitrum: "https://rpc.ankr.com/arbitrum"
-};
+async function searchToken() {
+  const query = document.getElementById("search").value;
+  const resultDiv = document.getElementById("result");
 
-const ERC20_ABI = [
-  "function name() view returns (string)",
-  "function symbol() view returns (string)",
-  "function decimals() view returns (uint8)",
-  "function totalSupply() view returns (uint256)"
-];
+  resultDiv.innerHTML = "در حال جستجو...";
 
-async function loadToken() {
   try {
-    const net = document.getElementById("network").value;
-    const address = document.getElementById("tokenAddress").value;
+    const res = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${query}`);
+    const data = await res.json();
 
-    const provider = new ethers.providers.JsonRpcProvider(networks[net]);
-    const contract = new ethers.Contract(address, ERC20_ABI, provider);
+    if (!data.pairs || data.pairs.length === 0) {
+      resultDiv.innerHTML = "توکن پیدا نشد";
+      return;
+    }
 
-    const name = await contract.name();
-    const symbol = await contract.symbol();
-    const decimals = await contract.decimals();
-    const total = await contract.totalSupply();
+    let html = "";
 
-    document.getElementById("result").innerHTML = `
-      <p>نام: ${name}</p>
-      <p>نماد: ${symbol}</p>
-      <p>اعشار: ${decimals}</p>
-      <p>عرضه کل: ${ethers.utils.formatUnits(total, decimals)}</p>
-    `;
-  } catch (err) {
-    document.getElementById("result").innerHTML = "توکن یافت نشد!";
+    data.pairs.slice(0, 10).forEach(pair => {
+      html += `
+        <div style="border:1px solid #ccc; margin:10px; padding:10px;">
+          <b>${pair.baseToken.name}</b> (${pair.baseToken.symbol})<br>
+          شبکه: ${pair.chainId}<br>
+          آدرس: ${pair.baseToken.address}<br>
+          قیمت: $${pair.priceUsd || 0}<br>
+        </div>
+      `;
+    });
+
+    resultDiv.innerHTML = html;
+
+  } catch (e) {
+    resultDiv.innerHTML = "خطا در جستجو";
   }
 }
 </script>
