@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8" />
+  <title>Token Viewer</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+</head>
+<body>
+
+<h2>مشاهده اطلاعات توکن</h2>
+
+<select id="network">
+  <option value="ethereum">Ethereum</option>
+  <option value="bsc">BSC</option>
+  <option value="polygon">Polygon</option>
+  <option value="arbitrum">Arbitrum</option>
+</select>
+
+<input id="tokenAddress" placeholder="Token Contract Address" />
+
+<button onclick="loadToken()">مشاهده</button>
+
+<div id="result"></div>
+
+<script>
+const networks = {
+  ethereum: "https://rpc.ankr.com/eth",
+  bsc: "https://rpc.ankr.com/bsc",
+  polygon: "https://rpc.ankr.com/polygon",
+  arbitrum: "https://rpc.ankr.com/arbitrum"
+};
+
+const ERC20_ABI = [
+  "function name() view returns (string)",
+  "function symbol() view returns (string)",
+  "function decimals() view returns (uint8)",
+  "function totalSupply() view returns (uint256)"
+];
+
+async function loadToken() {
+  try {
+    const net = document.getElementById("network").value;
+    const address = document.getElementById("tokenAddress").value;
+
+    const provider = new ethers.providers.JsonRpcProvider(networks[net]);
+    const contract = new ethers.Contract(address, ERC20_ABI, provider);
+
+    const name = await contract.name();
+    const symbol = await contract.symbol();
+    const decimals = await contract.decimals();
+    const total = await contract.totalSupply();
+
+    document.getElementById("result").innerHTML = `
+      <p>نام: ${name}</p>
+      <p>نماد: ${symbol}</p>
+      <p>اعشار: ${decimals}</p>
+      <p>عرضه کل: ${ethers.utils.formatUnits(total, decimals)}</p>
+    `;
+  } catch (err) {
+    document.getElementById("result").innerHTML = "توکن یافت نشد!";
+  }
+}
+</script>
+
+</body>
+</html>
