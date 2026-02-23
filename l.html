@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>صرافی غیرمتمرکز | استخر نقدینگی هوشمند</title>
+    <title>استخر نقدینگی | مدیریت استخرها</title>
     <!-- فونت‌های اینتر و وزیر -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,28 +44,45 @@
             margin-bottom: 3rem;
         }
 
-        /* ========== هدر با تیتر و دکمه اتصال کیف پول ========== */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2.5rem;
-            flex-wrap: wrap;
-            gap: 1rem;
+        /* ========== تیتر ========== */
+        .hero {
+            text-align: center;
+            margin-bottom: 1.5rem;
         }
 
-        .header h1 {
-            font-size: 2.2rem;
+        .hero h1 {
+            font-size: clamp(2.6rem, 8vw, 4rem);
             font-weight: 650;
-            color: #1a3849;
             letter-spacing: -0.02em;
+            color: #1a3849;
+            line-height: 1.2;
+            margin-bottom: 0.5rem;
+        }
+
+        /* ========== زیرتیتر و دکمه کیف پول ========== */
+        .subhead-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .subhead {
+            font-size: 1.15rem;
+            font-weight: 350;
+            color: #3b5b70;
+            max-width: 580px;
+            margin: 0 auto 1.5rem auto;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #b8cfde;
+            text-align: center;
         }
 
         .wallet-button {
             background: #254e64;
             border: none;
             border-radius: 40px;
-            padding: 0.7rem 1.8rem;
+            padding: 0.7rem 2rem;
             font-size: 1.1rem;
             font-weight: 500;
             color: white;
@@ -76,6 +93,7 @@
             align-items: center;
             gap: 8px;
             border: 1px solid #163847;
+            margin-bottom: 0.5rem;
         }
 
         .wallet-button:hover {
@@ -99,20 +117,18 @@
             box-shadow: 0 0 5px #4cd964;
         }
 
-        /* ========== زیرتیتر ========== */
-        .subhead {
-            text-align: center;
-            font-size: 1.15rem;
-            font-weight: 350;
-            color: #3b5b70;
-            max-width: 580px;
-            margin: 0 auto 2.5rem auto;
-            padding-bottom: 0.75rem;
-            border-bottom: 1px solid #b8cfde;
+        .wallet-address {
+            font-size: 0.85rem;
+            color: #5f7d94;
+            background: #e9f0f6;
+            padding: 0.3rem 1rem;
+            border-radius: 30px;
+            direction: ltr;
+            display: inline-block;
         }
 
-        /* ========== بخش لیست توکن‌ها (مثل صرافی) ========== */
-        .token-section {
+        /* ========== بخش استخرها (Pools) ========== */
+        .pools-section {
             background: #f5f9fc;
             border-radius: 20px;
             padding: 1.8rem 2rem;
@@ -121,25 +137,17 @@
             margin-bottom: 2.5rem;
         }
 
-        .token-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .token-title {
+        .section-title {
             font-size: 1.3rem;
             font-weight: 620;
             color: #1f475b;
+            margin-bottom: 1.5rem;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .token-title span {
+        .section-title span {
             background: #254e64;
             color: white;
             font-size: 0.8rem;
@@ -148,34 +156,119 @@
             font-weight: 400;
         }
 
-        .search-box {
+        .pools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .pool-card {
+            background: white;
+            border-radius: 18px;
+            padding: 1.5rem;
+            border: 1px solid #c5d9ec;
+            transition: all 0.15s;
+            box-shadow: 0 3px 8px -5px #a0b8cc;
+        }
+
+        .pool-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px -10px #1f4b60;
+            border-color: #9fbbd4;
+        }
+
+        .pool-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .pool-name {
+            font-weight: 650;
+            font-size: 1.2rem;
+            color: #123a4b;
+        }
+
+        .pool-apr {
+            background: #e0b354;
+            color: #1a2f3c;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border: 1px solid #c99f3d;
+        }
+
+        .pool-pair {
             display: flex;
             align-items: center;
-            background: white;
-            border-radius: 30px;
-            padding: 0.3rem 0.3rem 0.3rem 1rem;
-            border: 1px solid #cbdbe9;
+            gap: 0.5rem;
+            margin-bottom: 1.2rem;
         }
 
-        .search-box input {
-            border: none;
-            outline: none;
-            padding: 0.4rem 0.8rem;
-            font-family: 'Vazirmatn', sans-serif;
+        .token-icon-small {
+            width: 28px;
+            height: 28px;
+            background: #254e64;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .token-icon-small.secondary {
+            background: #5f3e8d;
+            margin-right: -10px;
+        }
+
+        .pool-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.2rem;
             font-size: 0.9rem;
-            width: 180px;
-            background: transparent;
+            color: #2b4d5e;
         }
 
-        .search-box button {
-            background: #e0e9f2;
-            border: none;
-            border-radius: 30px;
-            padding: 0.4rem 1rem;
-            font-size: 0.85rem;
-            cursor: pointer;
+        .stat-label {
+            font-weight: 300;
+            color: #5f7d94;
+        }
+
+        .stat-value {
+            font-weight: 600;
             color: #1f475b;
+        }
+
+        .pool-button {
+            width: 100%;
+            background: transparent;
+            border: 1.5px solid #254e64;
+            border-radius: 30px;
+            padding: 0.6rem;
+            font-size: 0.95rem;
             font-weight: 500;
+            color: #254e64;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .pool-button:hover {
+            background: #254e64;
+            color: white;
+        }
+
+        /* ========== بخش لیست توکن‌های کاربر ========== */
+        .tokens-section {
+            background: #f5f9fc;
+            border-radius: 20px;
+            padding: 1.8rem 2rem;
+            border: 1px solid #d0e2ef;
+            box-shadow: 0 5px 12px -10px #1b3d4f;
+            margin-bottom: 2.5rem;
         }
 
         .token-table {
@@ -227,34 +320,16 @@
             font-weight: 600;
         }
 
-        .token-change-positive {
-            color: #28a745;
-            font-weight: 500;
-        }
-
-        .token-change-negative {
-            color: #dc3545;
-            font-weight: 500;
-        }
-
-        .action-button {
-            background: transparent;
-            border: 1px solid #254e64;
-            border-radius: 20px;
-            padding: 0.3rem 1rem;
-            font-size: 0.85rem;
-            color: #254e64;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-
-        .action-button:hover {
-            background: #254e64;
+        .badge-success {
+            background: #28a745;
             color: white;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 30px;
         }
 
         /* ========== بخش ایجاد استخر ========== */
-        .pool-section {
+        .create-pool-section {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -267,20 +342,20 @@
             gap: 1.5rem;
         }
 
-        .pool-info h3 {
+        .create-pool-info h3 {
             font-size: 1.5rem;
             font-weight: 620;
             color: #123a4b;
             margin-bottom: 0.5rem;
         }
 
-        .pool-info p {
+        .create-pool-info p {
             color: #2b4d5e;
             font-weight: 340;
             font-size: 1rem;
         }
 
-        .pool-highlight {
+        .create-pool-highlight {
             background: #e0b354;
             color: #1a2f3c;
             padding: 0.2rem 1.2rem;
@@ -292,7 +367,7 @@
             margin-top: 0.8rem;
         }
 
-        .pool-button {
+        .create-pool-button {
             background: #254e64;
             border: none;
             border-radius: 40px;
@@ -309,65 +384,15 @@
             gap: 10px;
         }
 
-        .pool-button:hover {
+        .create-pool-button:hover {
             background: #2d5c77;
             box-shadow: 0 6px 12px -5px #1f4b60;
             transform: translateY(-2px);
         }
 
-        .pool-button:active {
+        .create-pool-button:active {
             background: #1d4054;
             transform: translateY(1px);
-        }
-
-        /* ========== قوانین ========== */
-        .rules-section {
-            background: #f5f9fc;
-            border-radius: 20px;
-            padding: 2rem 2.3rem;
-            border: 1px solid #d0e2ef;
-            box-shadow: 0 5px 12px -10px #1b3d4f;
-            margin-bottom: 3rem;
-        }
-
-        .rules-title {
-            font-size: 1.2rem;
-            font-weight: 620;
-            color: #1f475b;
-            margin-bottom: 1.2rem;
-            border-right: 4px solid #2b617b;
-            padding-right: 1rem;
-        }
-
-        .rules-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
-        }
-
-        .rule-item {
-            display: flex;
-            align-items: baseline;
-            gap: 0.7rem;
-            font-size: 0.98rem;
-            color: #1e3f50;
-            font-weight: 370;
-            padding-bottom: 0.6rem;
-            border-bottom: 1px solid #cbdbe9;
-        }
-
-        .rule-item:last-child {
-            border-bottom: none;
-        }
-
-        .rule-bullet {
-            width: 6px;
-            height: 6px;
-            background: #2f6a84;
-            border-radius: 2px;
-            transform: rotate(45deg);
-            flex-shrink: 0;
-            margin-left: 0.3rem;
         }
 
         /* ========== فوتر با کپی‌رایت ========== */
@@ -393,13 +418,9 @@
         @media screen and (max-width: 800px) {
             body { padding: 1rem; }
             .main-card { padding: 1.5rem 1.5rem 0 1.5rem; border-radius: 20px; }
-            .header h1 { font-size: 1.8rem; }
-            .token-header { flex-direction: column; align-items: flex-start; }
-            .search-box { width: 100%; }
-            .search-box input { width: 100%; }
-            .pool-section { flex-direction: column; text-align: center; }
-            .token-table { font-size: 0.9rem; }
-            .token-table td, .token-table th { padding: 0.8rem 0.3rem; }
+            .hero h1 { font-size: 2.2rem; }
+            .create-pool-section { flex-direction: column; text-align: center; }
+            .pools-grid { grid-template-columns: 1fr; }
             .footer-copyright { margin: 0 -1.5rem; padding-left: 1.5rem; padding-right: 1.5rem; }
         }
 
@@ -410,31 +431,92 @@
 </head>
 <body>
     <div class="main-card">
-        <!-- هدر با تیتر و دکمه اتصال کیف پول -->
-        <div class="header">
+        <!-- تیتر -->
+        <section class="hero">
             <h1>استخر نقدینگی هوشمند</h1>
+        </section>
+
+        <!-- زیرتیتر و دکمه اتصال کیف پول -->
+        <div class="subhead-section">
+            <div class="subhead">
+                مدیریت نقدینگی با بهره‌وری بالا · کاملاً شفاف و سریع
+            </div>
             <button class="wallet-button" onclick="alert('اتصال به کیف پول (نسخه آزمایشی)')">
                 <span class="wallet-dot"></span>
                 اتصال کیف پول
             </button>
+            <div class="wallet-address">0x71C...f3E2</div>
         </div>
 
-        <!-- زیرتیتر -->
-        <div class="subhead">
-            مدیریت نقدینگی با بهره‌وری بالا · کاملاً شفاف و سریع
-        </div>
+        <!-- بخش استخرها (Pools) -->
+        <section class="pools-section">
+            <div class="section-title">
+                استخرهای نقدینگی (Pools)
+                <span>۳ استخر فعال</span>
+            </div>
 
-        <!-- بخش لیست توکن‌ها (مثل صرافی) -->
-        <section class="token-section">
-            <div class="token-header">
-                <div class="token-title">
-                    لیست توکن‌های شما
-                    <span>قابل معامله</span>
+            <div class="pools-grid">
+                <!-- استخر اول -->
+                <div class="pool-card">
+                    <div class="pool-header">
+                        <span class="pool-name">ETH/USDT</span>
+                        <span class="pool-apr">APR ۲۴٪</span>
+                    </div>
+                    <div class="pool-pair">
+                        <div class="token-icon-small">ا</div>
+                        <div class="token-icon-small secondary">ت</div>
+                        <span style="margin-right: 0.5rem;">اتریوم - تتر</span>
+                    </div>
+                    <div class="pool-stats">
+                        <div><span class="stat-label">نقدینگی:</span> <span class="stat-value">$۲.۴M</span></div>
+                        <div><span class="stat-label">حجم ۲۴h:</span> <span class="stat-value">$۸۹۰K</span></div>
+                    </div>
+                    <button class="pool-button" onclick="alert('افزودن نقدینگی به ETH/USDT')">➕ افزودن نقدینگی</button>
                 </div>
-                <div class="search-box">
-                    <input type="text" placeholder="جستجوی توکن..." value="">
-                    <button>🔍 جستجو</button>
+
+                <!-- استخر دوم -->
+                <div class="pool-card">
+                    <div class="pool-header">
+                        <span class="pool-name">BTC/ETH</span>
+                        <span class="pool-apr">APR ۱۸٪</span>
+                    </div>
+                    <div class="pool-pair">
+                        <div class="token-icon-small">ب</div>
+                        <div class="token-icon-small secondary">ا</div>
+                        <span style="margin-right: 0.5rem;">بیت‌کوین - اتریوم</span>
+                    </div>
+                    <div class="pool-stats">
+                        <div><span class="stat-label">نقدینگی:</span> <span class="stat-value">$۵.۱M</span></div>
+                        <div><span class="stat-label">حجم ۲۴h:</span> <span class="stat-value">$۱.۲M</span></div>
+                    </div>
+                    <button class="pool-button" onclick="alert('افزودن نقدینگی به BTC/ETH')">➕ افزودن نقدینگی</button>
                 </div>
+
+                <!-- استخر سوم -->
+                <div class="pool-card">
+                    <div class="pool-header">
+                        <span class="pool-name">BNB/USDT</span>
+                        <span class="pool-apr">APR ۳۲٪</span>
+                    </div>
+                    <div class="pool-pair">
+                        <div class="token-icon-small">ب</div>
+                        <div class="token-icon-small secondary">ت</div>
+                        <span style="margin-right: 0.5rem;">بایننس - تتر</span>
+                    </div>
+                    <div class="pool-stats">
+                        <div><span class="stat-label">نقدینگی:</span> <span class="stat-value">$۱.۸M</span></div>
+                        <div><span class="stat-label">حجم ۲۴h:</span> <span class="stat-value">$۶۵۰K</span></div>
+                    </div>
+                    <button class="pool-button" onclick="alert('افزودن نقدینگی به BNB/USDT')">➕ افزودن نقدینگی</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- بخش لیست توکن‌های کاربر -->
+        <section class="tokens-section">
+            <div class="section-title">
+                توکن‌های شما
+                <span>۵ توکن</span>
             </div>
 
             <table class="token-table">
@@ -443,8 +525,8 @@
                         <th>توکن</th>
                         <th>موجودی</th>
                         <th>قیمت (USD)</th>
-                        <th>تغییر ۲۴h</th>
-                        <th></th>
+                        <th>ارزش کل</th>
+                        <th>وضعیت</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -457,8 +539,8 @@
                         </td>
                         <td>۰.۲۳۴۵</td>
                         <td>$۴۲,۳۵۰</td>
-                        <td class="token-change-positive">+۲.۴٪</td>
-                        <td><button class="action-button" onclick="alert('مبادله BTC')">مبادله</button></td>
+                        <td>$۹,۹۳۰</td>
+                        <td><span class="badge-success">در استخر</span></td>
                     </tr>
                     <tr>
                         <td>
@@ -469,8 +551,8 @@
                         </td>
                         <td>۱.۸۹۲۰</td>
                         <td>$۲,۲۸۰</td>
-                        <td class="token-change-negative">-۱.۲٪</td>
-                        <td><button class="action-button" onclick="alert('مبادله ETH')">مبادله</button></td>
+                        <td>$۴,۳۱۳</td>
+                        <td><span class="badge-success">در استخر</span></td>
                     </tr>
                     <tr>
                         <td>
@@ -481,8 +563,8 @@
                         </td>
                         <td>۵,۲۵۰</td>
                         <td>$۱.۰۰</td>
-                        <td class="token-change-positive">+۰.۰۱٪</td>
-                        <td><button class="action-button" onclick="alert('مبادله USDT')">مبادله</button></td>
+                        <td>$۵,۲۵۰</td>
+                        <td>—</td>
                     </tr>
                     <tr>
                         <td>
@@ -493,8 +575,8 @@
                         </td>
                         <td>۳.۴۵۰۰</td>
                         <td>$۳۱۲</td>
-                        <td class="token-change-positive">+۰.۸٪</td>
-                        <td><button class="action-button" onclick="alert('مبادله BNB')">مبادله</button></td>
+                        <td>$۱,۰۷۶</td>
+                        <td>—</td>
                     </tr>
                     <tr>
                         <td>
@@ -505,42 +587,30 @@
                         </td>
                         <td>۷.۲۳۰۰</td>
                         <td>$۹۸</td>
-                        <td class="token-change-negative">-۳.۵٪</td>
-                        <td><button class="action-button" onclick="alert('مبادله SOL')">مبادله</button></td>
+                        <td>$۷۰۸</td>
+                        <td>—</td>
                     </tr>
                 </tbody>
             </table>
         </section>
 
         <!-- بخش ایجاد استخر با ۲۰٪ نقدینگی بیشتر -->
-        <section class="pool-section">
-            <div class="pool-info">
+        <section class="create-pool-section">
+            <div class="create-pool-info">
                 <h3>ایجاد استخر نقدینگی جدید</h3>
-                <p>با ایجاد استخر، از مزایای زیر بهره‌مند شوید:</p>
-                <div class="pool-highlight">۲۰٪ نقدینگی بیشتر</div>
+                <p>با ایجاد استخر سفارشی، از مزایای ویژه بهره‌مند شوید</p>
+                <div class="create-pool-highlight">۲۰٪ پاداش نقدینگی بیشتر</div>
             </div>
-            <button class="pool-button" onclick="alert('ایجاد استخر جدید (نسخه آزمایشی)')">
-                <span>➕ ایجاد استخر</span>
+            <button class="create-pool-button" onclick="alert('ایجاد استخر جدید (نسخه آزمایشی)')">
+                <span>➕ ایجاد استخر جدید</span>
             </button>
-        </section>
-
-        <!-- قوانین و شرایط -->
-        <section class="rules-section">
-            <div class="rules-title">⚖️ قوانین و شرایط استفاده</div>
-            <div class="rules-grid">
-                <div class="rule-item"><span class="rule-bullet"></span>استفاده از استخرها به معنای پذیرش کامل شرایط پلتفرم است.</div>
-                <div class="rule-item"><span class="rule-bullet"></span>کارمزد تراکنش‌ها ۰.۳٪ و حداکثر تا سقف ۱۰۰ دلار محاسبه می‌شود.</div>
-                <div class="rule-item"><span class="rule-bullet"></span>برداشت نقدینگی فقط پس از ۴۸ ساعت از آخرین واریز امکان‌پذیر است.</div>
-                <div class="rule-item"><span class="rule-bullet"></span>در صورت نقض هر یک از بندها، حساب مسدود و نقدینگی مسترد نمی‌گردد.</div>
-                <div class="rule-item"><span class="rule-bullet"></span>مسئولیت ضرر و زیان ناشی از نوسانات بازار بر عهده سرمایه‌گذار است.</div>
-            </div>
         </section>
 
         <!-- کپی‌رایت -->
         <div class="footer-copyright">
             © ۲۰۲۵ استخر نقدینگی هوشمند. تمامی حقوق محفوظ است. | طراحی متوازن و حرفه‌ای
-            <span>— DEX v1.0</span>
+            <span>— Pools v1.0</span>
         </div>
     </div>
 </body>
-</html>
+    </html>
