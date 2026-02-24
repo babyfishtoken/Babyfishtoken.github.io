@@ -503,6 +503,7 @@
         // متغیر وضعیت اتصال
         let isWalletConnected = false;
         let loadingTimer = null;
+        let initialCheckDone = false;
 
         // تابع ایجاد کارت‌های خالی با لودینگ
         function renderSkeletonWithSpinner() {
@@ -635,25 +636,30 @@
             }
         }
 
-        // ✅ بررسی وضعیت اولیه (اگر کاربر از قبل متصل بوده)
-        // این کار بلافاصله بعد از لود صفحه انجام می‌شود
-        const checkInitialConnection = async () => {
+        // ✅ بررسی وضعیت اولیه - با بالاترین اولویت
+        (async function checkInitialConnection() {
             try {
-                // کمی صبر می‌کنیم تا Web3Modal کامل لود شود
-                setTimeout(() => {
-                    const initialAccount = getAccount(wagmiConfig);
-                    console.log('بررسی وضعیت اولیه:', initialAccount);
-                    if (initialAccount?.address) {
-                        updateWalletState(initialAccount);
-                    }
-                }, 500);
+                // ابتدا یکبار مستقیماً وضعیت را بررسی می‌کنیم
+                const initialAccount = getAccount(wagmiConfig);
+                console.log('بررسی وضعیت اولیه:', initialAccount);
+                
+                if (initialAccount?.address) {
+                    // اگر متصل است، مستقیماً وضعیت را به‌روز می‌کنیم
+                    updateWalletState(initialAccount);
+                } else {
+                    // اگر متصل نیست، یکبار دیگر با تأخیر کم بررسی می‌کنیم
+                    // (برای مواقعی که اتصال در حال بازیابی است)
+                    setTimeout(() => {
+                        const retryAccount = getAccount(wagmiConfig);
+                        if (retryAccount?.address) {
+                            updateWalletState(retryAccount);
+                        }
+                    }, 1000);
+                }
             } catch (error) {
                 console.error('خطا در بررسی وضعیت اولیه:', error);
             }
-        };
-
-        // اجرای بررسی اولیه
-        checkInitialConnection();
+        })();
 
         // نظاره‌گر تغییرات حساب (برای زمانی که کاربر بعداً متصل می‌شود)
         watchAccount(wagmiConfig, {
