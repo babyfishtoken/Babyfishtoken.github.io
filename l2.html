@@ -476,8 +476,7 @@
     <script type="module">
         import { createWeb3Modal, defaultWagmiConfig } from "https://esm.sh/@web3modal/wagmi";
         import { mainnet, polygon, bsc } from "https://esm.sh/wagmi/chains";
-        import { watchAccount, disconnect } from "https://esm.sh/wagmi/actions";
-        import { getAccount } from "https://esm.sh/wagmi/actions";
+        import { watchAccount, disconnect, getAccount } from "https://esm.sh/wagmi/actions";
 
         // ==================== تنظیمات ====================
         const projectId = "96f13374b0fe2f629a925617de0a2ba3";
@@ -636,15 +635,30 @@
             }
         }
 
-        // بررسی وضعیت اولیه (اگر قبلاً متصل بوده)
-        const initialAccount = getAccount(wagmiConfig);
-        if (initialAccount?.address) {
-            updateWalletState(initialAccount);
-        }
+        // ✅ بررسی وضعیت اولیه (اگر کاربر از قبل متصل بوده)
+        // این کار بلافاصله بعد از لود صفحه انجام می‌شود
+        const checkInitialConnection = async () => {
+            try {
+                // کمی صبر می‌کنیم تا Web3Modal کامل لود شود
+                setTimeout(() => {
+                    const initialAccount = getAccount(wagmiConfig);
+                    console.log('بررسی وضعیت اولیه:', initialAccount);
+                    if (initialAccount?.address) {
+                        updateWalletState(initialAccount);
+                    }
+                }, 500);
+            } catch (error) {
+                console.error('خطا در بررسی وضعیت اولیه:', error);
+            }
+        };
 
-        // نظاره‌گر تغییرات حساب
+        // اجرای بررسی اولیه
+        checkInitialConnection();
+
+        // نظاره‌گر تغییرات حساب (برای زمانی که کاربر بعداً متصل می‌شود)
         watchAccount(wagmiConfig, {
             onChange(account) {
+                console.log('تغییر وضعیت حساب:', account);
                 updateWalletState(account);
             }
         });
