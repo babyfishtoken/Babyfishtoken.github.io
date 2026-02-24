@@ -501,9 +501,7 @@
         const disconnectBtn = document.getElementById('disconnectBtn');
 
         // متغیر وضعیت اتصال
-        let isWalletConnected = false;
         let loadingTimer = null;
-        let initialCheckDone = false;
 
         // تابع ایجاد کارت‌های خالی با لودینگ
         function renderSkeletonWithSpinner() {
@@ -598,11 +596,41 @@
             }, 8000);
         }
 
+        // تابع قطع اتصال کیف پول
+        async function handleDisconnect() {
+            try {
+                await disconnect(wagmiConfig);
+                
+                // مخفی کردن بخش پوزیشن‌ها
+                positionsSection.classList.add('hidden');
+                
+                // مخفی کردن دکمه قطع اتصال
+                disconnectBtn.classList.add('hidden');
+                
+                // پاک کردن آدرس کیف پول
+                walletAddressEl.innerText = '';
+                
+                // نمایش پیام اتصال
+                connectMessageEl.innerText = "🔌 لطفاً کیف پول خود را متصل کنید";
+                
+                // پاک کردن تایمر
+                if (loadingTimer) {
+                    clearTimeout(loadingTimer);
+                    loadingTimer = null;
+                }
+                
+                // پاک کردن لیست پوزیشن‌ها
+                positionsList.innerHTML = '';
+                
+            } catch (error) {
+                console.error('خطا در قطع اتصال:', error);
+            }
+        }
+
         // تابع به‌روزرسانی وضعیت اتصال
         function updateWalletState(account) {
             if (account?.address) {
                 // کیف پول متصل است
-                isWalletConnected = true;
                 const shortAddress = `${account.address.slice(0,6)}...${account.address.slice(38)}`;
                 walletAddressEl.innerText = `✅ ${shortAddress}`;
                 connectMessageEl.innerText = "✅ کیف پول متصل است";
@@ -618,7 +646,6 @@
                 
             } else {
                 // کیف پول قطع است
-                isWalletConnected = false;
                 walletAddressEl.innerText = '';
                 connectMessageEl.innerText = "🔌 لطفاً کیف پول خود را متصل کنید";
                 
@@ -633,35 +660,16 @@
                     clearTimeout(loadingTimer);
                     loadingTimer = null;
                 }
+                
+                // پاک کردن لیست پوزیشن‌ها
+                positionsList.innerHTML = '';
             }
         }
 
-        // ✅ بررسی وضعیت اولیه - با بالاترین اولویت
-        (async function checkInitialConnection() {
-            try {
-                // ابتدا یکبار مستقیماً وضعیت را بررسی می‌کنیم
-                const initialAccount = getAccount(wagmiConfig);
-                console.log('بررسی وضعیت اولیه:', initialAccount);
-                
-                if (initialAccount?.address) {
-                    // اگر متصل است، مستقیماً وضعیت را به‌روز می‌کنیم
-                    updateWalletState(initialAccount);
-                } else {
-                    // اگر متصل نیست، یکبار دیگر با تأخیر کم بررسی می‌کنیم
-                    // (برای مواقعی که اتصال در حال بازیابی است)
-                    setTimeout(() => {
-                        const retryAccount = getAccount(wagmiConfig);
-                        if (retryAccount?.address) {
-                            updateWalletState(retryAccount);
-                        }
-                    }, 1000);
-                }
-            } catch (error) {
-                console.error('خطا در بررسی وضعیت اولیه:', error);
-            }
-        })();
+        // دکمه قطع اتصال
+        disconnectBtn.addEventListener('click', handleDisconnect);
 
-        // نظاره‌گر تغییرات حساب (برای زمانی که کاربر بعداً متصل می‌شود)
+        // نظاره‌گر تغییرات حساب
         watchAccount(wagmiConfig, {
             onChange(account) {
                 console.log('تغییر وضعیت حساب:', account);
@@ -669,15 +677,33 @@
             }
         });
 
-        // دکمه قطع اتصال
-        disconnectBtn.addEventListener('click', async () => {
+        // بررسی وضعیت اولیه - هر ۱۰۰ میلی‌ثانیه برای ۳ ثانیه
+        // این کار تضمین می‌کند که وضعیت واقعی کیف پول تشخیص داده شود
+        let checkCount = 0;
+        const maxChecks = 30; // ۳ ثانیه (هر ۱۰۰ms)
+        
+        const checkInterval = setInterval(() => {
             try {
-                await disconnect(wagmiConfig);
-                // وضعیت توسط watchAccount به‌روزرسانی می‌شود
+                const account = getAccount(wagmiConfig);
+                if (account?.address) {
+                    console.log('✅ کیف پول متصل است:', account.address);
+                    updateWalletState(account);
+                    clearInterval(checkInterval);
+                }
+                
+                checkCount++;
+                if (checkCount >= maxChecks) {
+                    clearInterval(checkInterval);
+                    console.log('⏰ پایان بررسی دوره‌ای - کیف پول متصل نیست');
+                }
             } catch (error) {
-                console.error('خطا در قطع اتصال:', error);
+                console.error('خطا:', error);
+                checkCount++;
+                if (checkCount >= maxChecks) {
+                    clearInterval(checkInterval);
+                }
             }
-        });
+        }, 100);
     </script>
 </body>
     </html>
