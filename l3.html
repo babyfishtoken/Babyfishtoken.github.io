@@ -519,8 +519,8 @@
             <div id="wallet-btn"></div>
         </div>
 
-        <!-- بخش پوزیشن‌ها -->
-        <div id="positionsSection">
+        <!-- بخش پوزیشن‌ها (ابتدا مخفی) -->
+        <div id="positionsSection" class="hidden">
             <div class="positions-header">
                 <div class="positions-title">
                     <h2>Your positions</h2>
@@ -725,14 +725,13 @@
                 // کیف پول متصل است
                 walletConnected = true;
                 positionsSection.classList.remove('hidden');
-                // اطمینان از مخفی بودن بخش new position هنگام اتصال اولیه
-                newPositionSection.classList.add('hidden');
+                newPositionSection.classList.add('hidden'); // همیشه New position رو مخفی نگه دار
                 startLoadingSequence();
             } else {
                 // کیف پول قطع است
                 walletConnected = false;
-                positionsSection.classList.add('hidden');
-                newPositionSection.classList.add('hidden');
+                positionsSection.classList.add('hidden'); // مخفی کردن Your positions
+                newPositionSection.classList.add('hidden'); // مخفی کردن New position
                 
                 // پاک کردن تایمر
                 if (loadingTimer) {
@@ -750,6 +749,8 @@
             if (walletConnected) {
                 positionsSection.classList.add('hidden');
                 newPositionSection.classList.remove('hidden');
+            } else {
+                alert('لطفاً ابتدا کیف پول خود را متصل کنید');
             }
         });
 
@@ -761,6 +762,11 @@
 
         // دکمه ایجاد پوزیشن
         createPositionBtn.addEventListener('click', () => {
+            if (!walletConnected) {
+                alert('لطفاً ابتدا کیف پول خود را متصل کنید');
+                return;
+            }
+            
             const dex = document.getElementById('dexSelect').value;
             const pair = document.getElementById('pairInput').value;
             const amount = document.getElementById('amountInput').value;
