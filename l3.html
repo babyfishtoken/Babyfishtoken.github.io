@@ -349,7 +349,6 @@
 
         .new-position-header span {
             color: #5f7d94;
-            font-size: 0.9rem;
         }
 
         .back-button {
@@ -415,16 +414,6 @@
             pointer-events: none;
         }
 
-        /* استایل پیش‌فرض برای گزینه انتخاب نشده */
-        .custom-select select option:first-child {
-            color: #8a9eb0;
-        }
-
-        .custom-select select option {
-            color: #1e2f3a;
-            padding: 0.5rem;
-        }
-
         /* استایل فیلدهای ورودی */
         .input-group {
             display: flex;
@@ -479,12 +468,6 @@
             background: #2d5c77;
         }
 
-        .create-position-button:disabled {
-            background: #a0b8cc;
-            cursor: not-allowed;
-            border-color: #8a9eb0;
-        }
-
         /* استایل محتوای مخفی */
         .hidden {
             display: none !important;
@@ -531,7 +514,7 @@
             مدیریت نقدینگی با بهره‌وری بالا · کاملاً شفاف و سریع
         </div>
 
-        <!-- بخش کیف پول - فقط دکمه Web3Modal -->
+        <!-- بخش کیف پول -->
         <div class="wallet-section">
             <div id="wallet-btn"></div>
         </div>
@@ -556,19 +539,16 @@
             </div>
 
             <!-- لیست پوزیشن‌ها -->
-            <div id="positionsList" class="positions-list">
-                <!-- محتوا توسط جاوااسکریپت پر می‌شود -->
-            </div>
+            <div id="positionsList" class="positions-list"></div>
         </div>
 
         <!-- بخش ایجاد پوزیشن جدید (ابتدا مخفی) -->
         <div id="newPositionSection" class="new-position-section hidden">
             <div class="new-position-header">
                 <button id="backToPositionsBtn" class="back-button">←</button>
-                Your positions <span>&nbsp; &gt; New position</span>
+                Your positions <span>/ New position</span>
             </div>
 
-            <!-- فرم ایجاد پوزیشن جدید -->
             <div class="form-group">
                 <div class="form-label">انتخاب صرافی</div>
                 <div class="custom-select">
@@ -584,7 +564,7 @@
             <div class="form-group">
                 <div class="form-label">جفت ارز</div>
                 <div class="input-group">
-                    <input type="text" id="pairInput" placeholder="مثال: ETH/USDT" value="">
+                    <input type="text" id="pairInput" placeholder="مثال: ETH/USDT">
                     <span>جفت</span>
                 </div>
             </div>
@@ -592,12 +572,12 @@
             <div class="form-group">
                 <div class="form-label">مقدار</div>
                 <div class="input-group">
-                    <input type="text" id="amountInput" placeholder="مقدار مورد نظر" value="">
+                    <input type="text" id="amountInput" placeholder="مقدار مورد نظر">
                     <span>توکن</span>
                 </div>
             </div>
 
-            <button id="createPositionConfirmBtn" class="create-position-button" onclick="alert('پوزیشن جدید ایجاد شد (نسخه آزمایشی)')">
+            <button id="createPositionConfirmBtn" class="create-position-button">
                 ایجاد پوزیشن
             </button>
         </div>
@@ -636,9 +616,11 @@
         const positionsList = document.getElementById('positionsList');
         const newPositionBtn = document.getElementById('newPositionBtn');
         const backToPositionsBtn = document.getElementById('backToPositionsBtn');
+        const createPositionBtn = document.getElementById('createPositionConfirmBtn');
 
         // متغیر وضعیت اتصال
         let loadingTimer = null;
+        let walletConnected = false;
 
         // تابع ایجاد کارت‌های خالی با لودینگ
         function renderSkeletonWithSpinner() {
@@ -719,6 +701,8 @@
 
         // تابع شروع لودینگ ۸ ثانیه‌ای
         function startLoadingSequence() {
+            if (!walletConnected) return;
+            
             // نمایش لودینگ
             renderSkeletonWithSpinner();
             
@@ -729,7 +713,9 @@
             
             // تنظیم تایمر جدید برای ۸ ثانیه بعد
             loadingTimer = setTimeout(() => {
-                renderEmpty();
+                if (walletConnected) {
+                    renderEmpty();
+                }
             }, 8000);
         }
 
@@ -737,13 +723,14 @@
         function updateWalletState(account) {
             if (account?.address) {
                 // کیف پول متصل است
-                if (positionsSection.classList.contains('hidden')) {
-                    positionsSection.classList.remove('hidden');
-                    newPositionSection.classList.add('hidden');
-                }
+                walletConnected = true;
+                positionsSection.classList.remove('hidden');
+                // اطمینان از مخفی بودن بخش new position هنگام اتصال اولیه
+                newPositionSection.classList.add('hidden');
                 startLoadingSequence();
             } else {
-                // کیف پول قطع است - مخفی کردن هر دو بخش
+                // کیف پول قطع است
+                walletConnected = false;
                 positionsSection.classList.add('hidden');
                 newPositionSection.classList.add('hidden');
                 
@@ -760,8 +747,10 @@
 
         // دکمه New position
         newPositionBtn.addEventListener('click', () => {
-            positionsSection.classList.add('hidden');
-            newPositionSection.classList.remove('hidden');
+            if (walletConnected) {
+                positionsSection.classList.add('hidden');
+                newPositionSection.classList.remove('hidden');
+            }
         });
 
         // دکمه بازگشت
@@ -770,40 +759,50 @@
             positionsSection.classList.remove('hidden');
         });
 
+        // دکمه ایجاد پوزیشن
+        createPositionBtn.addEventListener('click', () => {
+            const dex = document.getElementById('dexSelect').value;
+            const pair = document.getElementById('pairInput').value;
+            const amount = document.getElementById('amountInput').value;
+            
+            if (!dex) {
+                alert('لطفاً یک صرافی انتخاب کنید');
+                return;
+            }
+            if (!pair) {
+                alert('لطفاً جفت ارز را وارد کنید');
+                return;
+            }
+            if (!amount) {
+                alert('لطفاً مقدار را وارد کنید');
+                return;
+            }
+            
+            alert(`پوزیشن جدید ایجاد شد:\nصرافی: ${dex}\nجفت ارز: ${pair}\nمقدار: ${amount}`);
+            
+            // بازگشت به صفحه اصلی
+            newPositionSection.classList.add('hidden');
+            positionsSection.classList.remove('hidden');
+        });
+
         // نظاره‌گر تغییرات حساب
         watchAccount(wagmiConfig, {
             onChange(account) {
-                console.log('تغییر وضعیت حساب:', account);
                 updateWalletState(account);
             }
         });
 
         // بررسی وضعیت اولیه
-        let checkCount = 0;
-        const maxChecks = 30;
-        
-        const checkInterval = setInterval(() => {
+        setTimeout(() => {
             try {
                 const account = getAccount(wagmiConfig);
                 if (account?.address) {
-                    console.log('✅ کیف پول متصل است:', account.address);
                     updateWalletState(account);
-                    clearInterval(checkInterval);
-                }
-                
-                checkCount++;
-                if (checkCount >= maxChecks) {
-                    clearInterval(checkInterval);
-                    console.log('⏰ پایان بررسی دوره‌ای - کیف پول متصل نیست');
                 }
             } catch (error) {
                 console.error('خطا:', error);
-                checkCount++;
-                if (checkCount >= maxChecks) {
-                    clearInterval(checkInterval);
-                }
             }
-        }, 100);
+        }, 500);
     </script>
 </body>
-  </html>
+    </html>
