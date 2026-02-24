@@ -596,31 +596,42 @@
             }, 8000);
         }
 
-        // تابع قطع اتصال کیف پول
+        // تابع قطع اتصال کیف پول با پاکسازی کامل حافظه
         async function handleDisconnect() {
             try {
+                // قطع اتصال کیف پول
                 await disconnect(wagmiConfig);
                 
-                // مخفی کردن بخش پوزیشن‌ها
-                positionsSection.classList.add('hidden');
-                
-                // مخفی کردن دکمه قطع اتصال
-                disconnectBtn.classList.add('hidden');
-                
-                // پاک کردن آدرس کیف پول
-                walletAddressEl.innerText = '';
-                
-                // نمایش پیام اتصال
-                connectMessageEl.innerText = "🔌 لطفاً کیف پول خود را متصل کنید";
-                
-                // پاک کردن تایمر
+                // پاک کردن تمام تایمرها
                 if (loadingTimer) {
                     clearTimeout(loadingTimer);
                     loadingTimer = null;
                 }
                 
-                // پاک کردن لیست پوزیشن‌ها
+                // مخفی کردن تمام بخش‌ها
+                positionsSection.classList.add('hidden');
+                disconnectBtn.classList.add('hidden');
+                
+                // پاک کردن تمام متن‌ها و محتواها
+                walletAddressEl.innerText = '';
+                connectMessageEl.innerText = "🔌 لطفاً کیف پول خود را متصل کنید";
                 positionsList.innerHTML = '';
+                
+                // پاک کردن stateهای داخلی Web3Modal
+                // این کار باعث می‌شود دکمه اتصال به حالت اولیه برگردد
+                const modal = document.querySelector('w3m-modal');
+                if (modal) {
+                    modal.remove();
+                }
+                
+                // بازگرداندن دکمه اتصال به حالت اولیه
+                // با حذف و اضافه کردن مجدد دکمه، حافظه آن پاک می‌شود
+                const walletBtnContainer = document.getElementById('wallet-btn');
+                walletBtnContainer.innerHTML = '';
+                const newBtn = document.createElement("w3m-button");
+                walletBtnContainer.appendChild(newBtn);
+                
+                console.log('✅ اتصال قطع و حافظه پاکسازی شد');
                 
             } catch (error) {
                 console.error('خطا در قطع اتصال:', error);
@@ -645,7 +656,7 @@
                 startLoadingSequence();
                 
             } else {
-                // کیف پول قطع است
+                // کیف پول قطع است - پاکسازی کامل
                 walletAddressEl.innerText = '';
                 connectMessageEl.innerText = "🔌 لطفاً کیف پول خود را متصل کنید";
                 
@@ -678,7 +689,6 @@
         });
 
         // بررسی وضعیت اولیه - هر ۱۰۰ میلی‌ثانیه برای ۳ ثانیه
-        // این کار تضمین می‌کند که وضعیت واقعی کیف پول تشخیص داده شود
         let checkCount = 0;
         const maxChecks = 30; // ۳ ثانیه (هر ۱۰۰ms)
         
@@ -706,4 +716,4 @@
         }, 100);
     </script>
 </body>
-    </html>
+                        </html>
