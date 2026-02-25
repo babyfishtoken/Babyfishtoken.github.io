@@ -378,7 +378,7 @@
             font-size: 0.9rem;
         }
 
-        /* استایل سلکت باکس */
+        /* استایل سلکت باکس - در جای خود باز میشه */
         .custom-select {
             position: relative;
             width: 100%;
@@ -562,6 +562,15 @@
             </div>
 
             <div class="form-group">
+                <div class="form-label">نوع استخر</div>
+                <div class="custom-select">
+                    <select id="versionSelect" disabled>
+                        <option value="">ابتدا صرافی را انتخاب کنید</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
                 <div class="form-label">جفت ارز</div>
                 <div class="input-group">
                     <input type="text" id="pairInput" placeholder="مثال: ETH/USDT">
@@ -617,6 +626,8 @@
         const newPositionBtn = document.getElementById('newPositionBtn');
         const backToPositionsBtn = document.getElementById('backToPositionsBtn');
         const createPositionBtn = document.getElementById('createPositionConfirmBtn');
+        const dexSelect = document.getElementById('dexSelect');
+        const versionSelect = document.getElementById('versionSelect');
 
         // متغیر وضعیت اتصال
         let loadingTimer = null;
@@ -725,13 +736,13 @@
                 // کیف پول متصل است
                 walletConnected = true;
                 positionsSection.classList.remove('hidden');
-                newPositionSection.classList.add('hidden'); // همیشه New position رو مخفی نگه دار
+                newPositionSection.classList.add('hidden');
                 startLoadingSequence();
             } else {
                 // کیف پول قطع است
                 walletConnected = false;
-                positionsSection.classList.add('hidden'); // مخفی کردن Your positions
-                newPositionSection.classList.add('hidden'); // مخفی کردن New position
+                positionsSection.classList.add('hidden');
+                newPositionSection.classList.add('hidden');
                 
                 // پاک کردن تایمر
                 if (loadingTimer) {
@@ -760,6 +771,79 @@
             positionsSection.classList.remove('hidden');
         });
 
+        // تابع به‌روزرسانی گزینه‌های نوع استخر بر اساس صرافی انتخاب شده
+        function updateVersionOptions() {
+            const selectedDex = dexSelect.value;
+            
+            // پاک کردن گزینه‌های قبلی
+            versionSelect.innerHTML = '';
+            
+            if (!selectedDex) {
+                // اگر صرافی انتخاب نشده
+                versionSelect.disabled = true;
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = 'ابتدا صرافی را انتخاب کنید';
+                versionSelect.appendChild(option);
+                return;
+            }
+            
+            // فعال کردن سلکت
+            versionSelect.disabled = false;
+            
+            // اضافه کردن گزینه‌ها بر اساس صرافی
+            if (selectedDex === 'uniswap') {
+                // Uniswap: v2, v4 (پیش‌فرض v4)
+                const v2Option = document.createElement('option');
+                v2Option.value = 'v2';
+                v2Option.textContent = 'Uniswap V2';
+                
+                const v4Option = document.createElement('option');
+                v4Option.value = 'v4';
+                v4Option.textContent = 'Uniswap V4';
+                v4Option.selected = true; // پیش‌فرض v4
+                
+                versionSelect.appendChild(v2Option);
+                versionSelect.appendChild(v4Option);
+                
+            } else if (selectedDex === 'pancakeswap') {
+                // PancakeSwap: v2, v3, v4 (پیش‌فرض v3)
+                const v2Option = document.createElement('option');
+                v2Option.value = 'v2';
+                v2Option.textContent = 'PancakeSwap V2';
+                
+                const v3Option = document.createElement('option');
+                v3Option.value = 'v3';
+                v3Option.textContent = 'PancakeSwap V3';
+                v3Option.selected = true; // پیش‌فرض v3
+                
+                const v4Option = document.createElement('option');
+                v4Option.value = 'v4';
+                v4Option.textContent = 'PancakeSwap V4';
+                
+                versionSelect.appendChild(v2Option);
+                versionSelect.appendChild(v3Option);
+                versionSelect.appendChild(v4Option);
+                
+            } else if (selectedDex === 'sushiswap') {
+                // SushiSwap: v2, v3 (پیش‌فرض v3)
+                const v2Option = document.createElement('option');
+                v2Option.value = 'v2';
+                v2Option.textContent = 'SushiSwap V2';
+                
+                const v3Option = document.createElement('option');
+                v3Option.value = 'v3';
+                v3Option.textContent = 'SushiSwap V3';
+                v3Option.selected = true; // پیش‌فرض v3
+                
+                versionSelect.appendChild(v2Option);
+                versionSelect.appendChild(v3Option);
+            }
+        }
+
+        // رویداد تغییر صرافی
+        dexSelect.addEventListener('change', updateVersionOptions);
+
         // دکمه ایجاد پوزیشن
         createPositionBtn.addEventListener('click', () => {
             if (!walletConnected) {
@@ -767,12 +851,17 @@
                 return;
             }
             
-            const dex = document.getElementById('dexSelect').value;
+            const dex = dexSelect.value;
+            const version = versionSelect.value;
             const pair = document.getElementById('pairInput').value;
             const amount = document.getElementById('amountInput').value;
             
             if (!dex) {
                 alert('لطفاً یک صرافی انتخاب کنید');
+                return;
+            }
+            if (!version) {
+                alert('لطفاً نوع استخر را انتخاب کنید');
                 return;
             }
             if (!pair) {
@@ -784,7 +873,14 @@
                 return;
             }
             
-            alert(`پوزیشن جدید ایجاد شد:\nصرافی: ${dex}\nجفت ارز: ${pair}\nمقدار: ${amount}`);
+            // پیدا کردن نام نمایشی ورژن
+            let versionName = '';
+            const selectedOption = versionSelect.options[versionSelect.selectedIndex];
+            if (selectedOption) {
+                versionName = selectedOption.textContent;
+            }
+            
+            alert(`پوزیشن جدید ایجاد شد:\nصرافی: ${dex}\nنوع استخر: ${versionName}\nجفت ارز: ${pair}\nمقدار: ${amount}`);
             
             // بازگشت به صفحه اصلی
             newPositionSection.classList.add('hidden');
