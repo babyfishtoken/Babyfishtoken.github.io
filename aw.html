@@ -11,9 +11,7 @@
 <h2>💰 موجودی کیف پول Polygon</h2>
 
 <div id="wallet-btn"></div>
-
 <br><br>
-
 <div id="result"></div>
 
 <script type="module">
@@ -25,14 +23,20 @@ import { polygon }
 from "https://esm.sh/wagmi/chains";
 
 import { getAccount, watchAccount, getBalance, readContract } 
-from "https://esm.sh/wagmi";
+from "https://esm.sh/wagmi/actions";
 
+// ==================== تنظیم ====================
 const projectId = "96f13374b0fe2f629a925617de0a2ba3";
 
 const wagmiConfig = defaultWagmiConfig({
   chains: [polygon],
   projectId,
-  metadata: { name: "Polygon Wallet", description: "", url: window.location.href, icons: [] }
+  metadata: {
+    name: "Polygon Wallet",
+    description: "",
+    url: window.location.href,
+    icons: []
+  }
 });
 
 createWeb3Modal({
@@ -41,6 +45,7 @@ createWeb3Modal({
   chains: [polygon]
 });
 
+// دکمه اتصال
 const btn = document.createElement("w3m-button");
 document.getElementById("wallet-btn").appendChild(btn);
 
@@ -49,15 +54,15 @@ const USDT = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
 
 const ABI = [
   {
-    "constant": true,
-    "inputs": [{"name": "_owner","type": "address"}],
-    "name": "balanceOf",
-    "outputs": [{"name": "balance","type": "uint256"}],
-    "type": "function"
+    constant: true,
+    inputs: [{ name: "_owner", type: "address" }],
+    name: "balanceOf",
+    outputs: [{ name: "balance", type: "uint256" }],
+    type: "function"
   }
 ];
 
-// ==================== گرفتن قیمت ====================
+// ==================== قیمت ====================
 async function getPrices(){
 
   const res = await fetch(
@@ -72,7 +77,7 @@ async function getPrices(){
   };
 }
 
-// ==================== گرفتن موجودی ====================
+// ==================== موجودی ====================
 async function load(address){
 
   try{
@@ -101,31 +106,24 @@ async function load(address){
     // قیمت
     const prices = await getPrices();
 
-    const maticValue = maticBal * prices.matic;
-    const usdtValue = usdtBal * prices.usdt;
-
     document.getElementById("result").innerHTML = `
-
       <div style="background:#1e293b;padding:20px;border-radius:10px;margin-bottom:15px;">
         <h3>MATIC</h3>
         <h2>${maticBal.toFixed(4)}</h2>
         <div>قیمت: $${prices.matic.toFixed(4)}</div>
-        <div>ارزش: $${maticValue.toFixed(2)}</div>
       </div>
 
       <div style="background:#1e293b;padding:20px;border-radius:10px;">
         <h3>USDT</h3>
         <h2>${usdtBal.toFixed(2)}</h2>
         <div>قیمت: $1</div>
-        <div>ارزش: $${usdtValue.toFixed(2)}</div>
       </div>
-
     `;
 
   }catch(e){
-    document.getElementById("result").innerHTML =
-      "❌ خطا در دریافت اطلاعات";
     console.log(e);
+    document.getElementById("result").innerHTML =
+      "❌ خطا در دریافت";
   }
 }
 
