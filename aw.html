@@ -33,7 +33,7 @@ const ERC20_ABI = [
 
 async function connectWallet(){
   try{
-    provider = new window.EthereumProvider.default({
+    provider = await window.WalletConnectEthereumProvider.init({
       projectId: "96f13374b0fe2f629a925617de0a2ba3",
       chains: [137],
       showQrModal: true
