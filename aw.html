@@ -60,7 +60,7 @@ watchAccount(wagmiConfig, {
 async function load(address){
   document.getElementById("address").innerText = address;
 
-  const provider = new ethers.providers.JsonRpcProvider("https://polygon-rpc.com");
+  const provider = new ethers.providers.JsonRpcProvider("https://rpc.ankr.com/polygon");
 
   // MATIC
   const bal = await provider.getBalance(address);
