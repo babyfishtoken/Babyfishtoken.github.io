@@ -1,86 +1,83 @@
 <!DOCTYPE html><html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>اتصال کیف پول | Polygon + USDT</title>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-  <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.0/dist/index.umd.js"></script>
-  <style>
-    body {font-family: sans-serif; background:#0f0f0f; color:#fff; padding:20px}
-    button {padding:12px 20px; border:none; border-radius:10px; background:#8a2be2; color:#fff; font-size:16px}
-    .card {margin-top:20px; padding:20px; border-radius:15px; background:#1b1b1b}
-  </style>
-</head>
-<body><h2>اتصال کیف پول WalletConnect</h2>
-<button onclick="connectWallet()">اتصال کیف پول</button><div class="card">
-  <p>آدرس: <span id="address">-</span></p>
-  <p>موجودی MATIC: <span id="matic">-</span></p>
-  <p>موجودی USDT: <span id="usdt">-</span></p>
-  <p>قیمت MATIC: <span id="maticPrice">-</span></p>
-  <p>قیمت USDT: <span id="usdtPrice">-</span></p>
-</div><script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Polygon Wallet Connect</title>
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+</head><body style="background:#0f172a;color:white;text-align:center;padding-top:80px;font-family:sans-serif;"><h2>اتصال کیف پول Polygon</h2><div id="wallet-btn" style="margin-bottom:30px"></div><div>
+<p>آدرس: <span id="address">-</span></p>
+<p>MATIC: <span id="matic">-</span></p>
+<p>USDT: <span id="usdt">-</span></p>
+<p>قیمت MATIC: <span id="maticPrice">-</span></p>
+<p>قیمت USDT: <span id="usdtPrice">-</span></p>
+</div><script type="module">
+import { createWeb3Modal, defaultWagmiConfig } from "https://esm.sh/@web3modal/wagmi";
+import { polygon } from "https://esm.sh/wagmi/chains";
+import { getAccount, watchAccount } from "https://esm.sh/@wagmi/core";
 
-let provider;
-let signer;
+const projectId = "96f13374b0fe2f629a925617de0a2ba3";
 
-// USDT Polygon
+const metadata = {
+  name: "My Polygon Website",
+  description: "Web3 Polygon App",
+  url: "https://babyfishtoken.github.io",
+  icons: []
+};
+
+const chains = [polygon];
+
+const wagmiConfig = defaultWagmiConfig({
+  chains,
+  projectId,
+  metadata
+});
+
+createWeb3Modal({
+  wagmiConfig,
+  projectId,
+  chains
+});
+
+const btn = document.createElement("w3m-button");
+document.getElementById("wallet-btn").appendChild(btn);
+
+// USDT polygon
 const USDT = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
 
-const ERC20_ABI = [
-  "function balanceOf(address owner) view returns (uint256)",
-  "function decimals() view returns (uint8)"
+const ERC20 = [
+"function balanceOf(address) view returns(uint256)",
+"function decimals() view returns(uint8)"
 ];
 
-async function connectWallet(){
-  try{
-    provider = await WalletConnectEthereumProvider.init({
-      projectId: "96f13374b0fe2f629a925617de0a2ba3",
-      chains: [137],
-      showQrModal: true
-    });
-
-    await provider.enable();
-
-    const ethersProvider = new ethers.providers.Web3Provider(provider);
-    signer = ethersProvider.getSigner();
-
-    const address = await signer.getAddress();
-    document.getElementById("address").innerText = address;
-
-    loadBalances(ethersProvider, address);
-    loadPrices();
-
-  }catch(e){
-    alert(e.message);
+watchAccount(wagmiConfig, {
+  onChange(account){
+    if(account.address){
+      load(account.address);
+    }
   }
-}
+});
 
-async function loadBalances(ethersProvider, address){
+async function load(address){
+  document.getElementById("address").innerText = address;
+
+  const provider = new ethers.providers.JsonRpcProvider("https://polygon-rpc.com");
 
   // MATIC
-  const balance = await ethersProvider.getBalance(address);
-  document.getElementById("matic").innerText = ethers.utils.formatEther(balance);
+  const bal = await provider.getBalance(address);
+  document.getElementById("matic").innerText = ethers.utils.formatEther(bal);
 
   // USDT
-  const usdt = new ethers.Contract(USDT, ERC20_ABI, ethersProvider);
-  const dec = await usdt.decimals();
-  const bal = await usdt.balanceOf(address);
+  const token = new ethers.Contract(USDT, ERC20, provider);
+  const dec = await token.decimals();
+  const tb = await token.balanceOf(address);
+  document.getElementById("usdt").innerText = ethers.utils.formatUnits(tb, dec);
 
-  document.getElementById("usdt").innerText = ethers.utils.formatUnits(bal, dec);
-}
+  // price
+  const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=matic-network,tether&vs_currencies=usd");
+  const data = await res.json();
 
-async function loadPrices(){
-  try{
-
-    const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=matic-network,tether&vs_currencies=usd");
-    const data = await res.json();
-
-    document.getElementById("maticPrice").innerText = data["matic-network"].usd + " $";
-    document.getElementById("usdtPrice").innerText = data["tether"].usd + " $";
-
-  }catch(e){
-    console.log(e);
-  }
+  document.getElementById("maticPrice").innerText = data["matic-network"].usd + " $";
+  document.getElementById("usdtPrice").innerText = data["tether"].usd + " $";
 }
 
 </script></body>
