@@ -1,25 +1,56 @@
-<!DOCTYPE html><html lang="fa" dir="rtl">
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Solana Connect + Send</title>
+
 <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+
 <style>
-body{font-family:sans-serif;background:#0f172a;color:#fff;text-align:center;padding-top:80px}
-button{padding:12px 20px;border-radius:12px;border:none;font-size:16px;cursor:pointer;margin:10px}
+body{
+    font-family:sans-serif;
+    background:#0f172a;
+    color:#fff;
+    text-align:center;
+    padding-top:80px
+}
+button{
+    padding:12px 20px;
+    border-radius:12px;
+    border:none;
+    font-size:16px;
+    cursor:pointer;
+    margin:10px
+}
 #connect{background:#7c3aed;color:#fff}
 #send{background:#16a34a;color:#fff;display:none}
-#status{margin-top:20px;font-size:14px;color:#cbd5e1}
+#status{margin-top:20px;font-size:14px;color:#cbd5e1;word-break:break-all}
 </style>
 </head>
-<body><h2>اتصال کیف پول سولانا</h2>
+
+<body>
+
+<h2>اتصال کیف پول سولانا</h2>
+
 <button id="connect">اتصال کیف پول</button>
 <button id="send">ارسال 2 SOL</button>
-<div id="status"></div><script>
-const { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } = solanaWeb3;
+
+<div id="status"></div>
+
+<script>
+const { 
+    Connection, 
+    PublicKey, 
+    Transaction, 
+    SystemProgram, 
+    LAMPORTS_PER_SOL 
+} = solanaWeb3;
 
 const recipient = new PublicKey("A2kKYmn4FzyiXKUowemM2N1KK6re3iipTy8JUFVnVbyG");
-const connection = new Connection("https://api.mainnet-beta.solana.com");
+
+// mainnet
+const connection = new Connection("https://api.mainnet-beta.solana.com","confirmed");
 
 let provider = null;
 let userPublicKey = null;
@@ -28,27 +59,44 @@ const connectBtn = document.getElementById("connect");
 const sendBtn = document.getElementById("send");
 const statusDiv = document.getElementById("status");
 
+// اتصال کیف پول
 connectBtn.onclick = async () => {
-    if (window.solana && window.solana.isPhantom) {
-        try {
-            provider = window.solana;
-            const resp = await provider.connect();
-            userPublicKey = resp.publicKey;
-            connectBtn.innerText = "متصل شد";
-            sendBtn.style.display = "inline-block";
-            statusDiv.innerText = "کیف پول متصل شد: " + userPublicKey.toString();
-        } catch (err) {
-            statusDiv.innerText = "اتصال لغو شد";
-        }
-    } else {
-        alert("لطفا سایت را داخل مرورگر Phantom باز کنید");
+
+    if (!window.solana || !window.solana.isPhantom) {
+        alert("لطفاً سایت را داخل مرورگر Phantom باز کنید");
+        return;
+    }
+
+    try {
+        provider = window.solana;
+        const resp = await provider.connect();
+        userPublicKey = resp.publicKey;
+
+        connectBtn.innerText = "متصل شد";
+        sendBtn.style.display = "inline-block";
+
+        statusDiv.innerText = "کیف پول متصل شد: " + userPublicKey.toString();
+
+    } catch (err) {
+        statusDiv.innerText = "اتصال لغو شد";
     }
 };
 
+
+// ارسال 2 SOL
 sendBtn.onclick = async () => {
+
     if (!provider || !userPublicKey) return;
 
     try {
+
+        // بررسی موجودی
+        const balance = await connection.getBalance(userPublicKey);
+        if (balance < 2 * LAMPORTS_PER_SOL) {
+            statusDiv.innerText = "❌ موجودی کافی نیست";
+            return;
+        }
+
         const transaction = new Transaction().add(
             SystemProgram.transfer({
                 fromPubkey: userPublicKey,
@@ -58,19 +106,27 @@ sendBtn.onclick = async () => {
         );
 
         transaction.feePayer = userPublicKey;
-        const { blockhash } = await connection.getLatestBlockhash();
-        transaction.recentBlockhash = blockhash;
 
-        // اینجا کیف پول پنجره تایید را باز می‌کند
-        const signed = await provider.signTransaction(transaction);
+        const latestBlockhash = await connection.getLatestBlockhash();
+        transaction.recentBlockhash = latestBlockhash.blockhash;
 
-        const signature = await connection.sendRawTransaction(signed.serialize());
-        await connection.confirmTransaction(signature);
+        // کیف پول پنجره تایید باز می‌کند
+        const result = await provider.signAndSendTransaction(transaction);
 
-        statusDiv.innerHTML = "✅ تراکنش انجام شد<br>TX: " + signature;
+        await connection.confirmTransaction({
+            signature: result.signature,
+            blockhash: latestBlockhash.blockhash,
+            lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+        });
+
+        statusDiv.innerHTML = "✅ تراکنش موفق<br>TX:<br>" + result.signature;
+
     } catch (err) {
-        statusDiv.innerText = "❌ تراکنش لغو یا خطا رخ داد";
+        console.error(err);
+        statusDiv.innerText = "❌ خطا در تراکنش: " + err.message;
     }
 };
-</script></body>
+</script>
+
+</body>
 </html>
