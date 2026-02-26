@@ -51,11 +51,17 @@ const ERC20 = [
 
 watchAccount(wagmiConfig, {
   onChange(account){
-    if(account.address){
+    if(account?.address && account?.isConnected){
       load(account.address);
     }
   }
 });
+
+// اگر از قبل وصل بود
+const acc = getAccount(wagmiConfig);
+if(acc?.address && acc?.isConnected){
+  load(acc.address);
+}
 
 async function load(address){
   try{
