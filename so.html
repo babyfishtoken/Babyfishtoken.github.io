@@ -1,167 +1,97 @@
 <!DOCTYPE html><html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>اتصال حرفه‌ای کیف پول سولانا</title>  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;700&display=swap" rel="stylesheet">  <style>
-    * { box-sizing: border-box; font-family: Vazirmatn, sans-serif; }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Connect Solana Wallet</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;700&display=swap" rel="stylesheet"><style>
+*{box-sizing:border-box;font-family:Vazirmatn,sans-serif}
+body{
+  margin:0;
+  background:radial-gradient(circle at top,#0f172a,#020617);
+  color:#fff;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+}
 
-    body {
-      margin: 0;
-      background: radial-gradient(circle at top,#0f172a,#020617);
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 20px;
-    }
+.card{
+  width:100%;
+  max-width:420px;
+  background:#0b1120;
+  padding:35px;
+  border-radius:22px;
+  box-shadow:0 30px 70px rgba(0,0,0,.7);
+  text-align:center;
+}
 
-    .container {
-      width: 100%;
-      max-width: 420px;
-      background: #0b1120;
-      border-radius: 22px;
-      padding: 35px;
-      box-shadow: 0 30px 70px rgba(0,0,0,0.7);
-      text-align: center;
-    }
+h1{font-size:22px;margin-bottom:8px}
+p{color:#94a3b8;font-size:14px;margin-bottom:25px}
 
-    h1 {
-      margin-bottom: 8px;
-      font-size: 22px;
-    }
+button{
+  width:100%;
+  padding:15px;
+  border:none;
+  border-radius:14px;
+  font-size:16px;
+  font-weight:700;
+  cursor:pointer;
+  background:linear-gradient(90deg,#8b5cf6,#22d3ee);
+}
 
-    p {
-      color: #94a3b8;
-      font-size: 14px;
-      margin-bottom: 25px;
-    }
+.status{margin-top:20px;color:#4ade80;font-size:14px}
+.address{margin-top:10px;color:#22d3ee;font-size:13px;word-break:break-all}
 
-    .btn {
-      width: 100%;
-      padding: 15px;
-      font-size: 16px;
-      border-radius: 14px;
-      border: none;
-      cursor: pointer;
-      background: linear-gradient(90deg,#8b5cf6,#22d3ee);
-      color: white;
-      font-weight: bold;
-      transition: 0.25s;
-    }
+</style></head><body><div class="card">
+<h1>اتصال حرفه‌ای سولانا</h1>
+<p>بدون باز شدن سایت داخل کیف پول</p><button onclick="connect()">Connect Wallet</button>
 
-    .btn:hover { transform: scale(1.04); }
-
-    .wallet-list {
-      margin-top: 18px;
-      display: none;
-      gap: 10px;
-      flex-direction: column;
-    }
-
-    .wallet {
-      padding: 12px;
-      border-radius: 12px;
-      background: #020617;
-      border: 1px solid #1e293b;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .wallet:hover { background: #111827; }
-
-    .status {
-      margin-top: 20px;
-      font-size: 14px;
-      color: #4ade80;
-    }
-
-    .address {
-      margin-top: 12px;
-      font-size: 13px;
-      word-break: break-all;
-      color: #22d3ee;
-    }
-
-    @media (max-width:500px) {
-      .container { padding: 25px; }
-    }
-  </style></head><body>  <div class="container">
-    <h1>اتصال کیف پول سولانا</h1>
-    <p>پشتیبانی Phantom، Solflare و موبایل</p><button class="btn" onclick="openWallets()">اتصال کیف پول</button>
-
-<div class="wallet-list" id="wallets">
-  <div class="wallet" onclick="connectPhantom()">Phantom</div>
-  <div class="wallet" onclick="connectSolflare()">Solflare</div>
-</div>
-
-<div class="status" id="status"></div>
-<div class="address" id="address"></div>
-
-  </div><script>
-
+<div id="status" class="status"></div>
+<div id="address" class="address"></div>
+</div><script>
 let provider;
 
-function openWallets(){
-  document.getElementById("wallets").style.display = "flex";
-}
-
-async function connectPhantom(){
+async function connect(){
 
   try{
+
+    // تشخیص دسکتاپ
     if(window.solana && window.solana.isPhantom){
+
       provider = window.solana;
 
-      const res = await provider.connect();
+      const res = await provider.connect({onlyIfTrusted:false});
 
       success(res.publicKey.toString());
+
+      return;
+    }
+
+    // اگر موبایل و کیف پول نصب نیست
+    const ua = navigator.userAgent.toLowerCase();
+
+    const isMobile = /android|iphone|ipad|ipod/.test(ua);
+
+    if(isMobile){
+
+      document.getElementById("status").innerText =
+        "کیف پول Phantom را نصب کنید و از داخل آن سایت را باز کنید";
+
     }else{
-      mobileRedirect("phantom");
+
+      document.getElementById("status").innerText =
+        "افزونه Phantom نصب نیست";
+
     }
 
   }catch(e){
-    error("اتصال رد شد");
-  }
-}
-
-async function connectSolflare(){
-
-  try{
-    if(window.solflare){
-      provider = window.solflare;
-
-      await provider.connect();
-
-      success(provider.publicKey.toString());
-    }else{
-      mobileRedirect("solflare");
-    }
-
-  }catch(e){
-    error("اتصال رد شد");
+    document.getElementById("status").innerText="اتصال رد شد";
   }
 }
 
 function success(addr){
-  document.getElementById("status").innerText = "کیف پول متصل شد";
-  document.getElementById("address").innerText = addr;
-}
-
-function error(msg){
-  document.getElementById("status").innerText = msg;
-}
-
-function mobileRedirect(type){
-
-  const url = window.location.href;
-
-  if(type === "phantom"){
-    window.location.href = `https://phantom.app/ul/browse/${encodeURIComponent(url)}`;
-  }
-
-  if(type === "solflare"){
-    window.location.href = `https://solflare.com/ul/v1/browse/${encodeURIComponent(url)}`;
-  }
+  document.getElementById("status").innerText="کیف پول متصل شد";
+  document.getElementById("address").innerText=addr;
 }
 
 </script></body>
