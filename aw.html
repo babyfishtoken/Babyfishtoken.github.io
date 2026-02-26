@@ -1,96 +1,121 @@
-<!DOCTYPE html><html lang="fa" dir="rtl">
+<!DOCTYPE html><html lang="fa">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Polygon Wallet Connect</title>
-<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-</head><body style="background:#0f172a;color:white;text-align:center;padding-top:80px;font-family:sans-serif;"><h2>اتصال کیف پول Polygon</h2><div id="wallet-btn" style="margin-bottom:30px"></div><div>
-<p>آدرس: <span id="address">-</span></p>
-<p>MATIC: <span id="matic">-</span></p>
-<p>USDT: <span id="usdt">-</span></p>
-<p>قیمت MATIC: <span id="maticPrice">-</span></p>
-<p>قیمت USDT: <span id="usdtPrice">-</span></p>
-</div><script type="module">
+<title>Polygon Balance Viewer</title>
+</head><body style="background:#0f172a;color:white;font-family:sans-serif;padding:20px;text-align:center;"><h2>💰 موجودی کیف پول (Polygon)</h2><div id="wallet-btn"></div>
+<div id="walletAddress" style="margin:10px;color:#94a3b8;font-size:14px;"></div><div id="result" style="margin-top:20px;"></div><script type="module">
 import { createWeb3Modal, defaultWagmiConfig } from "https://esm.sh/@web3modal/wagmi";
 import { polygon } from "https://esm.sh/wagmi/chains";
-import { getAccount, watchAccount } from "https://esm.sh/@wagmi/core";
+import { getAccount, watchAccount, readContract, getBalance } from "https://esm.sh/wagmi/actions";
+import { formatUnits, formatEther } from "https://esm.sh/viem";
 
+// ==================== تنظیمات ====================
 const projectId = "96f13374b0fe2f629a925617de0a2ba3";
-
-const metadata = {
-  name: "My Polygon Website",
-  description: "Web3 Polygon App",
-  url: "https://babyfishtoken.github.io",
-  icons: []
-};
-
 const chains = [polygon];
 
 const wagmiConfig = defaultWagmiConfig({
-  chains,
-  projectId,
-  metadata
+    chains,
+    projectId,
+    metadata: { name: "Balance Viewer", description: "", url: window.location.href, icons: [] }
 });
 
-createWeb3Modal({
-  wagmiConfig,
-  projectId,
-  chains
-});
+createWeb3Modal({ wagmiConfig, projectId, chains });
 
 const btn = document.createElement("w3m-button");
 document.getElementById("wallet-btn").appendChild(btn);
 
-// USDT polygon
-const USDT = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
+// ==================== USDT Polygon ====================
+const USDT_ADDRESS = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
 
-const ERC20 = [
-"function balanceOf(address) view returns(uint256)",
-"function decimals() view returns(uint8)"
+const ERC20_ABI = [
+    { name: "symbol", type: "function", stateMutability: "view", inputs: [], outputs: [{ type: "string" }] },
+    { name: "decimals", type: "function", stateMutability: "view", inputs: [], outputs: [{ type: "uint8" }] },
+    { name: "balanceOf", type: "function", stateMutability: "view", inputs: [{ type: "address" }], outputs: [{ type: "uint256" }] }
 ];
 
+// ==================== وضعیت کیف پول ====================
+let currentAccount = null;
+
 watchAccount(wagmiConfig, {
-  onChange(account){
-    if(account?.address && account?.isConnected){
-      load(account.address);
+    async onChange(account) {
+        if (account?.address) {
+            currentAccount = account.address;
+            document.getElementById('walletAddress').innerText = `✅ ${account.address.slice(0,6)}...${account.address.slice(38)}`;
+            await loadBalances();
+        } else {
+            currentAccount = null;
+            document.getElementById('walletAddress').innerText = '';
+            document.getElementById('result').innerHTML = '';
+        }
     }
-  }
 });
 
-// اگر از قبل وصل بود
+// اگر قبلاً وصل بوده
 const acc = getAccount(wagmiConfig);
-if(acc?.address && acc?.isConnected){
-  load(acc.address);
+if (acc?.address) {
+    currentAccount = acc.address;
+    loadBalances();
 }
 
-async function load(address){
-  try{
-    document.getElementById("address").innerText = address;
+// ==================== گرفتن موجودی ====================
+async function loadBalances() {
+    try {
+        if (!currentAccount) return;
 
-    // استفاده از RPC پایدار
-    const provider = new ethers.providers.JsonRpcProvider("https://polygon.llamarpc.com");
+        document.getElementById('result').innerHTML = "⏳ در حال دریافت اطلاعات...";
 
-    // MATIC
-    const bal = await provider.getBalance(address);
-    document.getElementById("matic").innerText = ethers.utils.formatEther(bal);
+        // MATIC
+        const nativeBalance = await getBalance(wagmiConfig, {
+            address: currentAccount,
+            chainId: 137
+        });
 
-    // USDT
-    const token = new ethers.Contract(USDT, ERC20, provider);
-    const dec = await token.decimals();
-    const tb = await token.balanceOf(address);
-    document.getElementById("usdt").innerText = ethers.utils.formatUnits(tb, dec);
+        const matic = formatEther(nativeBalance.value);
 
-    // قیمت
-    const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=matic-network,tether&vs_currencies=usd");
-    const data = await res.json();
+        // USDT
+        const [decimals, balance] = await Promise.all([
+            readContract(wagmiConfig, {
+                address: USDT_ADDRESS,
+                abi: ERC20_ABI,
+                functionName: 'decimals',
+                chainId: 137
+            }),
+            readContract(wagmiConfig, {
+                address: USDT_ADDRESS,
+                abi: ERC20_ABI,
+                functionName: 'balanceOf',
+                args: [currentAccount],
+                chainId: 137
+            })
+        ]);
 
-    document.getElementById("maticPrice").innerText = data?.["matic-network"]?.usd + " $";
-    document.getElementById("usdtPrice").innerText = data?.tether?.usd + " $";
+        const usdt = formatUnits(balance, decimals);
 
-  }catch(e){
-    console.error(e);
-    alert("خطا در گرفتن موجودی یا قیمت. اینترنت یا RPC را چک کن");
-  }
+        // قیمت از CoinGecko
+        const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=matic-network,tether&vs_currencies=usd");
+        const priceData = await res.json();
+
+        const maticPrice = priceData?.["matic-network"]?.usd ?? 0;
+        const usdtPrice = priceData?.tether?.usd ?? 0;
+
+        document.getElementById('result').innerHTML = `
+            <div style="background:#1e293b;padding:20px;border-radius:8px;margin-bottom:15px;">
+                <div style="color:#94a3b8;">MATIC</div>
+                <div style="font-size:28px;font-weight:bold;color:#3b82f6;">${parseFloat(matic).toFixed(4)}</div>
+                <div style="color:#22c55e;">$ ${maticPrice}</div>
+            </div>
+
+            <div style="background:#1e293b;padding:20px;border-radius:8px;">
+                <div style="color:#94a3b8;">USDT</div>
+                <div style="font-size:28px;font-weight:bold;color:#3b82f6;">${parseFloat(usdt).toFixed(2)}</div>
+                <div style="color:#22c55e;">$ ${usdtPrice}</div>
+            </div>
+        `;
+
+    } catch (error) {
+        document.getElementById('result').innerHTML = `<div style="color:#ef4444;">❌ خطا: ${error.message.slice(0,60)}</div>`;
+    }
 }
 
 </script></body>
