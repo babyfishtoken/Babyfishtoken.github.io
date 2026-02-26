@@ -58,26 +58,33 @@ watchAccount(wagmiConfig, {
 });
 
 async function load(address){
-  document.getElementById("address").innerText = address;
+  try{
+    document.getElementById("address").innerText = address;
 
-  const provider = new ethers.providers.JsonRpcProvider("https://rpc.ankr.com/polygon");
+    // استفاده از RPC پایدار
+    const provider = new ethers.providers.JsonRpcProvider("https://polygon.llamarpc.com");
 
-  // MATIC
-  const bal = await provider.getBalance(address);
-  document.getElementById("matic").innerText = ethers.utils.formatEther(bal);
+    // MATIC
+    const bal = await provider.getBalance(address);
+    document.getElementById("matic").innerText = ethers.utils.formatEther(bal);
 
-  // USDT
-  const token = new ethers.Contract(USDT, ERC20, provider);
-  const dec = await token.decimals();
-  const tb = await token.balanceOf(address);
-  document.getElementById("usdt").innerText = ethers.utils.formatUnits(tb, dec);
+    // USDT
+    const token = new ethers.Contract(USDT, ERC20, provider);
+    const dec = await token.decimals();
+    const tb = await token.balanceOf(address);
+    document.getElementById("usdt").innerText = ethers.utils.formatUnits(tb, dec);
 
-  // price
-  const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=matic-network,tether&vs_currencies=usd");
-  const data = await res.json();
+    // قیمت
+    const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=matic-network,tether&vs_currencies=usd");
+    const data = await res.json();
 
-  document.getElementById("maticPrice").innerText = data["matic-network"].usd + " $";
-  document.getElementById("usdtPrice").innerText = data["tether"].usd + " $";
+    document.getElementById("maticPrice").innerText = data?.["matic-network"]?.usd + " $";
+    document.getElementById("usdtPrice").innerText = data?.tether?.usd + " $";
+
+  }catch(e){
+    console.error(e);
+    alert("خطا در گرفتن موجودی یا قیمت. اینترنت یا RPC را چک کن");
+  }
 }
 
 </script></body>
