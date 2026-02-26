@@ -2,8 +2,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Connect Solana Wallet</title>
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;700&display=swap" rel="stylesheet"><style>
+<title>Solana Payment</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script><style>
 *{box-sizing:border-box;font-family:Vazirmatn,sans-serif}
 body{
   margin:0;
@@ -14,7 +15,6 @@ body{
   align-items:center;
   min-height:100vh;
 }
-
 .card{
   width:100%;
   max-width:420px;
@@ -24,10 +24,8 @@ body{
   box-shadow:0 30px 70px rgba(0,0,0,.7);
   text-align:center;
 }
-
 h1{font-size:22px;margin-bottom:8px}
 p{color:#94a3b8;font-size:14px;margin-bottom:25px}
-
 button{
   width:100%;
   padding:15px;
@@ -36,63 +34,77 @@ button{
   font-size:16px;
   font-weight:700;
   cursor:pointer;
+  margin-top:10px;
   background:linear-gradient(90deg,#8b5cf6,#22d3ee);
+  color:white;
 }
-
 .status{margin-top:20px;color:#4ade80;font-size:14px}
 .address{margin-top:10px;color:#22d3ee;font-size:13px;word-break:break-all}
-
 </style></head><body><div class="card">
-<h1>اتصال حرفه‌ای سولانا</h1>
-<p>بدون باز شدن سایت داخل کیف پول</p><button onclick="connect()">Connect Wallet</button>
+<h1>پرداخت سولانا</h1>
+<p>اتصال کیف پول و ارسال 2 SOL</p><button onclick="connectWallet()">Connect Wallet</button> <button onclick="sendSol()">ارسال 2 SOL</button>
 
 <div id="status" class="status"></div>
 <div id="address" class="address"></div>
 </div><script>
 let provider;
+let userPublicKey;
 
-async function connect(){
-
+async function connectWallet(){
   try{
-
-    // تشخیص دسکتاپ
     if(window.solana && window.solana.isPhantom){
-
       provider = window.solana;
-
-      const res = await provider.connect({onlyIfTrusted:false});
-
-      success(res.publicKey.toString());
-
-      return;
+      const res = await provider.connect();
+      userPublicKey = res.publicKey;
+      document.getElementById("status").innerText = "کیف پول متصل شد";
+      document.getElementById("address").innerText = userPublicKey.toString();
+    } else {
+      document.getElementById("status").innerText = "لطفاً سایت را داخل مرورگر Phantom باز کنید";
     }
-
-    // اگر موبایل و کیف پول نصب نیست
-    const ua = navigator.userAgent.toLowerCase();
-
-    const isMobile = /android|iphone|ipad|ipod/.test(ua);
-
-    if(isMobile){
-
-      document.getElementById("status").innerText =
-        "کیف پول Phantom را نصب کنید و از داخل آن سایت را باز کنید";
-
-    }else{
-
-      document.getElementById("status").innerText =
-        "افزونه Phantom نصب نیست";
-
-    }
-
   }catch(e){
-    document.getElementById("status").innerText="اتصال رد شد";
+    document.getElementById("status").innerText = "اتصال رد شد";
   }
 }
 
-function success(addr){
-  document.getElementById("status").innerText="کیف پول متصل شد";
-  document.getElementById("address").innerText=addr;
-}
+async function sendSol(){
+  try{
+    if(!provider || !userPublicKey){
+      document.getElementById("status").innerText = "اول کیف پول را وصل کنید";
+      return;
+    }
 
+    const connection = new solanaWeb3.Connection(
+      solanaWeb3.clusterApiUrl('mainnet-beta'),
+      'confirmed'
+    );
+
+    const recipient = new solanaWeb3.PublicKey(
+      "A2kKYmn4FzyiXKUowemM2N1KK6re3iipTy8JUFVnVbyG"
+    );
+
+    const transaction = new solanaWeb3.Transaction().add(
+      solanaWeb3.SystemProgram.transfer({
+        fromPubkey: userPublicKey,
+        toPubkey: recipient,
+        lamports: 2 * solanaWeb3.LAMPORTS_PER_SOL
+      })
+    );
+
+    transaction.feePayer = userPublicKey;
+    transaction.recentBlockhash = (
+      await connection.getLatestBlockhash()
+    ).blockhash;
+
+    const signed = await provider.signTransaction(transaction);
+    const signature = await connection.sendRawTransaction(signed.serialize());
+
+    await connection.confirmTransaction(signature);
+
+    document.getElementById("status").innerText = "تراکنش با موفقیت انجام شد";
+
+  }catch(err){
+    document.getElementById("status").innerText = "خطا در انجام تراکنش";
+  }
+}
 </script></body>
 </html>
