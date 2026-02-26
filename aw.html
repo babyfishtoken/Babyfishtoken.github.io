@@ -22,10 +22,13 @@ from "https://esm.sh/@web3modal/wagmi";
 import { polygon } 
 from "https://esm.sh/wagmi/chains";
 
-import { getAccount, watchAccount, getBalance, readContract } 
+import { getAccount, watchAccount } 
+from "https://esm.sh/wagmi";
+
+import { getBalance, readContract } 
 from "https://esm.sh/wagmi/actions";
 
-// ==================== تنظیم ====================
+// --------------------
 const projectId = "96f13374b0fe2f629a925617de0a2ba3";
 
 const wagmiConfig = defaultWagmiConfig({
@@ -45,11 +48,10 @@ createWeb3Modal({
   chains: [polygon]
 });
 
-// دکمه اتصال
 const btn = document.createElement("w3m-button");
 document.getElementById("wallet-btn").appendChild(btn);
 
-// ==================== USDT ====================
+// -------------------- USDT
 const USDT = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
 
 const ABI = [
@@ -62,38 +64,38 @@ const ABI = [
   }
 ];
 
-// ==================== قیمت ====================
+// -------------------- قیمت
 async function getPrices(){
 
   const res = await fetch(
-    "https://api.binance.com/api/v3/ticker/price?symbols=[\"MATICUSDT\"]"
+    "https://api.binance.com/api/v3/ticker/price?symbol=MATICUSDT"
   );
 
   const data = await res.json();
 
   return {
-    matic: parseFloat(data[0].price),
+    matic: parseFloat(data.price),
     usdt: 1
   };
 }
 
-// ==================== موجودی ====================
+// -------------------- لود اطلاعات
 async function load(address){
 
   try{
 
     document.getElementById("result").innerHTML = "⏳ در حال دریافت...";
 
-    // MATIC
+    // ✅ MATIC (Native)
     const matic = await getBalance(wagmiConfig, {
       address,
       chainId: polygon.id
     });
 
-    const maticBal = Number(matic.formatted);
+    const maticBal = parseFloat(matic.formatted);
 
-    // USDT
-    const usdt = await readContract(wagmiConfig, {
+    // ✅ USDT
+    const usdtRaw = await readContract(wagmiConfig, {
       address: USDT,
       abi: ABI,
       functionName: "balanceOf",
@@ -101,33 +103,37 @@ async function load(address){
       chainId: polygon.id
     });
 
-    const usdtBal = Number(usdt) / 1e6;
+    const usdtBal = Number(usdtRaw) / 1e6;
 
     // قیمت
     const prices = await getPrices();
+
+    const maticValue = maticBal * prices.matic;
+    const usdtValue = usdtBal * prices.usdt;
 
     document.getElementById("result").innerHTML = `
       <div style="background:#1e293b;padding:20px;border-radius:10px;margin-bottom:15px;">
         <h3>MATIC</h3>
         <h2>${maticBal.toFixed(4)}</h2>
         <div>قیمت: $${prices.matic.toFixed(4)}</div>
+        <div>ارزش: $${maticValue.toFixed(2)}</div>
       </div>
 
       <div style="background:#1e293b;padding:20px;border-radius:10px;">
         <h3>USDT</h3>
         <h2>${usdtBal.toFixed(2)}</h2>
         <div>قیمت: $1</div>
+        <div>ارزش: $${usdtValue.toFixed(2)}</div>
       </div>
     `;
 
   }catch(e){
     console.log(e);
-    document.getElementById("result").innerHTML =
-      "❌ خطا در دریافت";
+    document.getElementById("result").innerHTML = "❌ خطا";
   }
 }
 
-// ==================== اتصال ====================
+// -------------------- اتصال
 watchAccount(wagmiConfig, {
   onChange(acc){
     if(acc?.address && acc?.isConnected){
