@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wallet Connect - صفحه X1</title>
+<style>
+    body {
+        background: #0f172a;
+        color: white;
+        text-align: center;
+        padding-top: 60px;
+        font-family: sans-serif;
+        margin: 0;
+        min-height: 100vh;
+    }
+    .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .nav-links {
+        margin: 30px 0;
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+    }
+    .nav-links a {
+        color: #60a5fa;
+        text-decoration: none;
+        padding: 10px 20px;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+    .nav-links a:hover {
+        background: #1e293b;
+        border-color: #60a5fa;
+    }
+    .wallet-info {
+        margin-top: 40px;
+        padding: 20px;
+        background: #1e293b;
+        border-radius: 12px;
+        display: none;
+    }
+    .wallet-info.show {
+        display: block;
+    }
+    .address {
+        background: #0f172a;
+        padding: 10px;
+        border-radius: 8px;
+        font-family: monospace;
+        word-break: break-all;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h2>🔷 صفحه X1 - Polygon Wallet</h2>
+    
+    <div class="nav-links">
+        <a href="x1.html">🏠 صفحه X1</a>
+        <a href="x2.html">🔄 صفحه X2</a>
+    </div>
+
+    <div id="wallet-btn"></div>
+    
+    <div id="wallet-info" class="wallet-info">
+        <h3>📌 اطلاعات کیف پول</h3>
+        <div id="account-address" class="address">وصل نشده</div>
+        <div id="network-info"></div>
+    </div>
+</div>
+
+<script type="module">
+import { createWeb3Modal, defaultWagmiConfig } from "https://esm.sh/@web3modal/wagmi";
+import { polygon, polygonAmoy } from "https://esm.sh/wagmi/chains";
+import { getAccount, watchAccount } from "https://esm.sh/@wagmi/core";
+
+const projectId = "96f13374b0fe2f629a925617de0a2ba3";
+
+const metadata = {
+    name: "My Polygon Website",
+    description: "Web3 Polygon App",
+    url: window.location.origin,
+    icons: []
+};
+
+const chains = [polygon, polygonAmoy];
+
+const wagmiConfig = defaultWagmiConfig({
+    chains,
+    projectId,
+    metadata
+});
+
+// ایجاد مودال با تنظیمات ذخیره‌سازی خودکار
+const modal = createWeb3Modal({
+    wagmiConfig,
+    projectId,
+    chains,
+    defaultChain: polygon
+});
+
+// اضافه کردن دکمه به صفحه
+const btn = document.createElement("w3m-button");
+document.getElementById("wallet-btn").appendChild(btn);
+
+// بررسی وضعیت اتصال
+async function checkConnection() {
+    const account = getAccount(wagmiConfig);
+    const walletInfo = document.getElementById('wallet-info');
+    const addressDisplay = document.getElementById('account-address');
+    
+    if (account.isConnected) {
+        walletInfo.classList.add('show');
+        addressDisplay.textContent = account.address;
+        
+        // آدرس را در localStorage ذخیره می‌کنیم (برای نمایش)
+        localStorage.setItem('lastConnected', 'true');
+        localStorage.setItem('lastAddress', account.address);
+    } else {
+        // بررسی می‌کنیم آیا قبلاً وصل بوده
+        const lastConnected = localStorage.getItem('lastConnected');
+        if (lastConnected === 'true') {
+            addressDisplay.textContent = 'در حال بازیابی اتصال...';
+        } else {
+            walletInfo.classList.remove('show');
+            addressDisplay.textContent = 'وصل نشده';
+        }
+    }
+}
+
+// مانیتور کردن تغییرات اتصال
+watchAccount(wagmiConfig, {
+    onChange(account) {
+        checkConnection();
+    }
+});
+
+// چک کردن اولیه
+setTimeout(checkConnection, 1000);
+</script>
+</body>
+</html>
