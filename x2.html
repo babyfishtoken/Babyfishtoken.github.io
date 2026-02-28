@@ -17,26 +17,23 @@
 <div id="account-info" style="margin-top:20px;display:none">
     <div id="address"></div>
     <button id="disconnect" style="margin-top:10px;padding:5px 15px;background:#ef4444;color:white;border:none;border-radius:5px;cursor:pointer">Disconnect</button>
-    <div id="disconnect-error" style="color:#ef4444;margin-top:10px;"></div>
 </div>
 
 <script type="module">
 import { createWeb3Modal, defaultWagmiConfig } from "https://esm.sh/@web3modal/wagmi";
 import { polygon } from "https://esm.sh/wagmi/chains";
 import { getAccount, watchAccount } from "https://esm.sh/@wagmi/core";
-import { connect, disconnect } from "https://esm.sh/@wagmi/core";
-import { injected } from "https://esm.sh/@wagmi/connectors";
+import { disconnect } from "https://esm.sh/@wagmi/core";
 
 const projectId = "96f13374b0fe2f629a925617de0a2ba3";
 
 const wagmiConfig = defaultWagmiConfig({
     chains: [polygon],
     projectId,
-    metadata: { name: "Wallet App", description: "", url: "", icons: [] },
-    connectors: [injected()]
+    metadata: { name: "Wallet App", description: "", url: "", icons: [] }
 });
 
-const modal = createWeb3Modal({ wagmiConfig, projectId, chains: [polygon] });
+createWeb3Modal({ wagmiConfig, projectId, chains: [polygon] });
 
 const btn = document.createElement("w3m-button");
 document.getElementById("wallet-btn").appendChild(btn);
@@ -44,42 +41,24 @@ document.getElementById("wallet-btn").appendChild(btn);
 const accountInfo = document.getElementById('account-info');
 const addressDiv = document.getElementById('address');
 const disconnectBtn = document.getElementById('disconnect');
-const errorDiv = document.getElementById('disconnect-error');
 
-async function updateUI() {
+function updateUI() {
     const account = getAccount(wagmiConfig);
     if (account.isConnected) {
         accountInfo.style.display = 'block';
         addressDiv.textContent = `${account.address.substring(0,6)}...${account.address.substring(38)}`;
-        localStorage.setItem('connected', 'true');
     } else {
         accountInfo.style.display = 'none';
-        localStorage.removeItem('connected');
     }
 }
 
 disconnectBtn.addEventListener('click', async () => {
-    errorDiv.textContent = '';
-    try {
-        await disconnect(wagmiConfig);
-        localStorage.clear();
-        updateUI();
-    } catch (error) {
-        errorDiv.textContent = 'خطا در قطع اتصال';
-    }
+    await disconnect(wagmiConfig);
+    updateUI();
 });
 
 watchAccount(wagmiConfig, { onChange: updateUI });
-updateUI();
-
-// اتصال خودکار
-if (localStorage.getItem('connected')) {
-    setTimeout(async () => {
-        try {
-            await connect(wagmiConfig, { connector: injected() });
-        } catch (e) {}
-    }, 500);
-}
+setTimeout(updateUI, 500);
 </script>
 </body>
 </html>
