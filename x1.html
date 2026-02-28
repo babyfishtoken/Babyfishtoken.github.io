@@ -114,6 +114,18 @@
     .action-btn:hover {
         background: #475569;
     }
+    .error-message {
+        color: #ef4444;
+        margin-top: 10px;
+        font-size: 14px;
+        display: none;
+    }
+    .success-message {
+        color: #10b981;
+        margin-top: 10px;
+        font-size: 14px;
+        display: none;
+    }
 </style>
 </head>
 <body>
@@ -144,7 +156,8 @@
         </div>
         
         <button id="disconnect-btn" class="disconnect-btn">Disconnect</button>
-        <div id="disconnect-error" style="color: #ef4444; margin-top: 10px; font-size: 14px; display: none;"></div>
+        <div id="connection-error" class="error-message"></div>
+        <div id="success-message" class="success-message"></div>
     </div>
 </div>
 
@@ -190,14 +203,15 @@ const addressDisplay = document.getElementById('account-address');
 const balanceDisplay = document.getElementById('account-balance');
 const explorerLink = document.getElementById('explorer-link');
 const disconnectBtn = document.getElementById('disconnect-btn');
-const disconnectError = document.getElementById('disconnect-error');
+const connectionError = document.getElementById('connection-error');
+const successMessage = document.getElementById('success-message');
 
 // تابع دریافت موجودی
 async function fetchBalance(address) {
     try {
         const balance = await getBalance(wagmiConfig, {
             address: address,
-            chainId: 137 // Polygon mainnet
+            chainId: 137
         });
         balanceDisplay.textContent = `${Number(formatEther(balance.value)).toFixed(3)} POL`;
     } catch (error) {
@@ -216,20 +230,18 @@ async function updateConnectionStatus() {
         connectBtn.classList.add('connected');
         walletInfo.classList.add('show');
         
-        // نمایش آدرس با فرمت کوتاه
         const shortAddress = `${account.address.substring(0, 5)}...${account.address.substring(account.address.length - 4)}`;
         addressDisplay.textContent = shortAddress;
         addressDisplay.setAttribute('data-full-address', account.address);
         
-        // دریافت موجودی
         await fetchBalance(account.address);
-        
-        // آپدیت لینک اکسپلورر
         explorerLink.href = `https://polygonscan.com/address/${account.address}`;
         
-        // ذخیره در localStorage
         localStorage.setItem('walletConnected', 'true');
         localStorage.setItem('walletAddress', account.address);
+        
+        connectionError.style.display = 'none';
+        
     } else {
         // عدم اتصال
         connectBtn.textContent = 'اتصال کیف پول';
@@ -238,107 +250,115 @@ async function updateConnectionStatus() {
         addressDisplay.textContent = 'Oxad...A228';
         balanceDisplay.textContent = '0.000 POL';
         
-        // پاک کردن localStorage
         localStorage.removeItem('walletConnected');
         localStorage.removeItem('walletAddress');
+    }
+}
+
+// تابع اتصال - اصلاح شده
+async function handleConnect() {
+    // پاک کردن پیام خطا
+    connectionError.style.display = 'none';
+    successMessage.style.display = 'none';
+    
+    try {
+        connectBtn.textContent = '⏳ در حال اتصال...';
+        connectBtn.disabled = true;
         
-        // تلاش برای اتصال خودکار
-        tryAutoConnect();
+        // ایجاد connector جدید
+        const connector = injected();
+        
+        // تلاش برای اتصال
+        const result = await connect(wagmiConfig, {
+            connector: connector,
+            chainId: 137 // Polygon mainnet
+        });
+        
+        if (result) {
+            successMessage.style.display = 'block';
+            successMessage.textContent = 'اتصال با موفقیت انجام شد';
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 3000);
+        }
+        
+    } catch (error) {
+        console.error('Connection error:', error);
+        
+        // نمایش خطای مناسب
+        connectionError.style.display = 'block';
+        
+        if (error.message?.includes('already pending')) {
+            connectionError.textContent = 'اتصال در حال انجام است، لطفاً صبر کنید...';
+        } else if (error.message?.includes('rejected')) {
+            connectionError.textContent = 'اتصال توسط کاربر لغو شد';
+        } else if (error.message?.includes('already connected')) {
+            connectionError.textContent = 'کیف پول قبلاً متصل است';
+            // آپدیت وضعیت
+            await updateConnectionStatus();
+        } else {
+            connectionError.textContent = 'خطا در اتصال - دوباره تلاش کنید';
+        }
+        
+        connectBtn.textContent = 'اتصال کیف پول';
+        
+    } finally {
+        connectBtn.disabled = false;
     }
 }
 
 // تابع قطع اتصال - اصلاح شده
 async function handleDisconnect() {
+    connectionError.style.display = 'none';
+    successMessage.style.display = 'none';
+    
     try {
-        disconnectError.style.display = 'none';
         disconnectBtn.disabled = true;
-        disconnectBtn.textContent = 'در حال قطع اتصال...';
+        disconnectBtn.textContent = '⏳ در حال قطع اتصال...';
         
-        // روش صحیح قطع اتصال
+        // قطع اتصال
         await disconnect(wagmiConfig);
         
-        // پاک کردن کامل localStorage
+        // پاک کردن حافظه
         localStorage.clear();
+        sessionStorage.clear();
+        
+        // بستن مودال
+        try {
+            await modal.close();
+        } catch (e) {
+            // ignore
+        }
         
         // آپدیت وضعیت
         await updateConnectionStatus();
         
-        // ریست کردن دکمه
-        disconnectBtn.disabled = false;
-        disconnectBtn.textContent = 'Disconnect';
+        successMessage.style.display = 'block';
+        successMessage.textContent = 'قطع اتصال با موفقیت انجام شد';
         
-        console.log('Disconnected successfully');
+        setTimeout(() => {
+            successMessage.style.display = 'none';
+        }, 3000);
         
     } catch (error) {
         console.error('Disconnect error:', error);
         
-        // اگر روش اول کار نکرد، از روش دوم استفاده کن
-        try {
-            // روش دوم: قطع اتصال از طریق مودال
-            if (modal) {
-                await modal.close();
-            }
-            
-            // پاک کردن حافظه
-            localStorage.clear();
-            sessionStorage.clear();
-            
-            // ریست کردن صفحه
-            window.location.reload();
-            
-        } catch (secondError) {
-            console.error('Second disconnect method failed:', secondError);
-            
-            // نمایش خطا
-            disconnectError.style.display = 'block';
-            disconnectError.textContent = 'Failed to disconnect - صفحه را رفرش کنید';
-            
-            disconnectBtn.disabled = false;
-            disconnectBtn.textContent = 'Disconnect';
-        }
-    }
-}
-
-// تابع اتصال خودکار
-async function tryAutoConnect() {
-    const wasConnected = localStorage.getItem('walletConnected');
-    if (wasConnected === 'true') {
-        try {
-            await connect(wagmiConfig, {
-                connector: injected()
-            });
-        } catch (error) {
-            console.log('Auto connect failed:', error);
-            localStorage.removeItem('walletConnected');
-            localStorage.removeItem('walletAddress');
-        }
+        // اگر قطع اتصال با خطا مواجه شد، باز هم وضعیت را ریست می‌کنیم
+        localStorage.clear();
+        sessionStorage.clear();
+        await updateConnectionStatus();
+        
+        connectionError.style.display = 'block';
+        connectionError.textContent = 'قطع اتصال انجام شد (با رفرش صفحه)';
+        
+    } finally {
+        disconnectBtn.disabled = false;
+        disconnectBtn.textContent = 'Disconnect';
     }
 }
 
 // رویداد کلیک برای اتصال
-connectBtn.addEventListener('click', async () => {
-    const account = getAccount(wagmiConfig);
-    
-    if (account.isConnected) {
-        modal.open();
-    } else {
-        try {
-            connectBtn.textContent = '⏳ در حال اتصال...';
-            connectBtn.disabled = true;
-            
-            await connect(wagmiConfig, {
-                connector: injected()
-            });
-            
-        } catch (error) {
-            console.error('Connection failed:', error);
-            connectBtn.textContent = '❌ خطا - دوباره تلاش کنید';
-            setTimeout(() => updateConnectionStatus(), 2000);
-        } finally {
-            connectBtn.disabled = false;
-        }
-    }
-});
+connectBtn.addEventListener('click', handleConnect);
 
 // رویداد قطع اتصال
 disconnectBtn.addEventListener('click', handleDisconnect);
@@ -359,4 +379,4 @@ setTimeout(() => {
 }, 1000);
 </script>
 </body>
-</html>
+            </html>
