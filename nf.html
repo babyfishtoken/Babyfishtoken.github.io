@@ -234,99 +234,113 @@
     <script>
         // ============================================================
         // دریافت قیمت مستقیم از بلاکچین پالیگان
-        // با استفاده از اوراکل Chainlink و RPC Gateway
+        // با استفاده از RPC جایگزین که رایگان و بدون نیاز به کلید است
         // ============================================================
         
-        // آدرس RPC عمومی پالیگان (رایگان، بدون نیاز به کلید)
-        const POLYGON_RPC = "https://polygon-rpc.com";
+        // لیست RPC های عمومی پالیگان (آزاد و بدون نیاز به کلید)
+        const RPC_LIST = [
+            "https://polygon-mainnet.g.alchemy.com/v2/demo",
+            "https://rpc-mainnet.maticvigil.com",
+            "https://polygon.llamarpc.com",
+            "https://polygon-rpc.com"
+        ];
         
-        // آدرس اوراکل Chainlink POL/USD روی شبکه پالیگان (Mainnet)
-        // این آدرس از مستندات رسمی Chainlink است [citation:1]
+        let currentRpcIndex = 0;
+        
+        // آدرس اوراکل Chainlink POL/USD روی شبکه پالیگان
         const CHAINLINK_POL_USD_FEED = "0xAB594600376Ec9fD91F8e885dADF0CE036862dE0";
         
-        // متد latestRoundData (بدون پارامتر) => signature: 0xfeaf968c
-        // این متد اطلاعات آخرین آپدیت قیمت را برمی‌گرداند [citation:1][citation:3]
+        // متد latestRoundData (signature: 0xfeaf968c)
         const LATEST_ROUND_DATA_SIG = "0xfeaf968c";
         
         let lastPrice = null;
         
-        // تابع اصلی برای گرفتن قیمت از بلاکچین
+        // تابع برای امتحان RPC های مختلف
+        async function tryRPCs() {
+            for (let i = 0; i < RPC_LIST.length; i++) {
+                try {
+                    const rpc = RPC_LIST[i];
+                    const result = await callContract(rpc);
+                    if (result && result.price > 0) {
+                        currentRpcIndex = i;
+                        return result;
+                    }
+                } catch (error) {
+                    console.log(`RPC ${RPC_LIST[i]} failed:`, error.message);
+                    continue;
+                }
+            }
+            throw new Error("تمامی RPC ها پاسخ ندادند");
+        }
+        
+        // فراخوانی قرارداد از یک RPC خاص
+        async function callContract(rpcUrl) {
+            const payload = {
+                jsonrpc: "2.0",
+                method: "eth_call",
+                params: [
+                    {
+                        to: CHAINLINK_POL_USD_FEED,
+                        data: LATEST_ROUND_DATA_SIG
+                    },
+                    "latest"
+                ],
+                id: 1
+            };
+            
+            const response = await fetch(rpcUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.error) {
+                throw new Error(data.error.message || "RPC error");
+            }
+            
+            const resultHex = data.result;
+            
+            if (!resultHex || resultHex === "0x") {
+                throw new Error("No data received");
+            }
+            
+            const hexWithoutPrefix = resultHex.slice(2);
+            const answerHex = "0x" + hexWithoutPrefix.slice(64, 128);
+            const priceRaw = parseInt(answerHex, 16);
+            const price = priceRaw / 100000000;
+            
+            if (price <= 0 || isNaN(price)) {
+                throw new Error("Invalid price");
+            }
+            
+            return { price, raw: priceRaw };
+        }
+        
         async function fetchPrice() {
             const priceElem = document.getElementById("pol-price");
             const changeElem = document.getElementById("pol-change");
             const updateTimeElem = document.getElementById("update-time");
             const errorDiv = document.getElementById("error-message");
             
-            // نمایش حالت بارگذاری
             priceElem.innerHTML = '<span class="loading">⟳ ...</span> <small>USD</small>';
             changeElem.innerHTML = '';
             errorDiv.style.display = "none";
-            updateTimeElem.innerHTML = "در حال خواندن از بلاکچین پالیگان...";
+            updateTimeElem.innerHTML = "در حال خواندن از بلاکچین...";
             
             try {
-                // ایجاد درخواست JSON-RPC برای فراخوانی latestRoundData
-                // این یک eth_call است که بدون ایجاد تراکنش، داده را از قرارداد می‌خواند [citation:5][citation:8]
-                const payload = {
-                    jsonrpc: "2.0",
-                    method: "eth_call",
-                    params: [
-                        {
-                            to: CHAINLINK_POL_USD_FEED,  // آدرس اوراکل Chainlink
-                            data: LATEST_ROUND_DATA_SIG   // متد latestRoundData
-                        },
-                        "latest"  // آخرین بلاک
-                    ],
-                    id: 1
-                };
+                const result = await tryRPCs();
+                const price = result.price;
                 
-                const response = await fetch(POLYGON_RPC, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(payload)
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`RPC error: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                
-                if (data.error) {
-                    throw new Error(`RPC error: ${data.error.message}`);
-                }
-                
-                // خروجی latestRoundData یک hex string است
-                // ساختار خروجی: roundId (32 bytes) + answer (32 bytes) + startedAt (32 bytes) + updatedAt (32 bytes) + answeredInRound (32 bytes) [citation:1]
-                const resultHex = data.result;
-                
-                if (!resultHex || resultHex === "0x") {
-                    throw new Error("هیچ داده‌ای از اوراکل دریافت نشد");
-                }
-                
-                // حذف پیشوند 0x
-                const hexWithoutPrefix = resultHex.slice(2);
-                
-                // قیمت در 64 کاراکتر دوم قرار دارد (بایت‌های 32 تا 64)
-                // یعنی کاراکترهای 64 تا 128
-                const answerHex = "0x" + hexWithoutPrefix.slice(64, 128);
-                
-                // تبدیل hex به عدد
-                const priceRaw = parseInt(answerHex, 16);
-                
-                // Chainlink قیمت را با 8 رقم اعشار ذخیره می‌کند [citation:1]
-                // برای تبدیل به قیمت واقعی باید بر 10^8 تقسیم کنیم
-                const price = priceRaw / 100000000;
-                
-                if (price <= 0 || isNaN(price)) {
-                    throw new Error("قیمت دریافتی معتبر نیست");
-                }
-                
-                // نمایش قیمت فرمت شده
                 priceElem.innerHTML = `${formatPrice(price)} <small>USD</small>`;
                 
-                // محاسبه و نمایش تغییرات لحظه‌ای (نسبت به قیمت قبلی)
                 if (lastPrice && lastPrice !== price) {
                     const changePercent = ((price - lastPrice) / lastPrice) * 100;
                     const isPositive = changePercent >= 0;
@@ -338,13 +352,12 @@
                 
                 lastPrice = price;
                 
-                // نمایش زمان آخرین بروزرسانی
                 const now = new Date();
                 const timeString = now.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                 updateTimeElem.innerHTML = `✅ خوانده شده از بلاکچین: ${timeString}`;
                 
             } catch (error) {
-                console.error("خطا در خواندن از بلاکچین:", error);
+                console.error("خطا:", error);
                 errorDiv.style.display = "block";
                 errorDiv.innerHTML = `⚠️ خطا: ${error.message}<br><small>در حال تلاش مجدد...</small>`;
                 updateTimeElem.innerHTML = "❌ خطا در اتصال به شبکه پالیگان";
@@ -358,11 +371,8 @@
             return price.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
         }
         
-        // بارگذاری اولیه
         fetchPrice();
-        
-        // بروزرسانی خودکار هر 15 ثانیه (قیمت اوراکل هر چند ثانیه یکبار آپدیت می‌شود)
         setInterval(fetchPrice, 15000);
     </script>
 </body>
-        </html>
+</html>
