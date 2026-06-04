@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💰 قیمت لحظه‌ای از بلاکچین پالیگان</title>
+    <title>💰 قیمت لحظه‌ای پالیگان - مستقیم از بلاکچین</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             direction: rtl;
@@ -16,6 +21,7 @@
             align-items: center;
             padding: 20px;
         }
+
         .container {
             background: rgba(30, 30, 47, 0.6);
             backdrop-filter: blur(20px);
@@ -24,333 +30,339 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.08);
             width: 100%;
-            max-width: 550px;
+            max-width: 450px;
         }
+
         h1 {
             text-align: center;
             color: #fff;
             font-weight: 700;
-            margin-bottom: 32px;
-            font-size: 1.8rem;
+            margin-bottom: 24px;
+            font-size: 1.6rem;
             background: linear-gradient(135deg, #c084fc, #60a5fa);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
         }
+
+        .badge {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .onchain-badge {
+            background: rgba(130, 71, 229, 0.2);
+            border: 1px solid rgba(130, 71, 229, 0.5);
+            border-radius: 40px;
+            padding: 6px 16px;
+            font-size: 0.7rem;
+            color: #c084fc;
+            display: inline-block;
+        }
+
         .price-card {
             background: rgba(15, 15, 26, 0.8);
             border-radius: 28px;
-            padding: 24px;
-            margin-bottom: 20px;
+            padding: 32px 24px;
             border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.3s ease;
+            text-align: center;
         }
-        .price-card:hover {
-            border-color: rgba(96, 165, 250, 0.3);
-            transform: translateY(-2px);
-        }
-        .token-header {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            margin-bottom: 18px;
-        }
+
         .token-icon {
-            width: 48px;
-            height: 48px;
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #8247e5, #6b21a5);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 800;
-            font-size: 1.4rem;
+            font-size: 2rem;
+            color: white;
+            margin: 0 auto 16px auto;
+            box-shadow: 0 8px 20px rgba(130, 71, 229, 0.3);
         }
-        .matic-icon { background: linear-gradient(135deg, #8247e5, #6b21a5); color: white; }
-        .usdt-icon { background: linear-gradient(135deg, #26a17b, #1a7a5c); color: white; }
-        .token-name { font-size: 1.3rem; font-weight: 600; color: #e2e8f0; }
-        .token-symbol { font-size: 0.85rem; color: #94a3b8; margin-top: 4px; }
-        .price-value { font-size: 2.8rem; font-weight: 800; text-align: left; direction: ltr; color: #ffffff; letter-spacing: 1px; font-family: 'Courier New', monospace; }
-        .price-value small { font-size: 1rem; font-weight: 500; color: #64748b; }
-        .price-change { margin-top: 12px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
-        .positive { color: #4ade80; }
-        .negative { color: #f87171; }
-        .info-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.08); }
-        .update-time { font-size: 0.7rem; color: #64748b; direction: ltr; }
-        .refresh-btn { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); padding: 8px 18px; border-radius: 40px; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
-        .refresh-btn:hover { background: #3b82f6; color: white; border-color: #3b82f6; }
-        .error-state { background: rgba(127, 29, 29, 0.3); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 20px; padding: 12px; text-align: center; margin-top: 16px; font-size: 0.8rem; color: #fca5a5; }
-        .loading { animation: pulse 1.5s ease-in-out infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .source-badge { text-align: center; font-size: 0.7rem; color: #475569; margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.05); }
+
+        .token-name {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #e2e8f0;
+            margin-bottom: 6px;
+        }
+
+        .token-symbol {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 20px;
+            font-family: monospace;
+        }
+
+        .price-value {
+            font-size: 3.2rem;
+            font-weight: 800;
+            text-align: center;
+            direction: ltr;
+            color: #ffffff;
+            letter-spacing: 1px;
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            width: auto;
+            margin: 0 auto;
+        }
+
+        .price-value small {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #64748b;
+        }
+
+        .price-change {
+            margin-top: 16px;
+            font-size: 0.9rem;
+        }
+
+        .positive {
+            color: #4ade80;
+        }
+
+        .negative {
+            color: #f87171;
+        }
+
+        .info-bar {
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            text-align: center;
+        }
+
+        .update-time {
+            font-size: 0.7rem;
+            color: #64748b;
+            direction: ltr;
+            margin-bottom: 12px;
+        }
+
+        .refresh-btn {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            padding: 8px 24px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .error-state {
+            background: rgba(127, 29, 29, 0.3);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 20px;
+            padding: 10px;
+            margin-top: 16px;
+            font-size: 0.75rem;
+            color: #fca5a5;
+        }
+
+        .loading {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .source {
+            font-size: 0.65rem;
+            color: #475569;
+            margin-top: 16px;
+            text-align: center;
+        }
+
+        .address-info {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 10px;
+            margin-top: 16px;
+            font-size: 0.65rem;
+            font-family: monospace;
+            color: #64748b;
+            word-break: break-all;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📊 قیمت لحظه‌ای از بلاکچین</h1>
-
-        <div class="price-card" id="matic-card">
-            <div class="token-header">
-                <div class="token-icon matic-icon">POL</div>
-                <div>
-                    <div class="token-name">پالیگان</div>
-                    <div class="token-symbol">Polygon (POL) - Chainlink Oracle</div>
-                </div>
-            </div>
-            <div class="price-value" id="matic-price">--- <small>USD</small></div>
-            <div class="price-change" id="matic-change"></div>
+        <div class="badge">
+            <span class="onchain-badge">🔗 On-Chain | Chainlink Oracle</span>
         </div>
+        <h1>📊 قیمت لحظه‌ای</h1>
 
-        <div class="price-card" id="usdt-card">
-            <div class="token-header">
-                <div class="token-icon usdt-icon">USDT</div>
-                <div>
-                    <div class="token-name">تتر</div>
-                    <div class="token-symbol">Tether (USDT) - Chainlink Oracle</div>
-                </div>
-            </div>
-            <div class="price-value" id="usdt-price">--- <small>USD</small></div>
-            <div class="price-change" id="usdt-change"></div>
+        <div class="price-card">
+            <div class="token-icon">POL</div>
+            <div class="token-name">پالیگان</div>
+            <div class="token-symbol">Polygon (POL)</div>
+            <div class="price-value" id="pol-price">--- <small>USD</small></div>
+            <div class="price-change" id="pol-change"></div>
         </div>
 
         <div class="info-bar">
-            <div class="update-time" id="update-time">در حال اتصال به بلاکچین...</div>
-            <button class="refresh-btn" onclick="fetchPrices()">🔄 بروزرسانی</button>
+            <div class="update-time" id="update-time">در حال خواندن از بلاکچین...</div>
+            <button class="refresh-btn" onclick="fetchPrice()">🔄 بروزرسانی</button>
         </div>
         <div id="error-message" class="error-state" style="display: none;"></div>
-        <div class="source-badge">
-            🔗 منبع: اوراکل Chainlink روی شبکه پالیگان | بروزرسانی هر ۳۰ ثانیه
+        <div class="address-info">
+            📍 اوراکل Chainlink POL/USD: 0xAB594600376Ec9fD91F8e885dADF0CE036862dE0
+        </div>
+        <div class="source">
+            🔗 منبع: اوراکل Chainlink روی شبکه پالیگان | خوانش مستقیم از بلاکچین
         </div>
     </div>
 
     <script>
         // ============================================================
-        // دریافت قیمت مستقیم از قراردادهای هوشمند روی بلاکچین پالیگان
-        // از طریق RPC Gateway (بدون نیاز به نصب کیف پول)
+        // دریافت قیمت مستقیم از بلاکچین پالیگان
+        // با استفاده از اوراکل Chainlink و RPC Gateway
         // ============================================================
         
-        // آدرس RPC عمومی پالیگان (رایگان و بدون نیاز به کلید)
+        // آدرس RPC عمومی پالیگان (رایگان، بدون نیاز به کلید)
         const POLYGON_RPC = "https://polygon-rpc.com";
         
-        // آدرس قراردادهای اوراکل Chainlink روی پالیگان
-        // منبع: مستندات رسمی Chainlink
-        const ORACLE_ADDRESSES = {
-            // Chainlink POL/USD Oracle - آدرس واقعی روی شبکه پالیگان
-            POL: "0xAB594600376Ec9fD91F8e885dADF0CE036862dE0",
-            // Chainlink USDT/USD Oracle
-            USDT: "0xfE4A8cc5b5B2366C1B58Bea3858e81843581b2F7"
-        };
+        // آدرس اوراکل Chainlink POL/USD روی شبکه پالیگان (Mainnet)
+        // این آدرس از مستندات رسمی Chainlink است [citation:1]
+        const CHAINLINK_POL_USD_FEED = "0xAB594600376Ec9fD91F8e885dADF0CE036862dE0";
         
-        // ABI قرارداد Chainlink Price Feed (فقط متد latestRoundData مورد نیاز است)
-        const CHAINLINK_ABI = [
-            {
-                "inputs": [],
-                "name": "latestRoundData",
-                "outputs": [
-                    {"internalType": "uint80", "name": "roundId", "type": "uint80"},
-                    {"internalType": "int256", "name": "answer", "type": "int256"},
-                    {"internalType": "uint256", "name": "startedAt", "type": "uint256"},
-                    {"internalType": "uint256", "name": "updatedAt", "type": "uint256"},
-                    {"internalType": "uint80", "name": "answeredInRound", "type": "uint80"}
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "decimals",
-                "outputs": [{"internalType": "uint8", "name": "", "type": "uint8"}],
-                "stateMutability": "view",
-                "type": "function"
-            }
-        ];
+        // متد latestRoundData (بدون پارامتر) => signature: 0xfeaf968c
+        // این متد اطلاعات آخرین آپدیت قیمت را برمی‌گرداند [citation:1][citation:3]
+        const LATEST_ROUND_DATA_SIG = "0xfeaf968c";
         
-        let lastPrices = { POL: null, USDT: null };
+        let lastPrice = null;
         
-        // تابع برای فراخوانی قرارداد هوشمند از طریق RPC
-        async function callContract(rpcUrl, contractAddress, abi, methodName, params = []) {
-            // ایجاد payload JSON-RPC
-            const payload = {
-                jsonrpc: "2.0",
-                method: "eth_call",
-                params: [{
-                    to: contractAddress,
-                    data: encodeFunctionCall(abi, methodName, params)
-                }, "latest"],
-                id: 1
-            };
-            
-            const response = await fetch(rpcUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-            
-            if (!response.ok) {
-                throw new Error(`RPC request failed: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            if (data.error) {
-                throw new Error(`RPC error: ${data.error.message}`);
-            }
-            
-            return data.result;
-        }
-        
-        // تابع ساده برای encode کردن فراخوانی تابع (بدون کتابخانه خارجی)
-        function encodeFunctionCall(abi, methodName, params) {
-            // برای سادگی، از متد latestRoundData که پارامتر ندارد استفاده می‌کنیم
-            // Signature: latestRoundData() -> 0xfeaf968c
-            if (methodName === "latestRoundData") {
-                return "0xfeaf968c";
-            }
-            if (methodName === "decimals") {
-                return "0x313ce567";
-            }
-            return "0x";
-        }
-        
-        // تبدیل داده هگزادسیمال به عدد
-        function hexToNumber(hex) {
-            if (!hex || hex === "0x") return 0;
-            return parseInt(hex, 16);
-        }
-        
-        // دریافت قیمت از یک اوراکل
-        async function fetchPriceFromOracle(contractAddress, decimals = 8) {
-            try {
-                // دریافت latestRoundData
-                const resultHex = await callContract(POLYGON_RPC, contractAddress, CHAINLINK_ABI, "latestRoundData");
-                // حذف پیشوند 0x
-                const resultWithoutPrefix = resultHex.slice(2);
-                // قیمت در بخش answer است (بایت‌های 64-128)
-                // هر بخش 64 کاراکتر (32 بایت) است
-                const answerHex = "0x" + resultWithoutPrefix.slice(64, 128);
-                const priceRaw = hexToNumber(answerHex);
-                
-                // اعمال decimals (معمولاً 8 رقم اعشار برای Chainlink)
-                const price = priceRaw / Math.pow(10, decimals);
-                return price;
-            } catch (error) {
-                console.error(`Error fetching price from ${contractAddress}:`, error);
-                return null;
-            }
-        }
-        
-        // دریافت قیمت POL از اوراکل
-        async function fetchPOLPrice() {
-            // POL/USD اوراکل معمولاً 8 رقم اعشار دارد
-            const price = await fetchPriceFromOracle(ORACLE_ADDRESSES.POL, 8);
-            if (price && price > 0) {
-                return { price, change24h: null };
-            }
-            
-            // اگر اوراکل جواب نداد، از API کمکی استفاده کن
-            console.warn("Oracle failed, trying fallback API");
-            const fallbackResponse = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=polygon&vs_currencies=usd");
-            const fallbackData = await fallbackResponse.json();
-            return { price: fallbackData.polygon?.usd || 0, change24h: null };
-        }
-        
-        // دریافت قیمت USDT از اوراکل
-        async function fetchUSDTPrice() {
-            // USDT/USD اوراکل
-            const price = await fetchPriceFromOracle(ORACLE_ADDRESSES.USDT, 8);
-            if (price && price > 0 && price < 1.5) {
-                return { price, change24h: null };
-            }
-            
-            // اگر اوراکل جواب نداد، مقدار منطقی برگردان
-            return { price: 1.00, change24h: null };
-        }
-        
-        async function fetchPrices() {
-            const maticPriceElem = document.getElementById("matic-price");
-            const usdtPriceElem = document.getElementById("usdt-price");
+        // تابع اصلی برای گرفتن قیمت از بلاکچین
+        async function fetchPrice() {
+            const priceElem = document.getElementById("pol-price");
+            const changeElem = document.getElementById("pol-change");
             const updateTimeElem = document.getElementById("update-time");
             const errorDiv = document.getElementById("error-message");
             
-            maticPriceElem.innerHTML = '<span class="loading">⟳ ...</span> <small>USD</small>';
-            usdtPriceElem.innerHTML = '<span class="loading">⟳ ...</span> <small>USD</small>';
+            // نمایش حالت بارگذاری
+            priceElem.innerHTML = '<span class="loading">⟳ ...</span> <small>USD</small>';
+            changeElem.innerHTML = '';
             errorDiv.style.display = "none";
             updateTimeElem.innerHTML = "در حال خواندن از بلاکچین پالیگان...";
             
             try {
-                // دریافت همزمان قیمت‌ها از بلاکچین
-                const [polResult, usdtResult] = await Promise.all([
-                    fetchPOLPrice(),
-                    fetchUSDTPrice()
-                ]);
+                // ایجاد درخواست JSON-RPC برای فراخوانی latestRoundData
+                // این یک eth_call است که بدون ایجاد تراکنش، داده را از قرارداد می‌خواند [citation:5][citation:8]
+                const payload = {
+                    jsonrpc: "2.0",
+                    method: "eth_call",
+                    params: [
+                        {
+                            to: CHAINLINK_POL_USD_FEED,  // آدرس اوراکل Chainlink
+                            data: LATEST_ROUND_DATA_SIG   // متد latestRoundData
+                        },
+                        "latest"  // آخرین بلاک
+                    ],
+                    id: 1
+                };
                 
-                const polPrice = polResult.price;
-                const usdtPrice = usdtResult.price;
+                const response = await fetch(POLYGON_RPC, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
                 
-                if (!polPrice || polPrice <= 0) {
-                    throw new Error("قیمت پالیگان از بلاکچین دریافت نشد");
+                if (!response.ok) {
+                    throw new Error(`RPC error: ${response.status}`);
                 }
                 
-                // نمایش قیمت POL
-                maticPriceElem.innerHTML = `${formatPrice(polPrice)} <small>USD</small>`;
-                updatePriceChange("matic-change", null, polPrice, lastPrices.POL);
-                lastPrices.POL = polPrice;
+                const data = await response.json();
                 
-                // نمایش قیمت USDT
-                if (usdtPrice && usdtPrice > 0) {
-                    usdtPriceElem.innerHTML = `${formatPrice(usdtPrice)} <small>USD</small>`;
-                    updatePriceChange("usdt-change", null, usdtPrice, lastPrices.USDT);
-                    lastPrices.USDT = usdtPrice;
+                if (data.error) {
+                    throw new Error(`RPC error: ${data.error.message}`);
+                }
+                
+                // خروجی latestRoundData یک hex string است
+                // ساختار خروجی: roundId (32 bytes) + answer (32 bytes) + startedAt (32 bytes) + updatedAt (32 bytes) + answeredInRound (32 bytes) [citation:1]
+                const resultHex = data.result;
+                
+                if (!resultHex || resultHex === "0x") {
+                    throw new Error("هیچ داده‌ای از اوراکل دریافت نشد");
+                }
+                
+                // حذف پیشوند 0x
+                const hexWithoutPrefix = resultHex.slice(2);
+                
+                // قیمت در 64 کاراکتر دوم قرار دارد (بایت‌های 32 تا 64)
+                // یعنی کاراکترهای 64 تا 128
+                const answerHex = "0x" + hexWithoutPrefix.slice(64, 128);
+                
+                // تبدیل hex به عدد
+                const priceRaw = parseInt(answerHex, 16);
+                
+                // Chainlink قیمت را با 8 رقم اعشار ذخیره می‌کند [citation:1]
+                // برای تبدیل به قیمت واقعی باید بر 10^8 تقسیم کنیم
+                const price = priceRaw / 100000000;
+                
+                if (price <= 0 || isNaN(price)) {
+                    throw new Error("قیمت دریافتی معتبر نیست");
+                }
+                
+                // نمایش قیمت فرمت شده
+                priceElem.innerHTML = `${formatPrice(price)} <small>USD</small>`;
+                
+                // محاسبه و نمایش تغییرات لحظه‌ای (نسبت به قیمت قبلی)
+                if (lastPrice && lastPrice !== price) {
+                    const changePercent = ((price - lastPrice) / lastPrice) * 100;
+                    const isPositive = changePercent >= 0;
+                    const changeText = `${isPositive ? '▲' : '▼'} ${Math.abs(changePercent).toFixed(3)}%`;
+                    changeElem.innerHTML = `<span class="${isPositive ? 'positive' : 'negative'}">${changeText} (لحظه‌ای)</span>`;
                 } else {
-                    usdtPriceElem.innerHTML = `1.0000 <small>USD</small>`;
+                    changeElem.innerHTML = '';
                 }
                 
+                lastPrice = price;
+                
+                // نمایش زمان آخرین بروزرسانی
                 const now = new Date();
                 const timeString = now.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                 updateTimeElem.innerHTML = `✅ خوانده شده از بلاکچین: ${timeString}`;
                 
             } catch (error) {
-                console.error("خطا:", error);
+                console.error("خطا در خواندن از بلاکچین:", error);
                 errorDiv.style.display = "block";
-                errorDiv.innerHTML = `⚠️ خطا در خواندن از بلاکچین: ${error.message}<br><small>در حال تلاش مجدد...</small>`;
+                errorDiv.innerHTML = `⚠️ خطا: ${error.message}<br><small>در حال تلاش مجدد...</small>`;
                 updateTimeElem.innerHTML = "❌ خطا در اتصال به شبکه پالیگان";
-            }
-        }
-        
-        function updatePriceChange(elementId, changePercent, currentPrice, lastPrice) {
-            const elem = document.getElementById(elementId);
-            if (!elem) return;
-            
-            if (changePercent !== null && changePercent !== undefined && !isNaN(changePercent)) {
-                const isPositive = changePercent >= 0;
-                elem.innerHTML = `۲۴h: <span class="${isPositive ? 'positive' : 'negative'}">${isPositive ? '▲' : '▼'} ${Math.abs(changePercent).toFixed(2)}%</span>`;
-                elem.style.display = "flex";
-            } else if (lastPrice && currentPrice) {
-                const calcChange = ((currentPrice - lastPrice) / lastPrice) * 100;
-                if (Math.abs(calcChange) > 0.001) {
-                    const isPositive = calcChange >= 0;
-                    elem.innerHTML = `<span class="${isPositive ? 'positive' : 'negative'}">${isPositive ? '▲' : '▼'} ${Math.abs(calcChange).toFixed(2)}% (لحظه‌ای)</span>`;
-                    elem.style.display = "flex";
-                } else {
-                    elem.innerHTML = "";
-                    elem.style.display = "none";
-                }
-            } else {
-                elem.innerHTML = "";
-                elem.style.display = "none";
             }
         }
         
         function formatPrice(price) {
             if (price < 0.01) return price.toFixed(6);
             if (price < 1) return price.toFixed(4);
-            if (price < 1000) return price.toFixed(2);
-            return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            if (price < 1000) return price.toFixed(4);
+            return price.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
         }
         
         // بارگذاری اولیه
-        fetchPrices();
+        fetchPrice();
         
-        // بروزرسانی خودکار هر 30 ثانیه
-        setInterval(fetchPrices, 30000);
+        // بروزرسانی خودکار هر 15 ثانیه (قیمت اوراکل هر چند ثانیه یکبار آپدیت می‌شود)
+        setInterval(fetchPrice, 15000);
     </script>
 </body>
-</html>
+        </html>
