@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>استخر نقدینگی | پوزیشن‌های من</title>
+    <!-- فونت‌های اینتر و وزیر -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Vazirmatn', 'Inter', sans-serif;
+            background: #eef2f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            direction: rtl;
+            padding: 2rem;
+            color: #1e2f3a;
+        }
+
+        /* کارت اصلی */
+        .main-card {
+            max-width: 800px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 35px -12px rgba(17, 45, 65, 0.2);
+            overflow: hidden;
+            padding: 2rem 2rem 0 2rem;
+            border: 1px solid #e3eef7;
+        }
+
+        /* ========== تیتر ========== */
+        .hero {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 2.5rem);
+            font-weight: 650;
+            letter-spacing: -0.02em;
+            color: #1a3849;
+            line-height: 1.2;
+        }
+
+        /* ========== زیرتیتر ========== */
+        .subhead {
+            font-size: 0.95rem;
+            font-weight: 350;
+            color: #3b5b70;
+            max-width: 580px;
+            margin: 0 auto 1.5rem auto;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #b8cfde;
+            text-align: center;
+        }
+
+        /* ========== بخش کیف پول ========== */
+        .wallet-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        #wallet-btn {
+            display: inline-block;
+        }
+
+        /* ========== بخش پوزیشن‌ها ========== */
+        .positions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .positions-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .positions-title h2 {
+            font-size: 1.3rem;
+            font-weight: 620;
+            color: #1f475b;
+        }
+
+        .new-button {
+            background: #254e64;
+            border: none;
+            border-radius: 30px;
+            padding: 0.4rem 1.2rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid #163847;
+        }
+
+        .new-button:hover {
+            background: #2d5c77;
+        }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-item {
+            background: white;
+            border: 1px solid #cbdbe9;
+            border-radius: 30px;
+            padding: 0.4rem 1.2rem;
+            font-size: 0.9rem;
+            color: #1e3f50;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .filter-item:hover {
+            background: #f0f7fc;
+        }
+
+        /* ========== لیست پوزیشن‌ها ========== */
+        .positions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            min-height: 300px;
+        }
+
+        /* استایل لودینگ با کارت‌های خالی و دایره چرخان */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .skeleton-card {
+            background: #f5f9fc;
+            border-radius: 18px;
+            padding: 1.2rem 1.5rem;
+            border: 1px solid #d0e2ef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* افکت لودینگ روی کارت‌ها */
+        .skeleton-card::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(200, 220, 240, 0.3),
+                transparent
+            );
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .skeleton-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .skeleton-icons {
+            display: flex;
+            align-items: center;
+        }
+
+        .skeleton-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(90deg, #d0e0ee 25%, #e0eef8 50%, #d0e0ee 75%);
+            background-size: 200% 100%;
+            animation: loading-gradient 1.5s infinite;
+            border-radius: 50%;
+        }
+
+        .skeleton-icon.secondary {
+            margin-right: -8px;
+        }
+
+        .skeleton-details {
+            margin-right: 0.3rem;
+        }
+
+        .skeleton-line {
+            height: 16px;
+            background: linear-gradient(90deg, #d0e0ee 25%, #e0eef8 50%, #d0e0ee 75%);
+            background-size: 200% 100%;
+            animation: loading-gradient 1.5s infinite;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .skeleton-line.short {
+            width: 80px;
+        }
+
+        .skeleton-line.medium {
+            width: 120px;
+        }
+
+        .skeleton-stats {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .skeleton-stat {
+            text-align: right;
+        }
+
+        .skeleton-stat .skeleton-line {
+            width: 60px;
+            margin-bottom: 4px;
+        }
+
+        .skeleton-stat .skeleton-line.small {
+            width: 40px;
+        }
+
+        .skeleton-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .skeleton-action {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(90deg, #d0e0ee 25%, #e0eef8 50%, #d0e0ee 75%);
+            background-size: 200% 100%;
+            animation: loading-gradient 1.5s infinite;
+            border-radius: 50%;
+        }
+
+        @keyframes loading-gradient {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* دایره چرخان در بالای کارت‌ها */
+        .spinner-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .loading-spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #e0e9f2;
+            border-top: 3px solid #254e64;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* استایل پیام خالی */
+        .empty-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 0;
+            background: #f5f9fc;
+            border-radius: 20px;
+            border: 1px solid #d0e2ef;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            color: #1f475b;
+            font-size: 1.1rem;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .empty-subtext {
+            color: #5f7d94;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+
+        /* ========== بخش ایجاد پوزیشن جدید ========== */
+        .new-position-section {
+            background: #f5f9fc;
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            border: 1px solid #d0e2ef;
+            margin-bottom: 2rem;
+        }
+
+        .new-position-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 1.8rem;
+            font-size: 1.1rem;
+            color: #1f475b;
+        }
+
+        .new-position-header span {
+            color: #5f7d94;
+        }
+
+        .back-button {
+            background: transparent;
+            border: none;
+            color: #254e64;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .back-button:hover {
+            color: #1d4054;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #1f475b;
+            font-size: 0.9rem;
+        }
+
+        /* استایل سلکت باکس - در جای خود باز میشه */
+        .custom-select {
+            position: relative;
+            width: 100%;
+        }
+
+        .custom-select select {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            background: white;
+            border: 1px solid #cbdbe9;
+            border-radius: 16px;
+            font-family: 'Vazirmatn', sans-serif;
+            font-size: 0.95rem;
+            color: #1e2f3a;
+            appearance: none;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .custom-select select:focus {
+            border-color: #254e64;
+            box-shadow: 0 0 0 2px rgba(37, 78, 100, 0.1);
+        }
+
+        .custom-select::after {
+            content: "▼";
+            font-size: 0.8rem;
+            color: #5f7d94;
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        /* استایل فیلدهای ورودی */
+        .input-group {
+            display: flex;
+            align-items: center;
+            background: white;
+            border: 1px solid #cbdbe9;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 0.9rem 1rem;
+            border: none;
+            outline: none;
+            font-family: 'Vazirmatn', sans-serif;
+            font-size: 0.95rem;
+            background: transparent;
+        }
+
+        .input-group input:focus {
+            box-shadow: inset 0 0 0 1px #254e64;
+        }
+
+        .input-group span {
+            padding: 0 1rem;
+            color: #5f7d94;
+            font-size: 0.9rem;
+            background: #f0f7fc;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            border-right: 1px solid #cbdbe9;
+        }
+
+        .create-position-button {
+            width: 100%;
+            background: #254e64;
+            border: none;
+            border-radius: 40px;
+            padding: 1rem;
+            font-size: 1rem;
+            font-weight: 500;
+            color: white;
+            cursor: pointer;
+            border: 1px solid #163847;
+            transition: all 0.15s;
+            margin-top: 0.5rem;
+        }
+
+        .create-position-button:hover {
+            background: #2d5c77;
+        }
+
+        /* استایل محتوای مخفی */
+        .hidden {
+            display: none !important;
+        }
+
+        /* استایل پیام اتصال کیف پول */
+        .connect-message {
+            text-align: center;
+            padding: 2rem;
+            background: #f5f9fc;
+            border-radius: 20px;
+            border: 1px solid #d0e2ef;
+            margin-bottom: 2rem;
+        }
+
+        .connect-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .connect-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1f475b;
+            margin-bottom: 0.5rem;
+        }
+
+        .connect-desc {
+            color: #5f7d94;
+            font-size: 0.9rem;
+        }
+
+        /* ========== فوتر با کپی‌رایت ========== */
+        .footer-copyright {
+            text-align: center;
+            padding: 1.2rem 0.5rem 1.5rem 0.5rem;
+            border-top: 1px solid #c2d7e9;
+            color: #386277;
+            font-size: 0.85rem;
+            font-weight: 330;
+            margin: 0 -2rem;
+            padding-left: 2rem;
+            padding-right: 2rem;
+            background: #f2f9ff;
+        }
+
+        .footer-copyright span {
+            font-weight: 430;
+            color: #124a61;
+        }
+
+        /* ========== ریسپانسیو ========== */
+        @media screen and (max-width: 600px) {
+            body { padding: 1rem; }
+            .main-card { padding: 1.2rem 1.2rem 0 1.2rem; border-radius: 20px; }
+            .positions-header { flex-direction: column; align-items: flex-start; }
+            .new-position-section { padding: 1.2rem 1.2rem; }
+            .footer-copyright { margin: 0 -1.2rem; padding-left: 1.2rem; padding-right: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-card">
+        <!-- تیتر -->
+        <section class="hero">
+            <h1>استخر نقدینگی هوشمند</h1>
+        </section>
+
+        <!-- زیرتیتر -->
+        <div class="subhead">
+            مدیریت نقدینگی با بهره‌وری بالا · کاملاً شفاف و سریع
+        </div>
+
+        <!-- بخش کیف پول -->
+        <div class="wallet-section">
+            <div id="wallet-btn"></div>
+        </div>
+
+        <!-- پیام قبل از اتصال کیف پول -->
+        <div id="connectMessage" class="connect-message">
+            <div class="connect-icon">🔌</div>
+            <div class="connect-title">اتصال کیف پول</div>
+            <div class="connect-desc">لطفاً برای مشاهده پوزیشن‌های خود، کیف پولتان را متصل کنید</div>
+        </div>
+
+        <!-- بخش پوزیشن‌ها (ابتدا مخفی) -->
+        <div id="positionsSection" class="hidden">
+            <div class="positions-header">
+                <div class="positions-title">
+                    <h2>پوزیشن‌های من</h2>
+                    <button id="newPositionBtn" class="new-button">
+                        <span>+ جدید</span>
+                    </button>
+                </div>
+                <div class="filters">
+                    <div class="filter-item" onclick="alert('فیلتر وضعیت در حال توسعه')">
+                        وضعیت ▼
+                    </div>
+                    <div class="filter-item" onclick="alert('فیلتر پروتکل در حال توسعه')">
+                        پروتکل ▼
+                    </div>
+                </div>
+            </div>
+
+            <!-- لیست پوزیشن‌ها -->
+            <div id="positionsList" class="positions-list"></div>
+        </div>
+
+        <!-- بخش ایجاد پوزیشن جدید (ابتدا مخفی) -->
+        <div id="newPositionSection" class="new-position-section hidden">
+            <div class="new-position-header">
+                <button id="backToPositionsBtn" class="back-button">←</button>
+                پوزیشن‌های من <span>/ ایجاد پوزیشن جدید</span>
+            </div>
+
+            <div class="form-group">
+                <div class="form-label">انتخاب صرافی</div>
+                <div class="custom-select">
+                    <select id="dexSelect">
+                        <option value="" selected disabled>انتخاب صرافی</option>
+                        <option value="uniswap">Uniswap</option>
+                        <option value="sushiswap">SushiSwap</option>
+                        <option value="pancakeswap">PancakeSwap</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-label">نسخه استخر</div>
+                <div class="custom-select">
+                    <select id="versionSelect" disabled>
+                        <option value="">ابتدا صرافی را انتخاب کنید</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-label">جفت ارز</div>
+                <div class="input-group">
+                    <input type="text" id="pairInput" placeholder="مثال: ETH/USDT">
+                    <span>جفت</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-label">مقدار نقدینگی</div>
+                <div class="input-group">
+                    <input type="text" id="amountInput" placeholder="مقدار مورد نظر">
+                    <span>توکن</span>
+                </div>
+            </div>
+
+            <button id="createPositionConfirmBtn" class="create-position-button">
+                ایجاد پوزیشن
+            </button>
+        </div>
+
+        <!-- کپی‌رایت -->
+        <div class="footer-copyright">
+            © ۲۰۲۵ استخر نقدینگی هوشمند. تمامی حقوق محفوظ است. | طراحی متوازن و حرفه‌ای
+            <span>— پوزیشن‌ها v1.0</span>
+        </div>
+    </div>
+
+    <!-- Web3Modal و Wagmi -->
+    <script type="module">
+        import { createWeb3Modal, defaultWagmiConfig } from "https://esm.sh/@web3modal/wagmi";
+        import { mainnet, polygon, bsc } from "https://esm.sh/wagmi/chains";
+        import { watchAccount, getAccount } from "https://esm.sh/wagmi/actions";
+
+        // ==================== تنظیمات ====================
+        const projectId = "96f13374b0fe2f629a925617de0a2ba3";
+        const chains = [mainnet, polygon, bsc];
+
+        const wagmiConfig = defaultWagmiConfig({
+            chains,
+            projectId,
+            metadata: { name: "Liquidity Pools", description: "", url: window.location.href, icons: [] }
+        });
+
+        // ایجاد دکمه اتصال کیف پول
+        createWeb3Modal({ wagmiConfig, projectId, chains });
+        const btn = document.createElement("w3m-button");
+        document.getElementById("wallet-btn").appendChild(btn);
+
+        // عناصر DOM
+        const connectMessage = document.getElementById('connectMessage');
+        const positionsSection = document.getElementById('positionsSection');
+        const newPositionSection = document.getElementById('newPositionSection');
+        const positionsList = document.getElementById('positionsList');
+        const newPositionBtn = document.getElementById('newPositionBtn');
+        const backToPositionsBtn = document.getElementById('backToPositionsBtn');
+        const createPositionBtn = document.getElementById('createPositionConfirmBtn');
+        const dexSelect = document.getElementById('dexSelect');
+        const versionSelect = document.getElementById('versionSelect');
+
+        // متغیر وضعیت اتصال
+        let loadingTimer = null;
+        let walletConnected = false;
+
+        // تابع ایجاد کارت‌های خالی با لودینگ
+        function renderSkeletonWithSpinner() {
+            positionsList.innerHTML = `
+                <div class="spinner-container">
+                    <div class="loading-spinner"></div>
+                </div>
+                <div class="loading-container">
+                    <div class="skeleton-card">
+                        <div class="skeleton-left">
+                            <div class="skeleton-icons">
+                                <div class="skeleton-icon"></div>
+                                <div class="skeleton-icon secondary"></div>
+                            </div>
+                            <div class="skeleton-details">
+                                <div class="skeleton-line short"></div>
+                                <div class="skeleton-line medium" style="margin-bottom: 0;"></div>
+                            </div>
+                        </div>
+                        <div class="skeleton-stats">
+                            <div class="skeleton-stat">
+                                <div class="skeleton-line small"></div>
+                                <div class="skeleton-line"></div>
+                            </div>
+                            <div class="skeleton-stat">
+                                <div class="skeleton-line small"></div>
+                                <div class="skeleton-line"></div>
+                            </div>
+                        </div>
+                        <div class="skeleton-actions">
+                            <div class="skeleton-action"></div>
+                            <div class="skeleton-action"></div>
+                        </div>
+                    </div>
+
+                    <div class="skeleton-card">
+                        <div class="skeleton-left">
+                            <div class="skeleton-icons">
+                                <div class="skeleton-icon"></div>
+                                <div class="skeleton-icon secondary"></div>
+                            </div>
+                            <div class="skeleton-details">
+                                <div class="skeleton-line short"></div>
+                                <div class="skeleton-line medium" style="margin-bottom: 0;"></div>
+                            </div>
+                        </div>
+                        <div class="skeleton-stats">
+                            <div class="skeleton-stat">
+                                <div class="skeleton-line small"></div>
+                                <div class="skeleton-line"></div>
+                            </div>
+                            <div class="skeleton-stat">
+                                <div class="skeleton-line small"></div>
+                                <div class="skeleton-line"></div>
+                            </div>
+                        </div>
+                        <div class="skeleton-actions">
+                            <div class="skeleton-action"></div>
+                            <div class="skeleton-action"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // تابع ایجاد پیام خالی
+        function renderEmpty() {
+            positionsList.innerHTML = `
+                <div class="empty-container">
+                    <div class="empty-icon">🏊</div>
+                    <div class="empty-text">فعلاً استخری ایجاد نکرده‌اید</div>
+                    <div class="empty-subtext">با کلیک روی دکمه «+ جدید» اولین استخر نقدینگی خود را ایجاد کنید</div>
+                </div>
+            `;
+        }
+
+        // تابع شروع لودینگ ۸ ثانیه‌ای
+        function startLoadingSequence() {
+            if (!walletConnected) return;
+            
+            // نمایش لودینگ
+            renderSkeletonWithSpinner();
+            
+            // پاک کردن تایمر قبلی اگر وجود دارد
+            if (loadingTimer) {
+                clearTimeout(loadingTimer);
+            }
+            
+            // تنظیم تایمر جدید برای ۸ ثانیه بعد
+            loadingTimer = setTimeout(() => {
+                if (walletConnected) {
+                    renderEmpty();
+                }
+            }, 8000);
+        }
+
+        // توقف لودینگ و پاک کردن تایمر
+        function stopLoadingSequence() {
+            if (loadingTimer) {
+                clearTimeout(loadingTimer);
+                loadingTimer = null;
+            }
+        }
+
+        // تابع به‌روزرسانی وضعیت اتصال
+        function updateWalletState(account) {
+            if (account?.address) {
+                // کیف پول متصل است
+                walletConnected = true;
+                
+                // مخفی کردن پیام اتصال
+                connectMessage.classList.add('hidden');
+                
+                // نمایش بخش پوزیشن‌ها
+                positionsSection.classList.remove('hidden');
+                
+                // مخفی کردن بخش ایجاد جدید در صورت نمایش
+                newPositionSection.classList.add('hidden');
+                
+                // شروع فرآیند لودینگ
+                startLoadingSequence();
+            } else {
+                // کیف پول قطع است
+                walletConnected = false;
+                
+                // نمایش پیام اتصال کیف پول
+                connectMessage.classList.remove('hidden');
+                
+                // مخفی کردن بخش پوزیشن‌ها
+                positionsSection.classList.add('hidden');
+                
+                // مخفی کردن بخش ایجاد پوزیشن
+                newPositionSection.classList.add('hidden');
+                
+                // توقف فرآیند لودینگ
+                stopLoadingSequence();
+                
+                // پاک کردن لیست پوزیشن‌ها
+                positionsList.innerHTML = '';
+            }
+        }
+
+        // دکمه New position
+        if (newPositionBtn) {
+            newPositionBtn.addEventListener('click', () => {
+                if (walletConnected) {
+                    positionsSection.classList.add('hidden');
+                    newPositionSection.classList.remove('hidden');
+                } else {
+                    alert('لطفاً ابتدا کیف پول خود را متصل کنید');
+                }
+            });
+        }
+
+        // دکمه بازگشت
+        if (backToPositionsBtn) {
+            backToPositionsBtn.addEventListener('click', () => {
+                newPositionSection.classList.add('hidden');
+                positionsSection.classList.remove('hidden');
+                // در صورت نیاز می‌توان دوباره لیست را رفرش کرد
+                startLoadingSequence();
+            });
+        }
+
+        // تابع به‌روزرسانی گزینه‌های نوع استخر بر اساس صرافی انتخاب شده
+        function updateVersionOptions() {
+            const selectedDex = dexSelect.value;
+            
+            // پاک کردن گزینه‌های قبلی
+            versionSelect.innerHTML = '';
+            
+            if (!selectedDex) {
+                // اگر صرافی انتخاب نشده
+                versionSelect.disabled = true;
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = 'ابتدا صرافی را انتخاب کنید';
+                versionSelect.appendChild(option);
+                return;
+            }
+            
+            // فعال کردن سلکت
+            versionSelect.disabled = false;
+            
+            // اضافه کردن گزینه‌ها بر اساس صرافی
+            if (selectedDex === 'uniswap') {
+                const v2Option = document.createElement('option');
+                v2Option.value = 'v2';
+                v2Option.textContent = 'Uniswap V2';
+                
+                const v4Option = document.createElement('option');
+                v4Option.value = 'v4';
+                v4Option.textContent = 'Uniswap V4';
+                v4Option.selected = true;
+                
+                versionSelect.appendChild(v2Option);
+                versionSelect.appendChild(v4Option);
+                
+            } else if (selectedDex === 'pancakeswap') {
+                const v2Option = document.createElement('option');
+                v2Option.value = 'v2';
+                v2Option.textContent = 'PancakeSwap V2';
+                
+                const v3Option = document.createElement('option');
+                v3Option.value = 'v3';
+                v3Option.textContent = 'PancakeSwap V3';
+                v3Option.selected = true;
+                
+                const v4Option = document.createElement('option');
+                v4Option.value = 'v4';
+                v4Option.textContent = 'PancakeSwap V4';
+                
+                versionSelect.appendChild(v2Option);
+                versionSelect.appendChild(v3Option);
+                versionSelect.appendChild(v4Option);
+                
+            } else if (selectedDex === 'sushiswap') {
+                const v2Option = document.createElement('option');
+                v2Option.value = 'v2';
+                v2Option.textContent = 'SushiSwap V2';
+                
+                const v3Option = document.createElement('option');
+                v3Option.value = 'v3';
+                v3Option.textContent = 'SushiSwap V3';
+                v3Option.selected = true;
+                
+                versionSelect.appendChild(v2Option);
+                versionSelect.appendChild(v3Option);
+            }
+        }
+
+        // رویداد تغییر صرافی
+        if (dexSelect) {
+            dexSelect.addEventListener('change', updateVersionOptions);
+        }
+
+        // دکمه ایجاد پوزیشن
+        if (createPositionBtn) {
+            createPositionBtn.addEventListener('click', () => {
+                if (!walletConnected) {
+                    alert('لطفاً ابتدا کیف پول خود را متصل کنید');
+                    return;
+                }
+                
+                const dex = dexSelect.value;
+                const version = versionSelect.value;
+                const pair = document.getElementById('pairInput').value;
+                const amount = document.getElementById('amountInput').value;
+                
+                if (!dex) {
+                    alert('لطفاً یک صرافی انتخاب کنید');
+                    return;
+                }
+                if (!version) {
+                    alert('لطفاً نسخه استخر را انتخاب کنید');
+                    return;
+                }
+                if (!pair) {
+                    alert('لطفاً جفت ارز را وارد کنید');
+                    return;
+                }
+                if (!amount) {
+                    alert('لطفاً مقدار نقدینگی را وارد کنید');
+                    return;
+                }
+                
+                // پیدا کردن نام نمایشی ورژن
+                let versionName = '';
+                const selectedOption = versionSelect.options[versionSelect.selectedIndex];
+                if (selectedOption) {
+                    versionName = selectedOption.textContent;
+                }
+                
+                alert(`✅ پوزیشن جدید با موفقیت ایجاد شد!\n\n📊 صرافی: ${dex}\n🔧 نسخه استخر: ${versionName}\n💱 جفت ارز: ${pair}\n💰 مقدار: ${amount}`);
+                
+                // خالی کردن فیلدها
+                document.getElementById('pairInput').value = '';
+                document.getElementById('amountInput').value = '';
+                dexSelect.value = '';
+                updateVersionOptions(); // ریست کردن نسخه استخر
+                
+                // بازگشت به صفحه اصلی
+                newPositionSection.classList.add('hidden');
+                positionsSection.classList.remove('hidden');
+                
+                // نمایش مجدد لودینگ (شبیه بارگذاری مجدد داده‌ها)
+                startLoadingSequence();
+            });
+        }
+
+        // نظاره‌گر تغییرات حساب
+        watchAccount(wagmiConfig, {
+            onChange(account) {
+                updateWalletState(account);
+            }
+        });
+
+        // بررسی وضعیت اولیه - بعد از بارگذاری کامل صفحه
+        setTimeout(() => {
+            try {
+                const account = getAccount(wagmiConfig);
+                updateWalletState(account);
+            } catch (error) {
+                console.error('خطا در بررسی اولیه کیف پول:', error);
+                // در صورت خطا، وضعیت قطع را نمایش بده
+                updateWalletState(null);
+            }
+        }, 500);
+    </script>
+</body>
+  </html>
