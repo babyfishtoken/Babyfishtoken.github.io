@@ -71,7 +71,6 @@
             display: inline-block;
         }
 
-        /* بخش پوزیشن‌ها */
         .positions-header {
             display: flex;
             justify-content: space-between;
@@ -290,7 +289,6 @@
             text-align: center;
         }
 
-        /* بخش ایجاد پوزیشن جدید */
         .new-position-section {
             background: #f5f9fc;
             border-radius: 20px;
@@ -427,12 +425,10 @@
             background: #2d5c77;
         }
 
-        /* کلاس مخفی کردن */
         .hidden {
             display: none !important;
         }
 
-        /* پیام انتظار برای اتصال کیف پول (اختیاری) */
         .waiting-message {
             text-align: center;
             padding: 2rem;
@@ -493,21 +489,17 @@
             <div id="wallet-btn"></div>
         </div>
 
-        <!-- پیام قبل از اتصال کیف پول (فقط تا زمانی که وصل نشده) -->
         <div id="waitingMessage" class="waiting-message">
             <div class="waiting-icon">🔌</div>
             <div class="waiting-title">اتصال کیف پول</div>
             <div style="color: #5f7d94; font-size: 0.9rem;">لطفاً برای مشاهده پوزیشن‌ها، کیف پول خود را متصل کنید</div>
         </div>
 
-        <!-- بخش پوزیشن‌ها (در ابتدا مخفی است) -->
         <div id="positionsSection" class="hidden">
             <div class="positions-header">
                 <div class="positions-title">
                     <h2>پوزیشن‌های من</h2>
-                    <button id="newPositionBtn" class="new-button">
-                        <span>+ جدید</span>
-                    </button>
+                    <button id="newPositionBtn" class="new-button">+ جدید</button>
                 </div>
                 <div class="filters">
                     <div class="filter-item" onclick="alert('فیلتر وضعیت در حال توسعه')">وضعیت ▼</div>
@@ -517,13 +509,11 @@
             <div id="positionsList" class="positions-list"></div>
         </div>
 
-        <!-- بخش ایجاد پوزیشن جدید (در ابتدا مخفی است) -->
         <div id="newPositionSection" class="new-position-section hidden">
             <div class="new-position-header">
                 <button id="backToPositionsBtn" class="back-button">←</button>
                 پوزیشن‌های من <span>/ جدید</span>
             </div>
-
             <div class="form-group">
                 <div class="form-label">انتخاب صرافی</div>
                 <div class="custom-select">
@@ -535,7 +525,6 @@
                     </select>
                 </div>
             </div>
-
             <div class="form-group">
                 <div class="form-label">نسخه استخر</div>
                 <div class="custom-select">
@@ -544,7 +533,6 @@
                     </select>
                 </div>
             </div>
-
             <div class="form-group">
                 <div class="form-label">جفت ارز</div>
                 <div class="input-group">
@@ -552,7 +540,6 @@
                     <span>جفت</span>
                 </div>
             </div>
-
             <div class="form-group">
                 <div class="form-label">مقدار نقدینگی</div>
                 <div class="input-group">
@@ -560,10 +547,7 @@
                     <span>توکن</span>
                 </div>
             </div>
-
-            <button id="createPositionConfirmBtn" class="create-position-button">
-                ایجاد پوزیشن
-            </button>
+            <button id="createPositionConfirmBtn" class="create-position-button">ایجاد پوزیشن</button>
         </div>
 
         <div class="footer-copyright">
@@ -575,9 +559,7 @@
     <script type="module">
         import { createWeb3Modal, defaultWagmiConfig } from "https://esm.sh/@web3modal/wagmi";
         import { mainnet, polygon, bsc } from "https://esm.sh/wagmi/chains";
-        import { watchAccount, getAccount } from "https://esm.sh/wagmi/actions";
 
-        // ==================== تنظیمات ====================
         const projectId = "96f13374b0fe2f629a925617de0a2ba3";
         const chains = [mainnet, polygon, bsc];
 
@@ -587,12 +569,14 @@
             metadata: { name: "Liquidity Pools", description: "", url: window.location.href, icons: [] }
         });
 
-        // ایجاد Web3Modal و دکمه کیف پول
-        createWeb3Modal({ wagmiConfig, projectId, chains });
+        // ایجاد Web3Modal و گرفتن نمونه آن
+        const modal = createWeb3Modal({ wagmiConfig, projectId, chains });
+        
+        // اضافه کردن دکمه به صفحه
         const btn = document.createElement("w3m-button");
         document.getElementById("wallet-btn").appendChild(btn);
 
-        // ==================== عناصر DOM ====================
+        // عناصر DOM
         const waitingMessage = document.getElementById('waitingMessage');
         const positionsSection = document.getElementById('positionsSection');
         const newPositionSection = document.getElementById('newPositionSection');
@@ -603,69 +587,16 @@
         const dexSelect = document.getElementById('dexSelect');
         const versionSelect = document.getElementById('versionSelect');
 
-        // متغیرهای وضعیت
         let loadingTimer = null;
-        let walletConnected = false;  // آیا کیف پول واقعاً وصل است؟
+        let isWalletConnected = false;
 
-        // ==================== توابع کمکی ====================
+        // توابع کمکی
         function renderSkeletonWithSpinner() {
             positionsList.innerHTML = `
-                <div class="spinner-container">
-                    <div class="loading-spinner"></div>
-                </div>
+                <div class="spinner-container"><div class="loading-spinner"></div></div>
                 <div class="loading-container">
-                    <div class="skeleton-card">
-                        <div class="skeleton-left">
-                            <div class="skeleton-icons">
-                                <div class="skeleton-icon"></div>
-                                <div class="skeleton-icon secondary"></div>
-                            </div>
-                            <div class="skeleton-details">
-                                <div class="skeleton-line short"></div>
-                                <div class="skeleton-line medium" style="margin-bottom: 0;"></div>
-                            </div>
-                        </div>
-                        <div class="skeleton-stats">
-                            <div class="skeleton-stat">
-                                <div class="skeleton-line small"></div>
-                                <div class="skeleton-line"></div>
-                            </div>
-                            <div class="skeleton-stat">
-                                <div class="skeleton-line small"></div>
-                                <div class="skeleton-line"></div>
-                            </div>
-                        </div>
-                        <div class="skeleton-actions">
-                            <div class="skeleton-action"></div>
-                            <div class="skeleton-action"></div>
-                        </div>
-                    </div>
-                    <div class="skeleton-card">
-                        <div class="skeleton-left">
-                            <div class="skeleton-icons">
-                                <div class="skeleton-icon"></div>
-                                <div class="skeleton-icon secondary"></div>
-                            </div>
-                            <div class="skeleton-details">
-                                <div class="skeleton-line short"></div>
-                                <div class="skeleton-line medium" style="margin-bottom: 0;"></div>
-                            </div>
-                        </div>
-                        <div class="skeleton-stats">
-                            <div class="skeleton-stat">
-                                <div class="skeleton-line small"></div>
-                                <div class="skeleton-line"></div>
-                            </div>
-                            <div class="skeleton-stat">
-                                <div class="skeleton-line small"></div>
-                                <div class="skeleton-line"></div>
-                            </div>
-                        </div>
-                        <div class="skeleton-actions">
-                            <div class="skeleton-action"></div>
-                            <div class="skeleton-action"></div>
-                        </div>
-                    </div>
+                    <div class="skeleton-card"><div class="skeleton-left"><div class="skeleton-icons"><div class="skeleton-icon"></div><div class="skeleton-icon secondary"></div></div><div><div class="skeleton-line short"></div><div class="skeleton-line medium"></div></div></div><div class="skeleton-stats"><div><div class="skeleton-line"></div><div class="skeleton-line"></div></div><div><div class="skeleton-line"></div><div class="skeleton-line"></div></div></div><div class="skeleton-actions"><div class="skeleton-action"></div><div class="skeleton-action"></div></div></div>
+                    <div class="skeleton-card"><div class="skeleton-left"><div class="skeleton-icons"><div class="skeleton-icon"></div><div class="skeleton-icon secondary"></div></div><div><div class="skeleton-line short"></div><div class="skeleton-line medium"></div></div></div><div class="skeleton-stats"><div><div class="skeleton-line"></div><div class="skeleton-line"></div></div><div><div class="skeleton-line"></div><div class="skeleton-line"></div></div></div><div class="skeleton-actions"><div class="skeleton-action"></div><div class="skeleton-action"></div></div></div>
                 </div>
             `;
         }
@@ -680,98 +611,82 @@
             `;
         }
 
-        // شروع لودینگ ۸ ثانیه‌ای
         function startLoadingSequence() {
-            if (!walletConnected) return;
+            if (!isWalletConnected) return;
             renderSkeletonWithSpinner();
             if (loadingTimer) clearTimeout(loadingTimer);
             loadingTimer = setTimeout(() => {
-                if (walletConnected) {
-                    renderEmpty();
-                }
+                if (isWalletConnected) renderEmpty();
             }, 8000);
         }
 
-        // توقف لودینگ
         function stopLoadingSequence() {
-            if (loadingTimer) {
-                clearTimeout(loadingTimer);
-                loadingTimer = null;
-            }
+            if (loadingTimer) { clearTimeout(loadingTimer); loadingTimer = null; }
         }
 
-        // به‌روزرسانی گزینه‌های نسخه استخر
         function updateVersionOptions() {
             const selectedDex = dexSelect.value;
             versionSelect.innerHTML = '';
             if (!selectedDex) {
                 versionSelect.disabled = true;
-                const option = document.createElement('option');
-                option.value = '';
-                option.textContent = 'ابتدا صرافی را انتخاب کنید';
-                versionSelect.appendChild(option);
+                versionSelect.innerHTML = '<option value="">ابتدا صرافی را انتخاب کنید</option>';
                 return;
             }
             versionSelect.disabled = false;
             if (selectedDex === 'uniswap') {
-                const v2 = document.createElement('option'); v2.value = 'v2'; v2.textContent = 'Uniswap V2';
-                const v4 = document.createElement('option'); v4.value = 'v4'; v4.textContent = 'Uniswap V4'; v4.selected = true;
-                versionSelect.appendChild(v2); versionSelect.appendChild(v4);
+                versionSelect.innerHTML = '<option value="v2">Uniswap V2</option><option value="v4" selected>Uniswap V4</option>';
             } else if (selectedDex === 'pancakeswap') {
-                const v2 = document.createElement('option'); v2.value = 'v2'; v2.textContent = 'PancakeSwap V2';
-                const v3 = document.createElement('option'); v3.value = 'v3'; v3.textContent = 'PancakeSwap V3'; v3.selected = true;
-                const v4 = document.createElement('option'); v4.value = 'v4'; v4.textContent = 'PancakeSwap V4';
-                versionSelect.appendChild(v2); versionSelect.appendChild(v3); versionSelect.appendChild(v4);
+                versionSelect.innerHTML = '<option value="v2">PancakeSwap V2</option><option value="v3" selected>PancakeSwap V3</option><option value="v4">PancakeSwap V4</option>';
             } else if (selectedDex === 'sushiswap') {
-                const v2 = document.createElement('option'); v2.value = 'v2'; v2.textContent = 'SushiSwap V2';
-                const v3 = document.createElement('option'); v3.value = 'v3'; v3.textContent = 'SushiSwap V3'; v3.selected = true;
-                versionSelect.appendChild(v2); versionSelect.appendChild(v3);
+                versionSelect.innerHTML = '<option value="v2">SushiSwap V2</option><option value="v3" selected>SushiSwap V3</option>';
             }
         }
 
-        // ==================== تابع اصلی: بروزرسانی وضعیت اتصال کیف پول ====================
-        function updateWalletState(account) {
-            // بررسی وجود آدرس معتبر
-            const hasAddress = account && account.address && account.address.startsWith('0x');
+        // ========== مهم: تابع بررسی وضعیت واقعی اتصال ==========
+        function checkAndUpdateConnection() {
+            // از طریق Web3Modal وضعیت را بررسی می‌کنیم
+            const state = modal.getState();
+            const isConnected = state.open === false && state.selectedNetworkId !== undefined && state.address;
             
-            if (hasAddress) {
-                // کیف پول با موفقیت متصل شده است
-                if (!walletConnected) {
-                    walletConnected = true;
-                    // مخفی کردن پیام انتظار
+            // روش دوم: بررسی مستقیم از طریق wagmi
+            import("https://esm.sh/wagmi/actions").then(({ getAccount }) => {
+                const account = getAccount(wagmiConfig);
+                const reallyConnected = account.isConnected === true && account.address;
+                
+                if (reallyConnected && !isWalletConnected) {
+                    // کیف پول واقعاً متصل شد
+                    isWalletConnected = true;
                     waitingMessage.classList.add('hidden');
-                    // نمایش بخش پوزیشن‌ها
                     positionsSection.classList.remove('hidden');
-                    // مخفی کردن بخش ایجاد جدید (در صورت نمایش)
                     newPositionSection.classList.add('hidden');
-                    // شروع لودینگ ۸ ثانیه‌ای
                     startLoadingSequence();
-                }
-            } else {
-                // کیف پول متصل نیست یا قطع شده
-                if (walletConnected) {
-                    walletConnected = false;
-                    // نمایش پیام انتظار
+                } 
+                else if (!reallyConnected && isWalletConnected) {
+                    // کیف پول قطع شد
+                    isWalletConnected = false;
                     waitingMessage.classList.remove('hidden');
-                    // مخفی کردن تمام بخش‌های داخلی
                     positionsSection.classList.add('hidden');
                     newPositionSection.classList.add('hidden');
-                    // پاک کردن لیست و توقف لودینگ
                     positionsList.innerHTML = '';
                     stopLoadingSequence();
-                } else if (!walletConnected && !waitingMessage.classList.contains('hidden') === false) {
-                    // اطمینان از نمایش پیام در حالت قطع
-                    waitingMessage.classList.remove('hidden');
-                    positionsSection.classList.add('hidden');
-                    newPositionSection.classList.add('hidden');
                 }
-            }
+            });
         }
 
-        // ==================== رویدادها ====================
+        // هر ۱ ثانیه وضعیت را چک کن (برای اطمینان از تشخیص قطع/وصل واقعی)
+        setInterval(checkAndUpdateConnection, 1000);
+
+        // همچنین وقتی مدال بسته می‌شود چک کنیم
+        if (modal.subscribeState) {
+            modal.subscribeState(() => {
+                setTimeout(checkAndUpdateConnection, 500);
+            });
+        }
+
+        // رویدادها
         if (newPositionBtn) {
             newPositionBtn.addEventListener('click', () => {
-                if (walletConnected) {
+                if (isWalletConnected) {
                     positionsSection.classList.add('hidden');
                     newPositionSection.classList.remove('hidden');
                 } else {
@@ -794,7 +709,7 @@
 
         if (createPositionBtn) {
             createPositionBtn.addEventListener('click', () => {
-                if (!walletConnected) {
+                if (!isWalletConnected) {
                     alert('لطفاً ابتدا کیف پول خود را متصل کنید');
                     return;
                 }
@@ -807,10 +722,7 @@
                 if (!pair) { alert('لطفاً جفت ارز را وارد کنید'); return; }
                 if (!amount) { alert('لطفاً مقدار نقدینگی را وارد کنید'); return; }
                 
-                let versionName = '';
-                const selectedOption = versionSelect.options[versionSelect.selectedIndex];
-                if (selectedOption) versionName = selectedOption.textContent;
-                
+                let versionName = versionSelect.options[versionSelect.selectedIndex]?.textContent || version;
                 alert(`✅ پوزیشن جدید ایجاد شد!\n\nصرافی: ${dex}\nنسخه: ${versionName}\nجفت ارز: ${pair}\nمقدار: ${amount}`);
                 
                 document.getElementById('pairInput').value = '';
@@ -824,23 +736,8 @@
             });
         }
 
-        // ==================== نظاره‌گر تغییرات کیف پول ====================
-        watchAccount(wagmiConfig, {
-            onChange(account) {
-                updateWalletState(account);
-            }
-        });
-
-        // بررسی اولیه (بعد از بارگذاری کامل)
-        setTimeout(() => {
-            try {
-                const account = getAccount(wagmiConfig);
-                updateWalletState(account);
-            } catch (error) {
-                console.error('خطا در بررسی اولیه:', error);
-                updateWalletState(null);
-            }
-        }, 500);
+        // چک اولیه
+        setTimeout(checkAndUpdateConnection, 1000);
     </script>
 </body>
-                    </html>
+    </html>
