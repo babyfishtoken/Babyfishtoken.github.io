@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💰 قیمت لحظه‌ای پالیگان و تتر (آنلاین)</title>
+    <title>💰 قیمت لحظه‌ای پالیگان و تتر</title>
     <style>
         * {
             margin: 0;
@@ -194,7 +194,7 @@
                 <div class="token-icon matic-icon">POL</div>
                 <div>
                     <div class="token-name">پالیگان</div>
-                    <div class="token-symbol">Polygon (POL)</div>
+                    <div class="token-symbol">Polygon (POL/MATIC)</div>
                 </div>
             </div>
             <div class="price-value" id="matic-price">--- <small>USD</small></div>
@@ -221,8 +221,8 @@
     </div>
 
     <script>
-        // API رایگان و عمومی CoinGecko - بدون نیاز به کلید
-        // این API قیمت لحظه‌ای هر دو ارز را با هم برمی‌گرداند
+        // استفاده از API رسمی بایننس - بدون نیاز به کلید و بدون مشکل CORS
+        // بایننس قیمت لحظه‌ای را با کمترین تأخیر ارائه می‌دهد
         
         let lastPrices = { POL: null, USDT: null };
 
@@ -239,89 +239,90 @@
             updateTimeElem.innerHTML = "در حال دریافت قیمت‌ها...";
 
             try {
-                // درخواست به CoinGecko برای دریافت همزمان قیمت POL و USDT
-                // توجه: USDT در CoinGecko با ID زیر شناخته می‌شود: tether
-                const url = 'https://api.coingecko.com/api/v3/simple/price?ids=polygon%2Ctether&vs_currencies=usd&include_24hr_change=true';
-                
-                const response = await fetch(url);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP Error: ${response.status}`);
+                // درخواست همزمان به بایننس برای هر دو ارز
+                // POL: جفت MATIC/USDC (قیمت بر حسب دلار)
+                // USDT: جفت USDT/USDC (قیمت تتر بر حسب دلار)
+                const [maticResponse, usdtResponse] = await Promise.all([
+                    fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=MATICUSDC'),
+                    fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=USDTUSDC')
+                ]);
+
+                if (!maticResponse.ok || !usdtResponse.ok) {
+                    throw new Error("خطا در ارتباط با بایننس");
                 }
+
+                const maticData = await maticResponse.json();
+                const usdtData = await usdtResponse.json();
+
+                // قیمت پالیگان (POL)
+                const polPrice = parseFloat(maticData.lastPrice);
+                const polChange = parseFloat(maticData.priceChangePercent);
                 
-                const data = await response.json();
-                
-                // استخراج قیمت پالیگان (POL)
-                const polPrice = data.polygon?.usd;
-                const polChange24h = data.polygon?.usd_24h_change;
-                
-                // استخراج قیمت تتر (USDT)
-                const usdtPrice = data.tether?.usd;
-                const usdtChange24h = data.tether?.usd_24h_change;
-                
-                // اعتبارسنجی قیمت POL
+                // قیمت تتر (USDT)
+                const usdtPrice = parseFloat(usdtData.lastPrice);
+                const usdtChange = parseFloat(usdtData.priceChangePercent);
+
+                // اعتبارسنجی
                 if (!polPrice || polPrice <= 0) {
-                    throw new Error("قیمت پالیگان دریافت نشد");
+                    throw new Error("قیمت پالیگان معتبر نیست");
                 }
-                
+
                 // نمایش قیمت POL
                 maticPriceElem.innerHTML = `${formatPrice(polPrice)} <small>USD</small>`;
-                updatePriceChange("matic-change", polChange24h, polPrice, lastPrices.POL);
+                updatePriceChange("matic-change", polChange, polPrice, lastPrices.POL);
                 lastPrices.POL = polPrice;
-                
-                // نمایش قیمت USDT (حتی اگر دقیقاً 1 نباشد، همان مقدار لحظه‌ای نمایش داده می‌شود)
+
+                // نمایش قیمت USDT
                 if (usdtPrice && usdtPrice > 0) {
                     usdtPriceElem.innerHTML = `${formatPrice(usdtPrice)} <small>USD</small>`;
-                    updatePriceChange("usdt-change", usdtChange24h, usdtPrice, lastPrices.USDT);
+                    updatePriceChange("usdt-change", usdtChange, usdtPrice, lastPrices.USDT);
                     lastPrices.USDT = usdtPrice;
                 } else {
-                    // در صورت عدم دریافت، مقدار پیش‌فرض نمایش داده شود
-                    usdtPriceElem.innerHTML = `0.9999 <small>USD</small>`;
-                    document.getElementById("usdt-change").innerHTML = '';
+                    usdtPriceElem.innerHTML = `0.999 <small>USD</small>`;
                 }
-                
+
                 // نمایش زمان آخرین بروزرسانی
                 const now = new Date();
                 const timeString = now.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                 updateTimeElem.innerHTML = `✅ آخرین بروزرسانی: ${timeString} (لحظه‌ای)`;
-                
+
             } catch (error) {
-                console.error("خطا در دریافت قیمت:", error);
+                console.error("خطا:", error);
                 errorDiv.style.display = "block";
-                errorDiv.innerHTML = `⚠️ خطا در دریافت قیمت‌ها: ${error.message}<br><small>لطفاً دوباره تلاش کنید</small>`;
+                errorDiv.innerHTML = `⚠️ خطا در دریافت قیمت‌ها: ${error.message}<br><small>در حال تلاش مجدد...</small>`;
                 updateTimeElem.innerHTML = "❌ خطا در ارتباط با سرور";
             }
         }
-        
-        function updatePriceChange(elementId, change24h, currentPrice, lastPrice) {
+
+        function updatePriceChange(elementId, changePercent, currentPrice, lastPrice) {
             const elem = document.getElementById(elementId);
             if (!elem) return;
 
-            if (change24h !== null && change24h !== undefined && !isNaN(change24h)) {
-                const isPositive = change24h >= 0;
-                elem.innerHTML = `۲۴h: <span class="${isPositive ? 'positive' : 'negative'}">${isPositive ? '▲' : '▼'} ${Math.abs(change24h).toFixed(2)}%</span>`;
+            if (changePercent !== null && changePercent !== undefined && !isNaN(changePercent)) {
+                const isPositive = changePercent >= 0;
+                elem.innerHTML = `۲۴h: <span class="${isPositive ? 'positive' : 'negative'}">${isPositive ? '▲' : '▼'} ${Math.abs(changePercent).toFixed(2)}%</span>`;
                 elem.style.display = "flex";
             } else if (lastPrice && currentPrice) {
-                const changePercent = ((currentPrice - lastPrice) / lastPrice) * 100;
-                const isPositive = changePercent >= 0;
-                elem.innerHTML = `<span class="${isPositive ? 'positive' : 'negative'}">${isPositive ? '▲' : '▼'} ${Math.abs(changePercent).toFixed(2)}% (لحظه‌ای)</span>`;
+                const calcChange = ((currentPrice - lastPrice) / lastPrice) * 100;
+                const isPositive = calcChange >= 0;
+                elem.innerHTML = `<span class="${isPositive ? 'positive' : 'negative'}">${isPositive ? '▲' : '▼'} ${Math.abs(calcChange).toFixed(2)}% (لحظه‌ای)</span>`;
                 elem.style.display = "flex";
             } else {
                 elem.innerHTML = "";
                 elem.style.display = "none";
             }
         }
-        
+
         function formatPrice(price) {
             if (price < 0.01) return price.toFixed(6);
             if (price < 1) return price.toFixed(4);
             if (price < 1000) return price.toFixed(2);
             return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
-        
+
         // بارگذاری اولیه
         fetchPrices();
-        
+
         // بروزرسانی خودکار هر 15 ثانیه
         setInterval(fetchPrices, 15000);
     </script>
