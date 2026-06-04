@@ -1,257 +1,282 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💰 قیمت لحظه‌ای پالیگان (POL)</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            direction: rtl;
-            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .container {
-            background: rgba(30, 30, 47, 0.6);
-            backdrop-filter: blur(20px);
-            border-radius: 40px;
-            padding: 32px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            width: 100%;
-            max-width: 450px;
-        }
-
-        h1 {
-            text-align: center;
-            color: #fff;
-            font-weight: 700;
-            margin-bottom: 24px;
-            font-size: 1.6rem;
-            background: linear-gradient(135deg, #c084fc, #60a5fa);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .price-card {
-            background: rgba(15, 15, 26, 0.8);
-            border-radius: 28px;
-            padding: 32px 24px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            text-align: center;
-        }
-
-        .token-icon {
-            width: 70px;
-            height: 70px;
-            background: linear-gradient(135deg, #8247e5, #6b21a5);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 2rem;
-            color: white;
-            margin: 0 auto 16px auto;
-            box-shadow: 0 8px 20px rgba(130, 71, 229, 0.3);
-        }
-
-        .token-name {
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: #e2e8f0;
-            margin-bottom: 6px;
-        }
-
-        .token-symbol {
-            font-size: 0.85rem;
-            color: #94a3b8;
-            margin-bottom: 20px;
-        }
-
-        .price-value {
-            font-size: 3.2rem;
-            font-weight: 800;
-            text-align: center;
-            direction: ltr;
-            color: #ffffff;
-            font-family: 'Courier New', monospace;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 12px 20px;
-            border-radius: 20px;
-            display: inline-block;
-        }
-
-        .price-value small {
-            font-size: 1rem;
-            font-weight: 500;
-            color: #64748b;
-        }
-
-        .price-change {
-            margin-top: 16px;
-            font-size: 0.9rem;
-        }
-
-        .positive {
-            color: #4ade80;
-        }
-
-        .negative {
-            color: #f87171;
-        }
-
-        .info-bar {
-            margin-top: 24px;
-            padding-top: 16px;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            text-align: center;
-        }
-
-        .update-time {
-            font-size: 0.7rem;
-            color: #64748b;
-            margin-bottom: 12px;
-        }
-
-        .refresh-btn {
-            background: rgba(59, 130, 246, 0.2);
-            color: #60a5fa;
-            border: 1px solid rgba(59, 130, 246, 0.4);
-            padding: 8px 24px;
-            border-radius: 40px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .refresh-btn:hover {
-            background: #3b82f6;
-            color: white;
-        }
-
-        .error-state {
-            background: rgba(127, 29, 29, 0.3);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            border-radius: 20px;
-            padding: 10px;
-            margin-top: 16px;
-            font-size: 0.75rem;
-            color: #fca5a5;
-        }
-
-        .loading {
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        .source {
-            font-size: 0.65rem;
-            color: #475569;
-            margin-top: 16px;
-            text-align: center;
-        }
-    </style>
+    <title>💰 Token Balance & Price Checker</title>
 </head>
-<body>
-    <div class="container">
-        <h1>📊 قیمت لحظه‌ای</h1>
+<body style="background:#0f172a;color:white;font-family:sans-serif;padding:20px;text-align:center;">
 
-        <div class="price-card">
-            <div class="token-icon">POL</div>
-            <div class="token-name">پالیگان</div>
-            <div class="token-symbol">Polygon (POL/MATIC)</div>
-            <div class="price-value" id="pol-price">--- <small>USD</small></div>
-            <div class="price-change" id="pol-change"></div>
-        </div>
+<h2>💰 بررسی موجودی و قیمت توکن</h2>
 
-        <div class="info-bar">
-            <div class="update-time" id="update-time">در حال دریافت...</div>
-            <button class="refresh-btn" onclick="fetchPrice()">🔄 بروزرسانی</button>
-        </div>
-        <div id="error-message" class="error-state" style="display: none;"></div>
-        <div class="source">
-            🔗 منبع: MEXC | بروزرسانی هر ۱۰ ثانیه
-        </div>
+<!-- دکمه اتصال کیف پول -->
+<div id="wallet-btn"></div>
+<div id="walletAddress" style="margin:10px;color:#94a3b8;font-size:14px;"></div>
+
+<!-- فرم جستجو -->
+<div style="max-width:500px;margin:20px auto;">
+    <select id="networkSelect" style="width:100%;padding:10px;margin-bottom:10px;background:#1e293b;color:white;border:1px solid #334155;border-radius:8px;">
+        <option value="1">اتریوم (Ethereum)</option>
+        <option value="137" selected>پالیگان (Polygon)</option>
+        <option value="56">BSC</option>
+    </select>
+    
+    <input type="text" id="tokenAddress" placeholder="آدرس توکن (0x...)" value="0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174" style="width:100%;padding:10px;margin-bottom:10px;background:#1e293b;color:white;border:1px solid #334155;border-radius:8px;">
+    
+    <div style="display:flex;gap:10px;margin-bottom:10px;">
+        <input type="text" id="priceSource" placeholder="منبع قیمت (اختیاری: coingecko, binance, mexc, chainlink)" value="mexc" style="flex:2;padding:10px;background:#1e293b;color:white;border:1px solid #334155;border-radius:8px;">
+        <select id="priceType" style="flex:1;padding:10px;background:#1e293b;color:white;border:1px solid #334155;border-radius:8px;">
+            <option value="auto">خودکار</option>
+            <option value="usd">USD</option>
+            <option value="usdt">USDT</option>
+        </select>
     </div>
+    
+    <button id="checkBtn" onclick="checkBalanceAndPrice()" disabled style="width:100%;padding:12px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;">بررسی موجودی و قیمت</button>
+</div>
 
-    <script>
-        let lastPrice = null;
+<!-- نتیجه -->
+<div id="result" style="margin-top:20px;"></div>
 
-        async function fetchPrice() {
-            const priceElem = document.getElementById("pol-price");
-            const changeElem = document.getElementById("pol-change");
-            const updateTimeElem = document.getElementById("update-time");
-            const errorDiv = document.getElementById("error-message");
-            
-            priceElem.innerHTML = '<span class="loading">⟳ ...</span> <small>USD</small>';
-            changeElem.innerHTML = '';
-            errorDiv.style.display = "none";
-            updateTimeElem.innerHTML = "در حال دریافت قیمت...";
-            
-            try {
-                // استفاده از API MEXC (بدون CORS و کاملاً رایگان)
-                // جفت MATIC/USDT در MEXC
-                const response = await fetch('https://api.mexc.com/api/v3/ticker/price?symbol=MATICUSDT');
-                
-                if (!response.ok) {
-                    throw new Error("خطا در ارتباط با سرور");
-                }
-                
-                const data = await response.json();
-                const price = parseFloat(data.price);
-                
-                if (!price || price <= 0) {
-                    throw new Error("قیمت معتبر نیست");
-                }
-                
-                // نمایش قیمت
-                priceElem.innerHTML = `${price.toFixed(4)} <small>USD</small>`;
-                
-                // محاسبه تغییرات
-                if (lastPrice && lastPrice !== price) {
-                    const changePercent = ((price - lastPrice) / lastPrice) * 100;
-                    const isPositive = changePercent >= 0;
-                    changeElem.innerHTML = `<span class="${isPositive ? 'positive' : 'negative'}">${isPositive ? '▲' : '▼'} ${Math.abs(changePercent).toFixed(2)}% (لحظه‌ای)</span>`;
-                } else {
-                    changeElem.innerHTML = '<span style="color:#64748b;">در انتظار تغییر...</span>';
-                }
-                
-                lastPrice = price;
-                
-                const now = new Date();
-                const timeString = now.toLocaleTimeString('fa-IR');
-                updateTimeElem.innerHTML = `✅ آخرین بروزرسانی: ${timeString}`;
-                
-            } catch (error) {
-                console.error("خطا:", error);
-                errorDiv.style.display = "block";
-                errorDiv.innerHTML = `⚠️ خطا: ${error.message}<br><small>در حال تلاش مجدد...</small>`;
-                updateTimeElem.innerHTML = "❌ خطا در ارتباط";
-            }
+<script type="module">
+import { createWeb3Modal, defaultWagmiConfig } from "https://esm.sh/@web3modal/wagmi";
+import { mainnet, polygon, bsc } from "https://esm.sh/wagmi/chains";
+import { watchAccount } from "https://esm.sh/wagmi/actions";
+import { readContract } from "https://esm.sh/wagmi/actions";
+import { formatUnits } from "https://esm.sh/viem";
+
+// ==================== تنظیمات ====================
+const projectId = "96f13374b0fe2f629a925617de0a2ba3";
+const chains = [mainnet, polygon, bsc];
+
+const wagmiConfig = defaultWagmiConfig({
+    chains,
+    projectId,
+    metadata: { name: "Token Checker", description: "", url: window.location.href, icons: [] }
+});
+
+// ایجاد دکمه
+createWeb3Modal({ wagmiConfig, projectId, chains });
+const btn = document.createElement("w3m-button");
+document.getElementById("wallet-btn").appendChild(btn);
+
+// ==================== ABI توکن ====================
+const ERC20_ABI = [
+    { "constant": true, "inputs": [], "name": "symbol", "outputs": [{"name": "", "type": "string"}], "type": "function" },
+    { "constant": true, "inputs": [], "name": "decimals", "outputs": [{"name": "", "type": "uint8"}], "type": "function" },
+    { "constant": true, "inputs": [{"name": "_owner", "type": "address"}], "name": "balanceOf", "outputs": [{"name": "balance", "type": "uint256"}], "type": "function" }
+];
+
+// ==================== مپ شبکه ====================
+const chainMap = { '1': mainnet, '137': polygon, '56': bsc };
+
+// ==================== توابع دریافت قیمت ====================
+
+// دریافت قیمت از MEXC (رایگان، بدون CORS)
+async function getPriceFromMEXC(symbol) {
+    try {
+        const response = await fetch(`https://api.mexc.com/api/v3/ticker/price?symbol=${symbol}USDT`);
+        if (!response.ok) throw new Error("MEXC error");
+        const data = await response.json();
+        return parseFloat(data.price);
+    } catch (error) {
+        console.log("MEXC failed:", error);
+        return null;
+    }
+}
+
+// دریافت قیمت از بایننس
+async function getPriceFromBinance(symbol) {
+    try {
+        const response = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}USDT`);
+        if (!response.ok) throw new Error("Binance error");
+        const data = await response.json();
+        return parseFloat(data.price);
+    } catch (error) {
+        console.log("Binance failed:", error);
+        return null;
+    }
+}
+
+// دریافت قیمت از CoinGecko
+async function getPriceFromCoinGecko(tokenId) {
+    try {
+        const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${tokenId}&vs_currencies=usd`);
+        if (!response.ok) throw new Error("CoinGecko error");
+        const data = await response.json();
+        return data[tokenId]?.usd || null;
+    } catch (error) {
+        console.log("CoinGecko failed:", error);
+        return null;
+    }
+}
+
+// مپ توکن‌های معروف به ID CoinGecko
+const tokenToCoinGeckoId = {
+    "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174": "usd-coin", // USDC
+    "0xc2132D05D31c914a87C6611C10748AEb04B58e8F": "tether", // USDT
+    "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619": "ethereum", // WETH
+    "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270": "matic-network", // POL/MATIC
+    "0x0000000000000000000000000000000000001010": "matic-network", // Native POL
+};
+
+// مپ توکن به نماد برای صرافی‌ها
+function getTokenSymbolFromAddress(address, symbol) {
+    const symbolMap = {
+        "USDC": "USDC",
+        "USDT": "USDT",
+        "WETH": "ETH",
+        "POL": "MATIC",
+        "MATIC": "MATIC"
+    };
+    return symbolMap[symbol] || symbol;
+}
+
+// تابع اصلی دریافت قیمت
+async function fetchPrice(tokenAddress, tokenSymbol, networkId, source) {
+    const symbol = getTokenSymbolFromAddress(tokenAddress, tokenSymbol);
+    
+    // روش اول: منبع مشخص شده توسط کاربر
+    if (source === "mexc") {
+        const price = await getPriceFromMEXC(symbol);
+        if (price) return price;
+    }
+    if (source === "binance") {
+        const price = await getPriceFromBinance(symbol);
+        if (price) return price;
+    }
+    if (source === "coingecko") {
+        const tokenId = tokenToCoinGeckoId[tokenAddress.toLowerCase()];
+        if (tokenId) {
+            const price = await getPriceFromCoinGecko(tokenId);
+            if (price) return price;
         }
+    }
+    
+    // روش دوم: خودکار - امتحان منابع مختلف
+    // اول MEXC
+    let price = await getPriceFromMEXC(symbol);
+    if (price) return price;
+    
+    // دوم بایننس
+    price = await getPriceFromBinance(symbol);
+    if (price) return price;
+    
+    // سوم CoinGecko
+    const tokenId = tokenToCoinGeckoId[tokenAddress.toLowerCase()];
+    if (tokenId) {
+        price = await getPriceFromCoinGecko(tokenId);
+        if (price) return price;
+    }
+    
+    // اگر همه منابع failed
+    return null;
+}
 
-        // بارگذاری اولیه
-        fetchPrice();
+// ==================== وضعیت کیف پول ====================
+let currentAccount = null;
+
+watchAccount(wagmiConfig, {
+    onChange(account) {
+        if (account?.address) {
+            currentAccount = account.address;
+            document.getElementById('walletAddress').innerHTML = `✅ ${account.address.slice(0,6)}...${account.address.slice(38)}`;
+            document.getElementById('checkBtn').disabled = false;
+        } else {
+            currentAccount = null;
+            document.getElementById('walletAddress').innerHTML = '';
+            document.getElementById('checkBtn').disabled = true;
+            document.getElementById('result').innerHTML = '';
+        }
+    }
+});
+
+// ==================== بررسی موجودی و قیمت ====================
+window.checkBalanceAndPrice = async function() {
+    const tokenAddress = document.getElementById('tokenAddress').value.trim();
+    const network = document.getElementById('networkSelect').value;
+    const priceSource = document.getElementById('priceSource').value.trim();
+    const priceType = document.getElementById('priceType').value;
+    
+    if (!tokenAddress || !tokenAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
+        document.getElementById('result').innerHTML = '<div style="color:#ef4444;">❌ آدرس توکن نامعتبر</div>';
+        return;
+    }
+    
+    if (!currentAccount) {
+        document.getElementById('result').innerHTML = '<div style="color:#ef4444;">❌ کیف پول متصل نیست</div>';
+        return;
+    }
+    
+    document.getElementById('result').innerHTML = '<div style="text-align:center;"><div>⏳ در حال بررسی موجودی...</div><div style="color:#94a3b8;font-size:12px;">در حال دریافت قیمت لحظه‌ای...</div></div>';
+    
+    try {
+        const chain = chainMap[network];
         
-        // بروزرسانی هر ۱۰ ثانیه
-        setInterval(fetchPrice, 10000);
-    </script>
+        // دریافت اطلاعات توکن
+        const [symbol, decimals, balance] = await Promise.all([
+            readContract(wagmiConfig, { address: tokenAddress, abi: ERC20_ABI, functionName: 'symbol', chainId: chain.id }),
+            readContract(wagmiConfig, { address: tokenAddress, abi: ERC20_ABI, functionName: 'decimals', chainId: chain.id }),
+            readContract(wagmiConfig, { address: tokenAddress, abi: ERC20_ABI, functionName: 'balanceOf', args: [currentAccount], chainId: chain.id })
+        ]);
+        
+        const formattedBalance = formatUnits(balance, decimals);
+        const balanceNum = parseFloat(formattedBalance);
+        
+        // دریافت قیمت لحظه‌ای
+        document.getElementById('result').innerHTML = '<div>⏳ در حال دریافت قیمت لحظه‌ای...</div>';
+        const price = await fetchPrice(tokenAddress, symbol, network, priceSource);
+        
+        const totalValue = (balanceNum * (price || 0)).toFixed(4);
+        
+        // نمایش نتیجه
+        let priceHtml = '';
+        if (price) {
+            priceHtml = `
+                <div style="margin-top:12px;padding:12px;background:#0f172a;border-radius:8px;">
+                    <div style="color:#94a3b8;">قیمت لحظه‌ای</div>
+                    <div style="font-size:20px;font-weight:bold;color:#60a5fa;">$${price.toFixed(6)}</div>
+                    <div style="margin-top:12px;color:#94a3b8;">ارزش کل</div>
+                    <div style="font-size:24px;font-weight:bold;color:#22c55e;">$${parseFloat(totalValue).toLocaleString()}</div>
+                </div>
+            `;
+        } else {
+            priceHtml = `
+                <div style="margin-top:12px;padding:12px;background:#0f172a;border-radius:8px;">
+                    <div style="color:#f97316;">⚠️ قیمت لحظه‌ای در دسترس نیست</div>
+                    <div style="font-size:14px;color:#94a3b8;">منابع: MEXC, Binance, CoinGecko</div>
+                </div>
+            `;
+        }
+        
+        if (balanceNum > 0) {
+            document.getElementById('result').innerHTML = `
+                <div style="background:#1e293b;padding:20px;border-radius:12px;">
+                    <div style="color:#94a3b8;">${symbol}</div>
+                    <div style="font-size:32px;font-weight:bold;color:#3b82f6;">${balanceNum.toLocaleString()}</div>
+                    <div style="color:#22c55e;">✅ موجود در کیف پول</div>
+                    ${priceHtml}
+                    <div style="margin-top:12px;font-size:11px;color:#475569;">
+                        🔗 آدرس توکن: ${tokenAddress.slice(0,10)}...${tokenAddress.slice(-8)}
+                    </div>
+                </div>
+            `;
+        } else {
+            document.getElementById('result').innerHTML = `
+                <div style="background:#1e293b;padding:20px;border-radius:12px;">
+                    <div style="color:#94a3b8;">${symbol}</div>
+                    <div style="font-size:32px;font-weight:bold;color:#ef4444;">0</div>
+                    <div style="color:#ef4444;">❌ در کیف پول نیست</div>
+                    ${priceHtml}
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        document.getElementById('result').innerHTML = `<div style="color:#ef4444;background:#1e293b;padding:20px;border-radius:12px;">❌ خطا: ${error.message.slice(0,100)}</div>`;
+    }
+}
+</script>
+
 </body>
-</html>
+    </html>
