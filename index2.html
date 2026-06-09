@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>استخر نقدینگی | پوزیشن‌های من</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Vazirmatn', 'Inter', sans-serif;
+            background: #eef2f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            direction: rtl;
+            padding: 2rem;
+            color: #1e2f3a;
+        }
+
+        .sticky-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            z-index: 1000;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+            border-bottom: 2px solid #254e64;
+            padding: 0.75rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            direction: rtl;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .site-icon {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #254e64, #3b7a9a);
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .site-name {
+            font-weight: 650;
+            font-size: 1.2rem;
+            color: #1a3849;
+            letter-spacing: -0.3px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-right w3m-button {
+            --w3m-accent: #254e64;
+        }
+
+        .page-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding-top: 95px;
+        }
+
+        .main-card {
+            max-width: 800px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 35px -12px rgba(17, 45, 65, 0.2);
+            overflow: hidden;
+            padding: 2rem 2rem 0 2rem;
+            border: 1px solid #e3eef7;
+        }
+
+        .wallet-section {
+            display: none;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 2.5rem);
+            font-weight: 650;
+            color: #1a3849;
+        }
+
+        .subhead {
+            font-size: 0.95rem;
+            font-weight: 350;
+            color: #3b5b70;
+            max-width: 580px;
+            margin: 0 auto 1.5rem auto;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #b8cfde;
+            text-align: center;
+        }
+
+        .positions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .positions-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .positions-title h2 {
+            font-size: 1.3rem;
+            font-weight: 620;
+            color: #1f475b;
+        }
+
+        .new-button {
+            background: #254e64;
+            border: none;
+            border-radius: 30px;
+            padding: 0.4rem 1.2rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid #163847;
+        }
+
+        .new-button:hover {
+            background: #2d5c77;
+        }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-item {
+            background: white;
+            border: 1px solid #cbdbe9;
+            border-radius: 30px;
+            padding: 0.4rem 1.2rem;
+            font-size: 0.9rem;
+            color: #1e3f50;
+            cursor: pointer;
+        }
+
+        .filter-item:hover {
+            background: #f0f7fc;
+        }
+
+        .positions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            min-height: 300px;
+        }
+
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .skeleton-card {
+            background: #f5f9fc;
+            border-radius: 18px;
+            padding: 1.2rem 1.5rem;
+            border: 1px solid #d0e2ef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skeleton-card::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: linear-gradient(90deg, transparent, rgba(200, 220, 240, 0.3), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .skeleton-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .skeleton-icons {
+            display: flex;
+            align-items: center;
+        }
+
+        .skeleton-icon {
+            width: 32px;
+            height: 32px;
+            background: #d0e0ee;
+            border-radius: 50%;
+        }
+
+        .skeleton-icon.secondary {
+            margin-right: -8px;
+        }
+
+        .skeleton-details {
+            margin-right: 0.3rem;
+        }
+
+        .skeleton-line {
+            height: 16px;
+            background: #d0e0ee;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .skeleton-line.short {
+            width: 80px;
+        }
+
+        .skeleton-line.medium {
+            width: 120px;
+        }
+
+        .skeleton-stats {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .skeleton-stat .skeleton-line {
+            width: 60px;
+            margin-bottom: 4px;
+        }
+
+        .skeleton-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .skeleton-action {
+            width: 36px;
+            height: 36px;
+            background: #d0e0ee;
+            border-radius: 50%;
+        }
+
+        .spinner-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .loading-spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #e0e9f2;
+            border-top: 3px solid #254e64;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 0;
+            background: #f5f9fc;
+            border-radius: 20px;
+            border: 1px solid #d0e2ef;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            color: #1f475b;
+            font-size: 1.1rem;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .empty-subtext {
+            color: #5f7d94;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+
+        /* ===== استایل‌های فرم جدید (DEX Form) ===== */
+        .new-position-section {
+            background: #f5f9fc;
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            border: 1px solid #d0e2ef;
+            margin-bottom: 2rem;
+        }
+
+        .new-position-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 1.8rem;
+            font-size: 1.1rem;
+            color: #1f475b;
+        }
+
+        .new-position-header span {
+            color: #5f7d94;
+        }
+
+        .back-button {
+            background: transparent;
+            border: none;
+            color: #254e64;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .back-button:hover {
+            color: #1d4054;
+        }
+
+        /* استایل‌های فرم DEX - راست‌چین شده */
+        .dex-form {
+            direction: rtl;
+        }
+        .dex-form .field {
+            margin-bottom: 1.2rem;
+        }
+        .dex-form label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 0.4rem;
+            color: #2c4b35;
+            text-align: right;
+        }
+        .dex-form .fake-select {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            font-size: 0.95rem;
+            border: 1px solid #dce5e8;
+            border-radius: 20px;
+            background: #f8fafb;
+            cursor: pointer;
+            font-family: inherit;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-align: right;
+        }
+        .dex-form .fake-select.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f0f2f4;
+            pointer-events: none;
+        }
+        .dex-form .double-row-top {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.2rem;
+        }
+        .dex-form .exchange-field {
+            flex: 0 0 70%;
+        }
+        .dex-form .pool-field {
+            flex: 0 0 30%;
+        }
+        .dex-form .double-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.2rem;
+        }
+        .dex-form .double-row .field {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        .dex-form input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            font-size: 0.95rem;
+            border: 1px solid #dce5e8;
+            border-radius: 20px;
+            background: white;
+            font-family: inherit;
+            outline: none;
+            text-align: right;
+        }
+        .dex-form input:focus {
+            border-color: #2b7a3e;
+        }
+        .dex-form .info-row {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .dex-form .info-item {
+            flex: 1;
+            background: #f8fafb;
+            border-radius: 20px;
+            padding: 0.8rem;
+            text-align: center;
+            border: 1px solid #e2e8ec;
+        }
+        .dex-form .info-label {
+            font-size: 0.7rem;
+            color: #5f7f6b;
+            margin-bottom: 0.3rem;
+        }
+        .dex-form .info-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1a2c3e;
+        }
+        .dex-form .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .dex-form .input-wrapper input {
+            flex: 1;
+            padding-left: 60px;
+            padding-right: 1rem;
+        }
+        .dex-form .max-btn {
+            position: absolute;
+            left: 12px;
+            background: #2b7a3e;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .dex-form .max-btn.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            background: #9cb8a8;
+        }
+        .dex-form .review-btn {
+            width: 100%;
+            padding: 0.9rem;
+            background: #2b7a3e;
+            color: white;
+            border: none;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+        .dex-form .review-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #9cb8a8;
+            pointer-events: none;
+        }
+        .dex-form .reward-info {
+            margin-top: 0.5rem;
+            font-size: 0.7rem;
+            padding: 0.25rem 0.7rem;
+            border-radius: 20px;
+            display: block;
+            width: 100%;
+            text-align: right;
+        }
+        .dex-form .reward-info.success {
+            color: #2b6e47;
+            background: #eaf7ef;
+        }
+        .dex-form .reward-info.error {
+            color: #c0392b;
+            background: #fee;
+        }
+        .dex-form .warning-info {
+            margin-top: 0.5rem;
+            font-size: 0.7rem;
+            color: #c0392b;
+            background: #fee;
+            padding: 0.25rem 0.7rem;
+            border-radius: 20px;
+            display: block;
+            width: 100%;
+            text-align: right;
+        }
+        .dex-form .selected-info {
+            margin-top: 0.5rem;
+            font-size: 0.7rem;
+            color: #2b6e47;
+            background: #eaf7ef;
+            padding: 0.25rem 0.7rem;
+            border-radius: 20px;
+            display: inline-block;
+            text-align: right;
+        }
+        hr {
+            margin: 1rem 0 0.5rem;
+            border: none;
+            border-top: 1px solid #e2e8ec;
+        }
+
+        /* پاپ‌آپ‌ها */
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 340px;
+            background: white;
+            border: 1px solid #dce5e8;
+            border-radius: 24px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.15);
+            z-index: 1001;
+            display: none;
+            overflow: hidden;
+        }
+        .popup-header {
+            padding: 1rem 1.2rem 0.5rem 1.2rem;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #2a5f3e;
+            border-bottom: 1px solid #e2edf2;
+            text-align: center;
+        }
+        .popup-body {
+            padding: 1rem 1.2rem 1.2rem 1.2rem;
+        }
+        .popup input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #dce5e8;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            margin-bottom: 0.8rem;
+        }
+        .popup button {
+            width: 100%;
+            padding: 0.6rem;
+            background: #2b7a3e;
+            color: white;
+            border: none;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.3rem;
+        }
+        .popup .clear {
+            background: #ecf0f1;
+            color: #1a2c3e;
+            margin-bottom: 0.5rem;
+        }
+        .option-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .option-item {
+            padding: 0.7rem;
+            text-align: center;
+            border-radius: 40px;
+            cursor: pointer;
+            background: #f8fafb;
+            border: 1px solid #dce5e8;
+        }
+        .option-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f0f0f0;
+            pointer-events: none;
+        }
+        .bottom-popup {
+            position: fixed;
+            bottom: -100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 28px 28px 0 0;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
+            z-index: 1001;
+            transition: bottom 0.3s ease;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        .bottom-popup.show {
+            bottom: 0;
+        }
+        .bottom-popup-header {
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid #e2edf2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+        .close-bottom-popup {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #8ba0aa;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 1000;
+            display: none;
+        }
+        .overlay.show {
+            display: block;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .footer-copyright {
+            text-align: center;
+            padding: 1.2rem 0.5rem 1.5rem 0.5rem;
+            border-top: 1px solid #c2d7e9;
+            color: #386277;
+            font-size: 0.85rem;
+            font-weight: 330;
+            margin: 0 -2rem;
+            padding-left: 2rem;
+            padding-right: 2rem;
+            background: #f2f9ff;
+        }
+
+        @media screen and (max-width: 600px) {
+            body { padding: 0; }
+            .sticky-header { padding: 0.5rem 1rem; }
+            .page-wrapper {
+                padding-top: 75px;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            .main-card { 
+                padding: 1.2rem 1.2rem 0 1.2rem; 
+                border-radius: 20px;
+            }
+            .new-position-section { padding: 1.2rem 1.2rem; }
+            .dex-form .double-row-top, .dex-form .double-row {
+                flex-direction: column;
+                gap: 0.8rem;
+            }
+            .dex-form .exchange-field, .dex-form .pool-field {
+                flex: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sticky-header">
+        <div class="header-left">
+            <div id="original-wallet-btn"></div>
+        </div>
+        <div class="header-right">
+            <div class="site-name">Liquidity Pool</div>
+            <div class="site-icon">💧</div>
+        </div>
+    </div>
+
+    <div class="page-wrapper">
+        <div class="main-card">
+            <div class="hero">
+                <h1>استخر نقدینگی هوشمند</h1>
+            </div>
+            <div class="subhead">
+                مدیریت نقدینگی با بهره‌وری بالا · کاملاً شفاف و سریع
+            </div>
+
+            <div id="wallet-btn" style="display: none;"></div>
+
+            <div id="waitingMessage" class="waiting-message">
+                <div class="waiting-icon">🔌</div>
+                <div class="waiting-title">اتصال کیف پول</div>
+                <div style="color: #5f7d94; font-size: 0.9rem;">لطفاً برای مشاهده پوزیشن‌ها، کیف پول خود را متصل کنید</div>
+            </div>
+
+            <div id="positionsSection" class="hidden">
+                <div class="positions-header">
+                    <div class="positions-title">
+                        <h2>پوزیشن‌های من</h2>
+                        <button id="newPositionBtn" class="new-button">+ جدید</button>
+                    </div>
+                    <div class="filters">
+                        <div class="filter-item" onclick="alert('فیلتر وضعیت در حال توسعه')">وضعیت ▼</div>
+                        <div class="filter-item" onclick="alert('فیلتر پروتکل در حال توسعه')">پروتکل ▼</div>
+                    </div>
+                </div>
+                <div id="positionsList" class="positions-list"></div>
+            </div>
+
+            <!-- فرم جدید جایگزین شده -->
+            <div id="newPositionSection" class="new-position-section hidden">
+                <div class="new-position-header">
+                    <button id="backToPositionsBtn" class="back-button">←</button>
+                    پوزیشن‌های من <span>/ جدید</span>
+                </div>
+                
+                <div class="dex-form">
+                    <div class="double-row-top">
+                        <div class="exchange-field">
+                            <label>انتخاب صرافی</label>
+                            <div class="fake-select" id="exchangeBtn">
+                                <span id="exchangeLabel">انتخاب صرافی</span>
+                                <span>▼</span>
+                            </div>
+                        </div>
+                        <div class="pool-field">
+                            <label>نوع استخر</label>
+                            <div class="fake-select disabled" id="poolBtn">
+                                <span id="poolLabel">-</span>
+                                <span>▼</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="double-row">
+                        <div class="field">
+                            <label>جفت ارز</label>
+                            <div class="fake-select disabled" id="pairBtn">
+                                <span id="pairLabel">انتخاب جفت</span>
+                                <span>▼</span>
+                            </div>
+                            <div id="pairInfo" class="selected-info" style="display:none"></div>
+                        </div>
+                        <div class="field">
+                            <label>توکن شما</label>
+                            <div class="fake-select disabled" id="tokenBtn">
+                                <span id="tokenLabel">انتخاب توکن</span>
+                                <span>+</span>
+                            </div>
+                            <div id="tokenInfo" class="selected-info" style="display:none"></div>
+                        </div>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-item">
+                            <div class="info-label">کارمزد</div>
+                            <div class="info-value" id="gasFee">--</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">رنج قیمت</div>
+                            <div class="info-value" id="tradingRange">--</div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label id="pairAmountLabel">مقدار USDT</label>
+                        <input type="number" id="pairAmount" placeholder="0.00" step="any" value="" class="disabled" disabled>
+                        <div id="usdtRewardInfo" class="reward-info" style="display: none;"></div>
+                        <div id="usdtWarning" class="warning-info" style="display: none;"></div>
+                    </div>
+
+                    <div class="field">
+                        <label id="tokenAmountLabel">مقدار توکن</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="tokenAmount" placeholder="0.00" step="any" value="" class="disabled" disabled>
+                            <button id="maxTokenBtn" class="max-btn disabled" disabled>حداکثر</button>
+                        </div>
+                        <div id="tokenRewardInfo" class="reward-info success" style="display: none;"></div>
+                    </div>
+
+                    <button id="reviewBtn" class="review-btn disabled" disabled>بررسی و ایجاد</button>
+                    <hr>
+                </div>
+            </div>
+
+            <div class="footer-copyright">
+                © ۲۰۲۵ استخر نقدینگی هوشمند. تمامی حقوق محفوظ است. | طراحی متوازن و حرفه‌ای
+                <span>— پوزیشن‌ها v1.0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- پاپ‌آپ‌ها -->
+    <div id="overlay" class="overlay"></div>
+    <div id="bottomPopup" class="bottom-popup">
+        <div class="bottom-popup-header">
+            <h3>ایجاد پوزیشن</h3>
+            <button class="close-bottom-popup" id="closeBottomPopupBtn">&times;</button>
+        </div>
+        <div class="bottom-popup-body" id="bottomPopupBody"></div>
+    </div>
+
+    <div id="exchangePopup" class="popup">
+        <div class="popup-header">انتخاب صرافی</div>
+        <div class="popup-body">
+            <div class="option-list">
+                <div class="option-item" data-value="SushiSwap">SushiSwap</div>
+                <div class="option-item" data-value="Uniswap">Uniswap</div>
+                <div class="option-item" data-value="QuickSwap">QuickSwap</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="poolPopup" class="popup">
+        <div class="popup-header">نوع استخر</div>
+        <div class="popup-body">
+            <div class="option-list" id="poolOptionsList"></div>
+        </div>
+    </div>
+
+    <div id="pairPopup" class="popup">
+        <div class="popup-header">جفت ارز</div>
+        <div class="popup-body">
+            <div class="option-list">
+                <div class="option-item" data-value="USDT">USDT</div>
+                <div class="option-item" data-value="Polygon">Polygon</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tokenPopup" class="popup">
+        <div class="popup-header">توکن شما</div>
+        <div class="popup-body">
+            <input type="text" id="contractInput" placeholder="آدرس قرارداد">
+            <button id="clearBtn" class="clear">پاک کردن</button>
+            <button id="confirmBtn">تأیید</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createWeb3Modal, defaultWagmiConfig } from "https://esm.sh/@web3modal/wagmi";
+        import { mainnet, polygon, bsc } from "https://esm.sh/wagmi/chains";
+
+        const projectId = "96f13374b0fe2f629a925617de0a2ba3";
+        const chains = [mainnet, polygon, bsc];
+
+        const wagmiConfig = defaultWagmiConfig({
+            chains,
+            projectId,
+            metadata: { name: "Liquidity Pools", description: "", url: window.location.href, icons: [] }
+        });
+
+        const modal = createWeb3Modal({ wagmiConfig, projectId, chains });
+        
+        const originalWalletContainer = document.getElementById("wallet-btn");
+        const headerWalletContainer = document.getElementById("original-wallet-btn");
+        
+        if (originalWalletContainer && headerWalletContainer) {
+            const btn = document.createElement("w3m-button");
+            headerWalletContainer.appendChild(btn);
+            originalWalletContainer.style.display = "none";
+        }
+
+        const waitingMessage = document.getElementById('waitingMessage');
+        const positionsSection = document.getElementById('positionsSection');
+        const newPositionSection = document.getElementById('newPositionSection');
+        const positionsList = document.getElementById('positionsList');
+        const newPositionBtn = document.getElementById('newPositionBtn');
+        const backToPositionsBtn = document.getElementById('backToPositionsBtn');
+
+        let loadingTimer = null;
+        let isWalletConnected = false;
+
+        function renderSkeletonWithSpinner() {
+            positionsList.innerHTML = `
+                <div class="spinner-container"><div class="loading-spinner"></div></div>
+                <div class="loading-container">
+                    <div class="skeleton-card"><div class="skeleton-left"><div class="skeleton-icons"><div class="skeleton-icon"></div><div class="skeleton-icon secondary"></div></div><div><div class="skeleton-line short"></div><div class="skeleton-line medium"></div></div></div><div class="skeleton-stats"><div><div class="skeleton-line"></div><div class="skeleton-line"></div></div><div><div class="skeleton-line"></div><div class="skeleton-line"></div></div></div><div class="skeleton-actions"><div class="skeleton-action"></div><div class="skeleton-action"></div></div></div>
+                    <div class="skeleton-card"><div class="skeleton-left"><div class="skeleton-icons"><div class="skeleton-icon"></div><div class="skeleton-icon secondary"></div></div><div><div class="skeleton-line short"></div><div class="skeleton-line medium"></div></div></div><div class="skeleton-stats"><div><div class="skeleton-line"></div><div class="skeleton-line"></div></div><div><div class="skeleton-line"></div><div class="skeleton-line"></div></div></div><div class="skeleton-actions"><div class="skeleton-action"></div><div class="skeleton-action"></div></div></div>
+                </div>
+            `;
+        }
+
+        function renderEmpty() {
+            positionsList.innerHTML = `
+                <div class="empty-container">
+                    <div class="empty-icon">🏊</div>
+                    <div class="empty-text">فعلاً استخری ایجاد نکرده‌اید</div>
+                    <div class="empty-subtext">با کلیک روی دکمه «+ جدید» اولین استخر نقدینگی خود را ایجاد کنید</div>
+                </div>
+            `;
+        }
+
+        function startLoadingSequence() {
+            if (!isWalletConnected) return;
+            renderSkeletonWithSpinner();
+            if (loadingTimer) clearTimeout(loadingTimer);
+            loadingTimer = setTimeout(() => {
+                if (isWalletConnected) renderEmpty();
+            }, 8000);
+        }
+
+        function stopLoadingSequence() {
+            if (loadingTimer) { clearTimeout(loadingTimer); loadingTimer = null; }
+        }
+
+        function checkAndUpdateConnection() {
+            import("https://esm.sh/wagmi/actions").then(({ getAccount }) => {
+                const account = getAccount(wagmiConfig);
+                const reallyConnected = account.isConnected === true && account.address;
+                
+                if (reallyConnected && !isWalletConnected) {
+                    isWalletConnected = true;
+                    waitingMessage.classList.add('hidden');
+                    positionsSection.classList.remove('hidden');
+                    newPositionSection.classList.add('hidden');
+                    startLoadingSequence();
+                } 
+                else if (!reallyConnected && isWalletConnected) {
+                    isWalletConnected = false;
+                    waitingMessage.classList.remove('hidden');
+                    positionsSection.classList.add('hidden');
+                    newPositionSection.classList.add('hidden');
+                    positionsList.innerHTML = '';
+                    stopLoadingSequence();
+                }
+            });
+        }
+
+        setInterval(checkAndUpdateConnection, 1000);
+
+        if (modal.subscribeState) {
+            modal.subscribeState(() => {
+                setTimeout(checkAndUpdateConnection, 500);
+            });
+        }
+
+        newPositionBtn.addEventListener('click', () => {
+            if (isWalletConnected) {
+                positionsSection.classList.add('hidden');
+                newPositionSection.classList.remove('hidden');
+                initDexForm();
+            } else {
+                alert('لطفاً ابتدا کیف پول خود را متصل کنید');
+            }
+        });
+
+        backToPositionsBtn.addEventListener('click', () => {
+            newPositionSection.classList.add('hidden');
+            positionsSection.classList.remove('hidden');
+            startLoadingSequence();
+        });
+
+        setTimeout(checkAndUpdateConnection, 1000);
+
+        // ========== تمام منطق فرم DEX ==========
+        function initDexForm() {
+            // عناصر DOM فرم
+            const exchangeBtn = document.getElementById('exchangeBtn');
+            const exchangeLabel = document.getElementById('exchangeLabel');
+            const exchangePopup = document.getElementById('exchangePopup');
+            const poolBtn = document.getElementById('poolBtn');
+            const poolLabel = document.getElementById('poolLabel');
+            const poolPopup = document.getElementById('poolPopup');
+            const poolOptionsList = document.getElementById('poolOptionsList');
+            const pairBtn = document.getElementById('pairBtn');
+            const pairLabel = document.getElementById('pairLabel');
+            const pairInfo = document.getElementById('pairInfo');
+            const pairPopup = document.getElementById('pairPopup');
+            const tokenBtn = document.getElementById('tokenBtn');
+            const tokenLabel = document.getElementById('tokenLabel');
+            const tokenInfo = document.getElementById('tokenInfo');
+            const tokenPopup = document.getElementById('tokenPopup');
+            const contractInput = document.getElementById('contractInput');
+            const confirmBtn = document.getElementById('confirmBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const pairAmountInput = document.getElementById('pairAmount');
+            const tokenAmountInput = document.getElementById('tokenAmount');
+            const pairAmountLabel = document.getElementById('pairAmountLabel');
+            const tokenAmountLabel = document.getElementById('tokenAmountLabel');
+            const usdtRewardInfo = document.getElementById('usdtRewardInfo');
+            const usdtWarning = document.getElementById('usdtWarning');
+            const tokenRewardInfo = document.getElementById('tokenRewardInfo');
+            const maxTokenBtn = document.getElementById('maxTokenBtn');
+            const gasFeeSpan = document.getElementById('gasFee');
+            const tradingRangeSpan = document.getElementById('tradingRange');
+            const reviewBtn = document.getElementById('reviewBtn');
+            const overlayEl = document.getElementById('overlay');
+            const bottomPopupEl = document.getElementById('bottomPopup');
+            const bottomPopupBody = document.getElementById('bottomPopupBody');
+            const closeBottomPopupBtn = document.getElementById('closeBottomPopupBtn');
+
+            let currentToken = '';
+            let currentPair = '';
+            let currentExchange = '';
+            let currentPool = '';
+            let polygonPrice = null;
+            let isLoadingPrice = true;
+            
+            const MIN_BONUS = 200;
+            const MAX_BONUS = 6000;
+            const FEE_PERCENT = 2;
+            let mockTokenBalance = 10000;
+            
+            function roundNumber(num) {
+                if (num === undefined || num === null || isNaN(num)) return 0;
+                return Math.round(parseFloat(num));
+            }
+            
+            function formatNumberForBox(num) {
+                if (num === undefined || num === null || isNaN(num)) return '0';
+                return Math.round(parseFloat(num)).toString();
+            }
+            
+            function formatNumberWithCommaForBox(num) {
+                let rounded = Math.round(parseFloat(num));
+                return rounded.toLocaleString('en-US');
+            }
+            
+            function formatNumberForPrice(num) {
+                if (num === undefined || num === null || isNaN(num)) return '0';
+                let n = parseFloat(num);
+                if (Math.floor(n) === n) return n.toString();
+                let str = n.toFixed(8).replace(/\.?0+$/, '');
+                return str;
+            }
+            
+            function getUsdtValue() {
+                let pairAmount = parseFloat(pairAmountInput.value) || 0;
+                if (currentPair === 'USDT') return pairAmount;
+                if (currentPair === 'Polygon' && polygonPrice !== null) return pairAmount * polygonPrice;
+                return 0;
+            }
+            
+            async function getPolygonPrice() {
+                try {
+                    const response = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=polygon-ecosystem-token&vs_currencies=usd");
+                    const data = await response.json();
+                    polygonPrice = data["polygon-ecosystem-token"].usd;
+                    isLoadingPrice = false;
+                    if (currentPair === 'Polygon') {
+                        updateUSDTBonus();
+                        checkReviewButton();
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch POL price:", error);
+                    polygonPrice = null;
+                    isLoadingPrice = false;
+                    if (currentPair === 'Polygon') {
+                        updateUSDTBonus();
+                        checkReviewButton();
+                    }
+                }
+            }
+            
+            function showBottomPopup() {
+                let pairAmount = parseFloat(pairAmountInput.value) || 0;
+                let tokenAmount = parseFloat(tokenAmountInput.value) || 0;
+                let tokenFee = tokenAmount * (FEE_PERCENT / 100);
+                let tokenToPool = tokenAmount - tokenFee;
+                let usdtValue = 0;
+                let bonusAmount = 0;
+                let totalValue = 0;
+                
+                if (currentPair === 'USDT') {
+                    usdtValue = pairAmount;
+                    if (usdtValue >= 1000) {
+                        bonusAmount = usdtValue * 0.20;
+                        if (bonusAmount < MIN_BONUS) bonusAmount = MIN_BONUS;
+                        if (bonusAmount > MAX_BONUS) bonusAmount = MAX_BONUS;
+                        totalValue = usdtValue + bonusAmount;
+                    } else {
+                        totalValue = usdtValue;
+                    }
+                } else if (currentPair === 'Polygon' && polygonPrice !== null) {
+                    usdtValue = pairAmount * polygonPrice;
+                    if (usdtValue >= 1000) {
+                        bonusAmount = usdtValue * 0.20;
+                        if (bonusAmount < MIN_BONUS) bonusAmount = MIN_BONUS;
+                        if (bonusAmount > MAX_BONUS) bonusAmount = MAX_BONUS;
+                        totalValue = usdtValue + bonusAmount;
+                    } else {
+                        totalValue = usdtValue;
+                    }
+                }
+                
+                let finalPolAmount = (currentPair === 'Polygon' && polygonPrice !== null) ? totalValue / polygonPrice : 0;
+                
+                let tokenShort = currentToken;
+                if (tokenShort.length > 12 && !tokenShort.startsWith('0x')) {
+                    tokenShort = tokenShort;
+                } else if (tokenShort.length > 16) {
+                    tokenShort = tokenShort.slice(0, 10) + '...' + tokenShort.slice(-6);
+                }
+                
+                let exchangePool = `${currentExchange}/${currentPool}`;
+                let pairDisplay = `${currentPair} / ${tokenShort}`;
+                
+                let usdtLineLeft = '';
+                let usdtLineRight = '';
+                let usdtSubText = '';
+                
+                if (currentPair === 'USDT') {
+                    usdtLineLeft = `USDT:   ${formatNumberWithCommaForBox(pairAmount)}`;
+                    if (bonusAmount > 0) {
+                        usdtLineLeft += ` + 20%`;
+                        usdtLineRight = `${formatNumberWithCommaForBox(totalValue)}`;
+                    } else {
+                        usdtLineRight = `${formatNumberWithCommaForBox(totalValue)}`;
+                    }
+                } else if (currentPair === 'Polygon' && polygonPrice !== null) {
+                    usdtLineLeft = `POL:   ${formatNumberWithCommaForBox(pairAmount)}`;
+                    if (bonusAmount > 0) {
+                        usdtLineLeft += ` + 20%`;
+                        usdtLineRight = `${formatNumberWithCommaForBox(finalPolAmount)}`;
+                        usdtSubText = `≈ $${formatNumberWithCommaForBox(usdtValue)} + 20% ≈ $${formatNumberWithCommaForBox(totalValue)}`;
+                    } else {
+                        usdtLineRight = `${formatNumberWithCommaForBox(finalPolAmount)}`;
+                        usdtSubText = `≈ $${formatNumberWithCommaForBox(usdtValue)}`;
+                    }
+                }
+                
+                let tokenLineLeft = `${tokenShort}:   ${formatNumberWithCommaForBox(tokenAmount)} - 2%`;
+                let tokenLineRight = `${formatNumberWithCommaForBox(tokenToPool)}`;
+                
+                let priceDisplay = '';
+                if (currentPair === 'USDT') {
+                    let pricePerToken = tokenToPool / totalValue;
+                    if (pricePerToken > 0 && totalValue > 0) {
+                        priceDisplay = `${formatNumberForPrice(pricePerToken)} ${tokenShort} = 1 USDT`;
+                    } else {
+                        priceDisplay = 'calculating...';
+                    }
+                } else if (currentPair === 'Polygon' && polygonPrice !== null) {
+                    let pricePerTokenInPol = tokenToPool / finalPolAmount;
+                    if (pricePerTokenInPol > 0 && finalPolAmount > 0) {
+                        priceDisplay = `${formatNumberForPrice(pricePerTokenInPol)} ${tokenShort} = 1 POL`;
+                    } else {
+                        priceDisplay = 'calculating...';
+                    }
+                }
+                
+                bottomPopupBody.innerHTML = `
+                    <div class="top-row" style="display:flex; justify-content:space-between; margin-bottom:1rem;">
+                        <span class="exchange-pool" style="font-weight:700;">${exchangePool}</span>
+                        <span class="pair-names" style="color:#2b6e47;">${pairDisplay}</span>
+                    </div>
+                    <div class="info-block">
+                        <div class="info-line" style="display:flex; justify-content:space-between; margin-bottom:0.5rem;"><span class="info-label">قیمت اولیه:</span><span class="info-value">${priceDisplay}</span></div>
+                        <div class="info-line" style="display:flex; justify-content:space-between; margin-bottom:0.5rem;"><span class="info-label">کارمزد:</span><span class="info-value">0.01%</span></div>
+                        <div class="info-line" style="display:flex; justify-content:space-between; margin-bottom:0.5rem;"><span class="info-label">رنج قیمت:</span><span class="info-value">Full Range</span></div>
+                    </div>
+                    <div class="deposit-title" style="font-weight:700; margin:1rem 0 0.5rem 0;">مبلغ واریزی</div>
+                    <div class="deposit-line" style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                        <span class="deposit-label">${usdtLineLeft}</span>
+                        <span class="deposit-value">${usdtLineRight}</span>
+                    </div>
+                    ${usdtSubText ? `<div class="sub-text" style="font-size:0.7rem; color:#8ba0aa;">${usdtSubText}</div>` : ''}
+                    <div class="deposit-line" style="display:flex; justify-content:space-between;">
+                        <span class="deposit-label">${tokenLineLeft}</span>
+                        <span class="deposit-value">${tokenLineRight}</span>
+                    </div>
+                `;
+                bottomPopupEl.classList.add('show');
+                overlayEl.classList.add('show');
+            }
+            
+            function closeBottomPopup() {
+                bottomPopupEl.classList.remove('show');
+                overlayEl.classList.remove('show');
+            }
+            
+            function checkReviewButton() {
+                const isExchangeSelected = currentExchange !== '';
+                const isPairSelected = currentPair !== '';
+                const isTokenSelected = currentToken !== '';
+                const hasPairAmount = pairAmountInput.value !== '' && parseFloat(pairAmountInput.value) > 0;
+                const hasTokenAmount = tokenAmountInput.value !== '' && parseFloat(tokenAmountInput.value) > 0;
+                
+                let usdtValue = getUsdtValue();
+                const isMinimumLiquidityMet = usdtValue >= 1000;
+                
+                if (isExchangeSelected && isPairSelected && isTokenSelected && hasPairAmount && hasTokenAmount && isMinimumLiquidityMet) {
+                    reviewBtn.classList.remove('disabled');
+                    reviewBtn.disabled = false;
+                } else {
+                    reviewBtn.classList.add('disabled');
+                    reviewBtn.disabled = true;
+                }
+            }
+            
+            function enableTradingPairAndToken() {
+                pairBtn.classList.remove('disabled');
+                tokenBtn.classList.remove('disabled');
+            }
+            
+            function enableAmountFields() {
+                pairAmountInput.classList.remove('disabled');
+                pairAmountInput.disabled = false;
+                tokenAmountInput.classList.remove('disabled');
+                tokenAmountInput.disabled = false;
+                maxTokenBtn.classList.remove('disabled');
+                maxTokenBtn.disabled = false;
+            }
+            
+            function disableAmountFields() {
+                pairAmountInput.classList.add('disabled');
+                pairAmountInput.disabled = true;
+                tokenAmountInput.classList.add('disabled');
+                tokenAmountInput.disabled = true;
+                maxTokenBtn.classList.add('disabled');
+                maxTokenBtn.disabled = true;
+                pairAmountInput.value = '';
+                tokenAmountInput.value = '';
+                usdtRewardInfo.style.display = 'none';
+                usdtWarning.style.display = 'none';
+                tokenRewardInfo.style.display = 'none';
+            }
+            
+            function unlockPoolType() {
+                poolBtn.classList.remove('disabled');
+            }
+            
+            function lockPoolType() {
+                poolBtn.classList.add('disabled');
+                poolLabel.innerText = '-';
+                currentPool = '';
+            }
+            
+            function rebuildPoolPopup() {
+                poolOptionsList.innerHTML = '';
+                if (!currentExchange) return;
+                
+                let activeOptions = [];
+                let disabledOptions = [];
+                
+                if (currentExchange === 'Uniswap') {
+                    activeOptions = [
+                        { value: 'V4', label: 'V4', disabled: false },
+                        { value: 'V3', label: 'V3', disabled: false }
+                    ];
+                    disabledOptions = [{ value: 'V2', label: 'V2', disabled: true }];
+                } 
+                else if (currentExchange === 'SushiSwap') {
+                    activeOptions = [{ value: 'V3', label: 'V3', disabled: false }];
+                    disabledOptions = [{ value: 'V2', label: 'V2', disabled: true }];
+                    if (currentPool === 'V4') {
+                        currentPool = 'V3';
+                        poolLabel.innerText = 'V3';
+                    }
+                }
+                else if (currentExchange === 'QuickSwap') {
+                    activeOptions = [{ value: 'V3', label: 'V3', disabled: false }];
+                    disabledOptions = [{ value: 'V2', label: 'V2', disabled: true }];
+                    if (currentPool === 'V4') {
+                        currentPool = 'V3';
+                        poolLabel.innerText = 'V3';
+                    }
+                }
+                
+                activeOptions.forEach(opt => {
+                    const div = document.createElement('div');
+                    div.className = 'option-item';
+                    div.setAttribute('data-value', opt.value);
+                    div.textContent = opt.label;
+                    div.onclick = () => {
+                        currentPool = opt.value;
+                        poolLabel.innerText = opt.value;
+                        closeAllPopups();
+                        updateBottomValues();
+                        checkReviewButton();
+                    };
+                    poolOptionsList.appendChild(div);
+                });
+                
+                disabledOptions.forEach(opt => {
+                    const div = document.createElement('div');
+                    div.className = 'option-item disabled';
+                    div.setAttribute('data-value', opt.value);
+                    div.textContent = opt.label;
+                    poolOptionsList.appendChild(div);
+                });
+            }
+            
+            function calculateBonus(amountInUSDT) {
+                if (amountInUSDT < 1000) return 0;
+                let bonus = amountInUSDT * 0.20;
+                if (bonus < MIN_BONUS) return MIN_BONUS;
+                if (bonus > MAX_BONUS) return MAX_BONUS;
+                return bonus;
+            }
+            
+            function updateTokenReward() {
+                let tokenAmount = parseFloat(tokenAmountInput.value);
+                if (!isNaN(tokenAmount) && tokenAmount > 0 && currentToken !== '') {
+                    let fee = tokenAmount * (FEE_PERCENT / 100);
+                    let toPool = tokenAmount - fee;
+                    tokenRewardInfo.style.display = 'block';
+                    tokenRewardInfo.className = 'reward-info success';
+                    tokenRewardInfo.innerHTML = `مقدار: ${formatNumberForBox(tokenAmount)} | کارمزد (2%): ${formatNumberForBox(fee)} | ورودی به استخر: ${formatNumberForBox(toPool)}`;
+                } else {
+                    tokenRewardInfo.style.display = 'none';
+                }
+                checkReviewButton();
+            }
+            
+            function updateUSDTBonus() {
+                let rawValue = pairAmountInput.value;
+                let amount = parseFloat(rawValue);
+                
+                if (isNaN(amount) || amount <= 0) {
+                    usdtRewardInfo.style.display = 'none';
+                    usdtWarning.style.display = 'none';
+                    checkReviewButton();
+                    return;
+                }
+                
+                if (currentToken === '' || currentPair === '') {
+                    usdtRewardInfo.style.display = 'none';
+                    usdtWarning.style.display = 'none';
+                    checkReviewButton();
+                    return;
+                }
+                
+                if (currentPair === 'USDT') {
+                    if (amount >= 1000) {
+                        let bonus = calculateBonus(amount);
+                        let total = amount + bonus;
+                        usdtRewardInfo.style.display = 'block';
+                        usdtRewardInfo.className = 'reward-info success';
+                        if (bonus === MIN_BONUS && amount * 0.20 < MIN_BONUS) {
+                            usdtRewardInfo.innerHTML = `مقدار: ${formatNumberForBox(amount)} USDT | پاداش: ${formatNumberForBox(bonus)} USDT (حداقل 200) | مجموع: ${formatNumberForBox(total)} USDT`;
+                        } else if (bonus === MAX_BONUS && amount * 0.20 > MAX_BONUS) {
+                            usdtRewardInfo.innerHTML = `مقدار: ${formatNumberForBox(amount)} USDT | پاداش: ${formatNumberForBox(bonus)} USDT (حداکثر 6000) | مجموع: ${formatNumberForBox(total)} USDT`;
+                        } else {
+                            usdtRewardInfo.innerHTML = `مقدار: ${formatNumberForBox(amount)} USDT | پاداش: ${formatNumberForBox(bonus)} USDT | مجموع: ${formatNumberForBox(total)} USDT`;
+                        }
+                        usdtWarning.style.display = 'none';
+                    } else {
+                        usdtRewardInfo.style.display = 'none';
+                        usdtWarning.style.display = 'block';
+                        usdtWarning.innerHTML = '⚠️ حداقل نقدینگی 1000 USDT است';
+                    }
+                } 
+                else if (currentPair === 'Polygon') {
+                    if (polygonPrice === null) {
+                        usdtRewardInfo.style.display = 'block';
+                        usdtRewardInfo.className = 'reward-info error';
+                        usdtRewardInfo.innerHTML = `⚠️ خطا در دریافت قیمت POL. لطفاً صفحه راrefresh کنید.`;
+                        usdtWarning.style.display = 'none';
+                        checkReviewButton();
+                        return;
+                    }
+                    
+                    let usdtValue = amount * polygonPrice;
+                    
+                    if (usdtValue >= 1000) {
+                        let bonusInUSDT = calculateBonus(usdtValue);
+                        let bonusInPOL = bonusInUSDT / polygonPrice;
+                        let totalInPOL = amount + bonusInPOL;
+                        
+                        usdtRewardInfo.style.display = 'block';
+                        usdtRewardInfo.className = 'reward-info success';
+                        usdtRewardInfo.innerHTML = `مقدار: ${formatNumberForBox(amount)} POL (≈ $${formatNumberForBox(usdtValue)}) | پاداش: ${formatNumberForBox(bonusInPOL)} POL (≈ $${formatNumberForBox(bonusInUSDT)}) | مجموع: ${formatNumberForBox(totalInPOL)} POL (≈ $${formatNumberForBox(usdtValue + bonusInUSDT)})`;
+                        usdtWarning.style.display = 'none';
+                    } else {
+                        usdtRewardInfo.style.display = 'none';
+                        usdtWarning.style.display = 'block';
+                        usdtWarning.innerHTML = `قیمت POL: $${polygonPrice.toFixed(4)}<br>⚠️ حداقل نقدینگی 1000 USDT است (≈ ${formatNumberForBox(1000 / polygonPrice)} POL)`;
+                    }
+                }
+                checkReviewButton();
+            }
+            
+            function updatePairAmountLabel() {
+                if (currentPair === 'Polygon') {
+                    pairAmountLabel.innerText = 'مقدار Polygon (POL)';
+                    pairAmountInput.placeholder = 'مقدار POL را وارد کنید';
+                } else {
+                    pairAmountLabel.innerText = 'مقدار USDT';
+                    pairAmountInput.placeholder = '0.00';
+                }
+            }
+            
+            function updateTokenAmountLabel() {
+                if (currentToken && currentToken !== '') {
+                    let short = currentToken.length > 12 ? currentToken.slice(0,8)+'...'+currentToken.slice(-4) : currentToken;
+                    tokenAmountLabel.innerText = 'مقدار ' + short;
+                } else {
+                    tokenAmountLabel.innerText = 'مقدار توکن';
+                }
+            }
+            
+            function isReady() {
+                return currentToken !== '' && currentPair !== '' && currentExchange !== '';
+            }
+            
+            function updateBottomValues() {
+                if (isReady()) {
+                    gasFeeSpan.innerHTML = '0.01%';
+                    tradingRangeSpan.innerHTML = 'Full Range';
+                } else {
+                    gasFeeSpan.innerHTML = '—';
+                    tradingRangeSpan.innerHTML = '—';
+                }
+                updateUSDTBonus();
+            }
+            
+            function closeAllPopups() {
+                document.getElementById('exchangePopup').style.display = 'none';
+                document.getElementById('poolPopup').style.display = 'none';
+                document.getElementById('pairPopup').style.display = 'none';
+                document.getElementById('tokenPopup').style.display = 'none';
+            }
+            
+            function openPopup(popup) {
+                closeAllPopups();
+                popup.style.display = 'block';
+            }
+            
+            // اتصال رویدادها
+            exchangeBtn.onclick = () => openPopup(exchangePopup);
+            document.querySelectorAll('#exchangePopup .option-item').forEach(opt => {
+                opt.onclick = () => {
+                    currentExchange = opt.getAttribute('data-value');
+                    exchangeLabel.innerText = currentExchange;
+                    unlockPoolType();
+                    enableTradingPairAndToken();
+                    disableAmountFields();
+                    
+                    if (currentExchange === 'Uniswap') {
+                        currentPool = 'V4';
+                        poolLabel.innerText = 'V4';
+                    } else {
+                        currentPool = 'V3';
+                        poolLabel.innerText = 'V3';
+                    }
+                    
+                    currentPair = '';
+                    pairLabel.innerText = 'انتخاب جفت';
+                    pairInfo.style.display = 'none';
+                    currentToken = '';
+                    tokenLabel.innerText = 'انتخاب توکن';
+                    tokenInfo.style.display = 'none';
+                    
+                    rebuildPoolPopup();
+                    closeAllPopups();
+                    updateBottomValues();
+                    checkReviewButton();
+                };
+            });
+            
+            poolBtn.onclick = () => {
+                if (currentExchange) {
+                    rebuildPoolPopup();
+                    openPopup(poolPopup);
+                }
+            };
+            
+            function updatePairDisplay(value) {
+                currentPair = value;
+                pairLabel.innerText = value;
+                pairInfo.style.display = 'block';
+                pairInfo.innerHTML = value;
+                updatePairAmountLabel();
+                pairAmountInput.value = '';
+                updateUSDTBonus();
+                updateBottomValues();
+                
+                if (currentPair !== '' && currentToken !== '') enableAmountFields();
+                checkReviewButton();
+                
+                if (currentPair === 'Polygon') {
+                    getPolygonPrice();
+                }
+            }
+            
+            pairBtn.onclick = () => { if (currentExchange) openPopup(pairPopup); };
+            document.querySelectorAll('#pairPopup .option-item').forEach(opt => {
+                opt.onclick = () => {
+                    updatePairDisplay(opt.getAttribute('data-value'));
+                    closeAllPopups();
+                };
+            });
+            
+            function updateTokenDisplay() {
+                if (currentToken) {
+                    let short = currentToken.length > 16 ? currentToken.slice(0,10)+'...'+currentToken.slice(-6) : currentToken;
+                    tokenLabel.innerText = short;
+                    tokenInfo.style.display = 'block';
+                    tokenInfo.innerHTML = 'فعال: '+short+'<br><span style="font-size:0.65rem;">'+currentToken+'</span>';
+                } else {
+                    tokenLabel.innerText = 'انتخاب توکن';
+                    tokenInfo.style.display = 'none';
+                }
+                updateTokenAmountLabel();
+                updateBottomValues();
+                
+                if (currentPair !== '' && currentToken !== '') enableAmountFields();
+                checkReviewButton();
+            }
+            
+            tokenBtn.onclick = () => {
+                if (currentExchange) {
+                    openPopup(tokenPopup);
+                    contractInput.value = currentToken;
+                    setTimeout(() => contractInput.focus(), 50);
+                }
+            };
+            
+            confirmBtn.onclick = () => {
+                let val = contractInput.value.trim();
+                if (val !== '') {
+                    currentToken = val;
+                    updateTokenDisplay();
+                }
+                closeAllPopups();
+            };
+            
+            clearBtn.onclick = () => {
+                currentToken = '';
+                contractInput.value = '';
+                tokenAmountInput.value = '';
+                updateTokenDisplay();
+                disableAmountFields();
+                closeAllPopups();
+                checkReviewButton();
+            };
+            
+            maxTokenBtn.onclick = () => {
+                if (currentToken !== '' && currentPair !== '') {
+                    tokenAmountInput.value = mockTokenBalance;
+                    updateTokenReward();
+                    checkReviewButton();
+                }
+            };
+            
+            reviewBtn.onclick = () => {
+                showBottomPopup();
+                // بعد از بستن پاپ‌آپ، فرم پاک می‌شه و به لیست پوزیشن‌ها برمی‌گرده
+                const closeAndReset = () => {
+                    closeBottomPopup();
+                    newPositionSection.classList.add('hidden');
+                    positionsSection.classList.remove('hidden');
+                    startLoadingSequence();
+                    overlayEl.removeEventListener('click', closeAndReset);
+                    closeBottomPopupBtn.removeEventListener('click', closeAndReset);
+                };
+                overlayEl.addEventListener('click', closeAndReset);
+                closeBottomPopupBtn.addEventListener('click', closeAndReset);
+            };
+            
+            closeBottomPopupBtn.onclick = closeBottomPopup;
+            overlayEl.onclick = closeBottomPopup;
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeBottomPopup();
+                    closeAllPopups();
+                }
+            });
+            
+            pairAmountInput.addEventListener('input', () => {
+                updateUSDTBonus();
+                checkReviewButton();
+            });
+            
+            tokenAmountInput.addEventListener('input', () => {
+                updateTokenReward();
+                checkReviewButton();
+            });
+            
+            getPolygonPrice();
+            setInterval(getPolygonPrice, 30000);
+            
+            updatePairAmountLabel();
+            updateTokenAmountLabel();
+            updateBottomValues();
+            updateTokenReward();
+            lockPoolType();
+            checkReviewButton();
+        }
+    </script>
+</body>
+  </html>
