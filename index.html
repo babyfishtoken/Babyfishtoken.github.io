@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>استخر نقدینگی | پوزیشن‌های من</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Vazirmatn', 'Inter', sans-serif;
+            background: #eef2f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            direction: rtl;
+            padding: 2rem;
+            color: #1e2f3a;
+        }
+
+        /* ========== استایل هدر ثابت جدید ========== */
+        .sticky-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            z-index: 1000;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+            border-bottom: 2px solid #254e64;
+            padding: 0.75rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            direction: rtl;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .site-icon {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #254e64, #3b7a9a);
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .site-name {
+            font-weight: 650;
+            font-size: 1.2rem;
+            color: #1a3849;
+            letter-spacing: -0.3px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+
+        /* تنظیم دکمه کیف پول در هدر */
+        .header-right w3m-button {
+            --w3m-accent: #254e64;
+        }
+
+        /* فضای خالی برای جبران ارتفاع هدر ثابت */
+        .header-spacer {
+            height: 85px;
+        }
+
+        /* تنظیم مجدد کارت اصلی */
+        .main-card {
+            max-width: 800px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 35px -12px rgba(17, 45, 65, 0.2);
+            overflow: hidden;
+            padding: 2rem 2rem 0 2rem;
+            border: 1px solid #e3eef7;
+        }
+
+        /* حذف دکمه قبلی از بخش wallet-section چون الان در هدر است */
+        .wallet-section {
+            display: none;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 2.5rem);
+            font-weight: 650;
+            color: #1a3849;
+        }
+
+        .subhead {
+            font-size: 0.95rem;
+            font-weight: 350;
+            color: #3b5b70;
+            max-width: 580px;
+            margin: 0 auto 1.5rem auto;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #b8cfde;
+            text-align: center;
+        }
+
+        .positions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .positions-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .positions-title h2 {
+            font-size: 1.3rem;
+            font-weight: 620;
+            color: #1f475b;
+        }
+
+        .new-button {
+            background: #254e64;
+            border: none;
+            border-radius: 30px;
+            padding: 0.4rem 1.2rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid #163847;
+        }
+
+        .new-button:hover {
+            background: #2d5c77;
+        }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-item {
+            background: white;
+            border: 1px solid #cbdbe9;
+            border-radius: 30px;
+            padding: 0.4rem 1.2rem;
+            font-size: 0.9rem;
+            color: #1e3f50;
+            cursor: pointer;
+        }
+
+        .filter-item:hover {
+            background: #f0f7fc;
+        }
+
+        .positions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            min-height: 300px;
+        }
+
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .skeleton-card {
+            background: #f5f9fc;
+            border-radius: 18px;
+            padding: 1.2rem 1.5rem;
+            border: 1px solid #d0e2ef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skeleton-card::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: linear-gradient(90deg, transparent, rgba(200, 220, 240, 0.3), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .skeleton-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .skeleton-icons {
+            display: flex;
+            align-items: center;
+        }
+
+        .skeleton-icon {
+            width: 32px;
+            height: 32px;
+            background: #d0e0ee;
+            border-radius: 50%;
+        }
+
+        .skeleton-icon.secondary {
+            margin-right: -8px;
+        }
+
+        .skeleton-details {
+            margin-right: 0.3rem;
+        }
+
+        .skeleton-line {
+            height: 16px;
+            background: #d0e0ee;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .skeleton-line.short {
+            width: 80px;
+        }
+
+        .skeleton-line.medium {
+            width: 120px;
+        }
+
+        .skeleton-stats {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .skeleton-stat .skeleton-line {
+            width: 60px;
+            margin-bottom: 4px;
+        }
+
+        .skeleton-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .skeleton-action {
+            width: 36px;
+            height: 36px;
+            background: #d0e0ee;
+            border-radius: 50%;
+        }
+
+        .spinner-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .loading-spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #e0e9f2;
+            border-top: 3px solid #254e64;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 0;
+            background: #f5f9fc;
+            border-radius: 20px;
+            border: 1px solid #d0e2ef;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            color: #1f475b;
+            font-size: 1.1rem;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .empty-subtext {
+            color: #5f7d94;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+
+        .new-position-section {
+            background: #f5f9fc;
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            border: 1px solid #d0e2ef;
+            margin-bottom: 2rem;
+        }
+
+        .new-position-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 1.8rem;
+            font-size: 1.1rem;
+            color: #1f475b;
+        }
+
+        .new-position-header span {
+            color: #5f7d94;
+        }
+
+        .back-button {
+            background: transparent;
+            border: none;
+            color: #254e64;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .back-button:hover {
+            color: #1d4054;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #1f475b;
+            font-size: 0.9rem;
+        }
+
+        .custom-select {
+            position: relative;
+            width: 100%;
+        }
+
+        .custom-select select {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            background: white;
+            border: 1px solid #cbdbe9;
+            border-radius: 16px;
+            font-family: 'Vazirmatn', sans-serif;
+            font-size: 0.95rem;
+            color: #1e2f3a;
+            appearance: none;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .custom-select select:focus {
+            border-color: #254e64;
+            box-shadow: 0 0 0 2px rgba(37, 78, 100, 0.1);
+        }
+
+        .custom-select::after {
+            content: "▼";
+            font-size: 0.8rem;
+            color: #5f7d94;
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            background: white;
+            border: 1px solid #cbdbe9;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 0.9rem 1rem;
+            border: none;
+            outline: none;
+            font-family: 'Vazirmatn', sans-serif;
+            font-size: 0.95rem;
+            background: transparent;
+        }
+
+        .input-group input:focus {
+            box-shadow: inset 0 0 0 1px #254e64;
+        }
+
+        .input-group span {
+            padding: 0 1rem;
+            color: #5f7d94;
+            font-size: 0.9rem;
+            background: #f0f7fc;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            border-right: 1px solid #cbdbe9;
+        }
+
+        .create-position-button {
+            width: 100%;
+            background: #254e64;
+            border: none;
+            border-radius: 40px;
+            padding: 1rem;
+            font-size: 1rem;
+            font-weight: 500;
+            color: white;
+            cursor: pointer;
+            border: 1px solid #163847;
+            transition: all 0.15s;
+            margin-top: 0.5rem;
+        }
+
+        .create-position-button:hover {
+            background: #2d5c77;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .waiting-message {
+            text-align: center;
+            padding: 2rem;
+            background: #f5f9fc;
+            border-radius: 20px;
+            border: 1px solid #d0e2ef;
+            margin-bottom: 2rem;
+        }
+
+        .waiting-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .waiting-title {
+            font-weight: 600;
+            color: #1f475b;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-copyright {
+            text-align: center;
+            padding: 1.2rem 0.5rem 1.5rem 0.5rem;
+            border-top: 1px solid #c2d7e9;
+            color: #386277;
+            font-size: 0.85rem;
+            font-weight: 330;
+            margin: 0 -2rem;
+            padding-left: 2rem;
+            padding-right: 2rem;
+            background: #f2f9ff;
+        }
+
+        .footer-copyright span {
+            font-weight: 430;
+            color: #124a61;
+        }
+
+        @media screen and (max-width: 600px) {
+            body { padding: 1rem; }
+            .sticky-header { padding: 0.5rem 1rem; }
+            .header-spacer { height: 70px; }
+            .main-card { padding: 1.2rem 1.2rem 0 1.2rem; border-radius: 20px; }
+            .positions-header { flex-direction: column; align-items: flex-start; }
+            .new-position-section { padding: 1.2rem 1.2rem; }
+            .footer-copyright { margin: 0 -1.2rem; padding-left: 1.2rem; padding-right: 1.2rem; }
+            .site-icon { width: 36px; height: 36px; font-size: 1.6rem; }
+            .site-name { font-size: 0.95rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- ========== هدر ثابت جدید با آیکون سمت چپ و دکمه کیف پول سمت راست ========== -->
+    <div class="sticky-header">
+        <div class="header-left">
+            <div class="site-icon">💧</div>
+            <div class="site-name">Liquidity Pool</div>
+        </div>
+        <div class="header-right">
+            <div id="wallet-btn-header"></div>
+        </div>
+    </div>
+    <div class="header-spacer"></div>
+
+    <div class="main-card">
+        <div class="hero">
+            <h1>استخر نقدینگی هوشمند</h1>
+        </div>
+        <div class="subhead">
+            مدیریت نقدینگی با بهره‌وری بالا · کاملاً شفاف و سریع
+        </div>
+
+        <!-- دکمه قبلی را مخفی کردیم، دیگر نیازی نیست -->
+        <div id="wallet-btn" style="display: none;"></div>
+
+        <div id="waitingMessage" class="waiting-message">
+            <div class="waiting-icon">🔌</div>
+            <div class="waiting-title">اتصال کیف پول</div>
+            <div style="color: #5f7d94; font-size: 0.9rem;">لطفاً برای مشاهده پوزیشن‌ها، کیف پول خود را متصل کنید</div>
+        </div>
+
+        <div id="positionsSection" class="hidden">
+            <div class="positions-header">
+                <div class="positions-title">
+                    <h2>پوزیشن‌های من</h2>
+                    <button id="newPositionBtn" class="new-button">+ جدید</button>
+                </div>
+                <div class="filters">
+                    <div class="filter-item" onclick="alert('فیلتر وضعیت در حال توسعه')">وضعیت ▼</div>
+                    <div class="filter-item" onclick="alert('فیلتر پروتکل در حال توسعه')">پروتکل ▼</div>
+                </div>
+            </div>
+            <div id="positionsList" class="positions-list"></div>
+        </div>
+
+        <div id="newPositionSection" class="new-position-section hidden">
+            <div class="new-position-header">
+                <button id="backToPositionsBtn" class="back-button">←</button>
+                پوزیشن‌های من <span>/ جدید</span>
+            </div>
+            <div class="form-group">
+                <div class="form-label">انتخاب صرافی</div>
+                <div class="custom-select">
+                    <select id="dexSelect">
+                        <option value="" selected disabled>انتخاب صرافی</option>
+                        <option value="uniswap">Uniswap</option>
+                        <option value="sushiswap">SushiSwap</option>
+                        <option value="pancakeswap">PancakeSwap</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-label">نسخه استخر</div>
+                <div class="custom-select">
+                    <select id="versionSelect" disabled>
+                        <option value="">ابتدا صرافی را انتخاب کنید</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-label">جفت ارز</div>
+                <div class="input-group">
+                    <input type="text" id="pairInput" placeholder="مثال: ETH/USDT">
+                    <span>جفت</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-label">مقدار نقدینگی</div>
+                <div class="input-group">
+                    <input type="text" id="amountInput" placeholder="مقدار مورد نظر">
+                    <span>توکن</span>
+                </div>
+            </div>
+            <button id="createPositionConfirmBtn" class="create-position-button">ایجاد پوزیشن</button>
+        </div>
+
+        <div class="footer-copyright">
+            © ۲۰۲۵ استخر نقدینگی هوشمند. تمامی حقوق محفوظ است. | طراحی متوازن و حرفه‌ای
+            <span>— پوزیشن‌ها v1.0</span>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createWeb3Modal, defaultWagmiConfig } from "https://esm.sh/@web3modal/wagmi";
+        import { mainnet, polygon, bsc } from "https://esm.sh/wagmi/chains";
+
+        const projectId = "96f13374b0fe2f629a925617de0a2ba3";
+        const chains = [mainnet, polygon, bsc];
+
+        const wagmiConfig = defaultWagmiConfig({
+            chains,
+            projectId,
+            metadata: { name: "Liquidity Pools", description: "", url: window.location.href, icons: [] }
+        });
+
+        // ایجاد Web3Modal و گرفتن نمونه آن
+        const modal = createWeb3Modal({ wagmiConfig, projectId, chains });
+        
+        // اضافه کردن دکمه به هدر جدید (سمت راست)
+        const btn = document.createElement("w3m-button");
+        document.getElementById("wallet-btn-header").appendChild(btn);
+        
+        // همچنین برای سازگاری با کد قبلی، یک المان خالی در جای قبلی قرار می‌دهیم
+        const oldWalletContainer = document.getElementById("wallet-btn");
+        if(oldWalletContainer) {
+            oldWalletContainer.appendChild(document.createElement("w3m-button"));
+        }
+
+        // عناصر DOM
+        const waitingMessage = document.getElementById('waitingMessage');
+        const positionsSection = document.getElementById('positionsSection');
+        const newPositionSection = document.getElementById('newPositionSection');
+        const positionsList = document.getElementById('positionsList');
+        const newPositionBtn = document.getElementById('newPositionBtn');
+        const backToPositionsBtn = document.getElementById('backToPositionsBtn');
+        const createPositionBtn = document.getElementById('createPositionConfirmBtn');
+        const dexSelect = document.getElementById('dexSelect');
+        const versionSelect = document.getElementById('versionSelect');
+
+        let loadingTimer = null;
+        let isWalletConnected = false;
+
+        // توابع کمکی
+        function renderSkeletonWithSpinner() {
+            positionsList.innerHTML = `
+                <div class="spinner-container"><div class="loading-spinner"></div></div>
+                <div class="loading-container">
+                    <div class="skeleton-card"><div class="skeleton-left"><div class="skeleton-icons"><div class="skeleton-icon"></div><div class="skeleton-icon secondary"></div></div><div><div class="skeleton-line short"></div><div class="skeleton-line medium"></div></div></div><div class="skeleton-stats"><div><div class="skeleton-line"></div><div class="skeleton-line"></div></div><div><div class="skeleton-line"></div><div class="skeleton-line"></div></div></div><div class="skeleton-actions"><div class="skeleton-action"></div><div class="skeleton-action"></div></div></div>
+                    <div class="skeleton-card"><div class="skeleton-left"><div class="skeleton-icons"><div class="skeleton-icon"></div><div class="skeleton-icon secondary"></div></div><div><div class="skeleton-line short"></div><div class="skeleton-line medium"></div></div></div><div class="skeleton-stats"><div><div class="skeleton-line"></div><div class="skeleton-line"></div></div><div><div class="skeleton-line"></div><div class="skeleton-line"></div></div></div><div class="skeleton-actions"><div class="skeleton-action"></div><div class="skeleton-action"></div></div></div>
+                </div>
+            `;
+        }
+
+        function renderEmpty() {
+            positionsList.innerHTML = `
+                <div class="empty-container">
+                    <div class="empty-icon">🏊</div>
+                    <div class="empty-text">فعلاً استخری ایجاد نکرده‌اید</div>
+                    <div class="empty-subtext">با کلیک روی دکمه «+ جدید» اولین استخر نقدینگی خود را ایجاد کنید</div>
+                </div>
+            `;
+        }
+
+        function startLoadingSequence() {
+            if (!isWalletConnected) return;
+            renderSkeletonWithSpinner();
+            if (loadingTimer) clearTimeout(loadingTimer);
+            loadingTimer = setTimeout(() => {
+                if (isWalletConnected) renderEmpty();
+            }, 8000);
+        }
+
+        function stopLoadingSequence() {
+            if (loadingTimer) { clearTimeout(loadingTimer); loadingTimer = null; }
+        }
+
+        function updateVersionOptions() {
+            const selectedDex = dexSelect.value;
+            versionSelect.innerHTML = '';
+            if (!selectedDex) {
+                versionSelect.disabled = true;
+                versionSelect.innerHTML = '<option value="">ابتدا صرافی را انتخاب کنید</option>';
+                return;
+            }
+            versionSelect.disabled = false;
+            if (selectedDex === 'uniswap') {
+                versionSelect.innerHTML = '<option value="v2">Uniswap V2</option><option value="v4" selected>Uniswap V4</option>';
+            } else if (selectedDex === 'pancakeswap') {
+                versionSelect.innerHTML = '<option value="v2">PancakeSwap V2</option><option value="v3" selected>PancakeSwap V3</option><option value="v4">PancakeSwap V4</option>';
+            } else if (selectedDex === 'sushiswap') {
+                versionSelect.innerHTML = '<option value="v2">SushiSwap V2</option><option value="v3" selected>SushiSwap V3</option>';
+            }
+        }
+
+        // ========== تابع بررسی وضعیت واقعی اتصال ==========
+        function checkAndUpdateConnection() {
+            import("https://esm.sh/wagmi/actions").then(({ getAccount }) => {
+                const account = getAccount(wagmiConfig);
+                const reallyConnected = account.isConnected === true && account.address;
+                
+                if (reallyConnected && !isWalletConnected) {
+                    isWalletConnected = true;
+                    waitingMessage.classList.add('hidden');
+                    positionsSection.classList.remove('hidden');
+                    newPositionSection.classList.add('hidden');
+                    startLoadingSequence();
+                } 
+                else if (!reallyConnected && isWalletConnected) {
+                    isWalletConnected = false;
+                    waitingMessage.classList.remove('hidden');
+                    positionsSection.classList.add('hidden');
+                    newPositionSection.classList.add('hidden');
+                    positionsList.innerHTML = '';
+                    stopLoadingSequence();
+                }
+            });
+        }
+
+        setInterval(checkAndUpdateConnection, 1000);
+
+        if (modal.subscribeState) {
+            modal.subscribeState(() => {
+                setTimeout(checkAndUpdateConnection, 500);
+            });
+        }
+
+        // رویدادها
+        if (newPositionBtn) {
+            newPositionBtn.addEventListener('click', () => {
+                if (isWalletConnected) {
+                    positionsSection.classList.add('hidden');
+                    newPositionSection.classList.remove('hidden');
+                } else {
+                    alert('لطفاً ابتدا کیف پول خود را متصل کنید');
+                }
+            });
+        }
+
+        if (backToPositionsBtn) {
+            backToPositionsBtn.addEventListener('click', () => {
+                newPositionSection.classList.add('hidden');
+                positionsSection.classList.remove('hidden');
+                startLoadingSequence();
+            });
+        }
+
+        if (dexSelect) {
+            dexSelect.addEventListener('change', updateVersionOptions);
+        }
+
+        if (createPositionBtn) {
+            createPositionBtn.addEventListener('click', () => {
+                if (!isWalletConnected) {
+                    alert('لطفاً ابتدا کیف پول خود را متصل کنید');
+                    return;
+                }
+                const dex = dexSelect.value;
+                const version = versionSelect.value;
+                const pair = document.getElementById('pairInput').value;
+                const amount = document.getElementById('amountInput').value;
+                if (!dex) { alert('لطفاً یک صرافی انتخاب کنید'); return; }
+                if (!version) { alert('لطفاً نسخه استخر را انتخاب کنید'); return; }
+                if (!pair) { alert('لطفاً جفت ارز را وارد کنید'); return; }
+                if (!amount) { alert('لطفاً مقدار نقدینگی را وارد کنید'); return; }
+                
+                let versionName = versionSelect.options[versionSelect.selectedIndex]?.textContent || version;
+                alert(`✅ پوزیشن جدید ایجاد شد!\n\nصرافی: ${dex}\nنسخه: ${versionName}\nجفت ارز: ${pair}\nمقدار: ${amount}`);
+                
+                document.getElementById('pairInput').value = '';
+                document.getElementById('amountInput').value = '';
+                dexSelect.value = '';
+                updateVersionOptions();
+                
+                newPositionSection.classList.add('hidden');
+                positionsSection.classList.remove('hidden');
+                startLoadingSequence();
+            });
+        }
+
+        setTimeout(checkAndUpdateConnection, 1000);
+    </script>
+</body>
+  </html>
