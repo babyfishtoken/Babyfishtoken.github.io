@@ -72,6 +72,7 @@
         .header-right {
             display: flex;
             align-items: center;
+            gap: 0.5rem;
         }
 
         /* تنظیم دکمه کیف پول در هدر */
@@ -96,7 +97,7 @@
             border: 1px solid #e3eef7;
         }
 
-        /* حذف دکمه قبلی از بخش wallet-section چون الان در هدر است */
+        /* مخفی کردن بخش wallet-section قبلی چون الان در هدر است */
         .wallet-section {
             display: none;
         }
@@ -533,10 +534,10 @@
     </style>
 </head>
 <body>
-    <!-- ========== هدر ثابت با آیکون در راست، نوشته در سمت چپ آن ========== -->
+    <!-- ========== هدر ثابت با آیکون سمت راست، دکمه اصلی شما سمت چپ ========== -->
     <div class="sticky-header">
         <div class="header-left">
-            <div id="wallet-btn-header"></div>
+            <div id="original-wallet-btn"></div>
         </div>
         <div class="header-right">
             <div class="site-name">Liquidity Pool</div>
@@ -553,7 +554,7 @@
             مدیریت نقدینگی با بهره‌وری بالا · کاملاً شفاف و سریع
         </div>
 
-        <!-- دکمه قبلی را مخفی کردیم، دیگر نیازی نیست -->
+        <!-- المان اصلی دکمه کیف پول شما (به هدر منتقل شده) -->
         <div id="wallet-btn" style="display: none;"></div>
 
         <div id="waitingMessage" class="waiting-message">
@@ -639,14 +640,16 @@
         // ایجاد Web3Modal و گرفتن نمونه آن
         const modal = createWeb3Modal({ wagmiConfig, projectId, chains });
         
-        // اضافه کردن دکمه به هدر (سمت چپ)
-        const btn = document.createElement("w3m-button");
-        document.getElementById("wallet-btn-header").appendChild(btn);
+        // گرفتن المان اصلی دکمه شما و انتقال آن به هدر
+        const originalWalletContainer = document.getElementById("wallet-btn");
+        const headerWalletContainer = document.getElementById("original-wallet-btn");
         
-        // همچنین برای سازگاری با کد قبلی، یک المان خالی در جای قبلی قرار می‌دهیم
-        const oldWalletContainer = document.getElementById("wallet-btn");
-        if(oldWalletContainer) {
-            oldWalletContainer.appendChild(document.createElement("w3m-button"));
+        if (originalWalletContainer && headerWalletContainer) {
+            // ایجاد دکمه جدید در هدر
+            const btn = document.createElement("w3m-button");
+            headerWalletContainer.appendChild(btn);
+            // مخفی کردن المان اصلی
+            originalWalletContainer.style.display = "none";
         }
 
         // عناصر DOM
@@ -803,4 +806,4 @@
         setTimeout(checkAndUpdateConnection, 1000);
     </script>
 </body>
-    </html>
+                </html>
