@@ -533,14 +533,14 @@
     </style>
 </head>
 <body>
-    <!-- ========== هدر ثابت جدید با آیکون سمت چپ و دکمه کیف پول سمت راست ========== -->
+    <!-- ========== هدر ثابت با آیکون در راست، دکمه کیف پول در چپ ========== -->
     <div class="sticky-header">
         <div class="header-left">
-            <div class="site-icon">💧</div>
-            <div class="site-name">Liquidity Pool</div>
+            <div id="wallet-btn-header"></div>
         </div>
         <div class="header-right">
-            <div id="wallet-btn-header"></div>
+            <div class="site-icon">💧</div>
+            <div class="site-name">Liquidity Pool</div>
         </div>
     </div>
     <div class="header-spacer"></div>
@@ -639,7 +639,7 @@
         // ایجاد Web3Modal و گرفتن نمونه آن
         const modal = createWeb3Modal({ wagmiConfig, projectId, chains });
         
-        // اضافه کردن دکمه به هدر جدید (سمت راست)
+        // اضافه کردن دکمه به هدر (سمت چپ)
         const btn = document.createElement("w3m-button");
         document.getElementById("wallet-btn-header").appendChild(btn);
         
@@ -803,4 +803,4 @@
         setTimeout(checkAndUpdateConnection, 1000);
     </script>
 </body>
-  </html>
+    </html>
