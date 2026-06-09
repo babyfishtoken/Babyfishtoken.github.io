@@ -27,7 +27,6 @@
             color: #e8f0e8;
         }
 
-        /* Dark green & white theme */
         .sticky-header {
             position: fixed;
             top: 0;
@@ -341,19 +340,17 @@
             text-align: center;
         }
 
-        /* New empty page with only back link */
+        /* Empty page - completely blank */
         .new-position-empty {
             background: #f5faf7;
             border-radius: 20px;
             border: 1px solid #c8e0d4;
             margin-bottom: 2rem;
             min-height: 400px;
-            display: flex;
-            flex-direction: column;
         }
 
         .empty-page-header {
-            padding: 1.5rem 2rem;
+            padding: 1rem 1.5rem;
             border-bottom: 1px solid #c8e0d4;
             background: white;
             border-radius: 20px 20px 0 0;
@@ -363,13 +360,13 @@
             background: transparent;
             border: none;
             color: #1a5a3a;
-            font-size: 1rem;
+            font-size: 0.95rem;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
             font-weight: 500;
-            padding: 0.5rem 0;
+            padding: 0.3rem 0;
             transition: color 0.2s;
         }
 
@@ -377,24 +374,9 @@
             color: #0a3a2a;
         }
 
+        /* Completely empty content area - nothing inside */
         .empty-page-content {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 4rem 2rem;
-            text-align: center;
-        }
-
-        .empty-page-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            opacity: 0.4;
-        }
-
-        .empty-page-text {
-            color: #2a6a4a;
-            font-size: 1rem;
+            min-height: 350px;
         }
 
         .hidden {
@@ -455,20 +437,19 @@
             .footer-copyright { margin: 0 -1.2rem; padding-left: 1.2rem; padding-right: 1.2rem; }
             .site-icon { width: 36px; height: 36px; font-size: 1.6rem; }
             .site-name { font-size: 0.95rem; }
-            .empty-page-header { padding: 1rem 1.2rem; }
-            .empty-page-content { padding: 2rem 1rem; }
+            .empty-page-header { padding: 0.75rem 1rem; }
         }
     </style>
 </head>
 <body>
-    <!-- Fixed header -->
+    <!-- Fixed header - logo on left, button on right (original order) -->
     <div class="sticky-header">
         <div class="header-left">
-            <div id="original-wallet-btn"></div>
+            <div class="site-icon">💧</div>
+            <div class="site-name">Liquidity Pool</div>
         </div>
         <div class="header-right">
-            <div class="site-name">Liquidity Pool</div>
-            <div class="site-icon">💧</div>
+            <div id="original-wallet-btn"></div>
         </div>
     </div>
 
@@ -503,19 +484,14 @@
                 <div id="positionsList" class="positions-list"></div>
             </div>
 
-            <!-- New empty page - only back link and empty content -->
+            <!-- Empty page - only back link that says "Your Positions", completely blank inside -->
             <div id="newPositionSection" class="new-position-empty hidden">
                 <div class="empty-page-header">
                     <button id="backToPositionsBtn" class="back-link">
-                        ← Your Positions - New Position
+                        ← Your Positions
                     </button>
                 </div>
-                <div class="empty-page-content">
-                    <div>
-                        <div class="empty-page-icon">📄</div>
-                        <div class="empty-page-text">No form to fill · This page is intentionally empty</div>
-                    </div>
-                </div>
+                <div class="empty-page-content"></div>
             </div>
 
             <div class="footer-copyright">
