@@ -80,9 +80,9 @@
             --w3m-accent: #254e64;
         }
 
-        /* فضای خالی برای جبران ارتفاع هدر ثابت - افزایش ارتفاع برای جلوگیری از تداخل */
+        /* فضای خالی برای جبران ارتفاع هدر ثابت */
         .header-spacer {
-            height: 95px;
+            height: 85px;
         }
 
         /* تنظیم مجدد کارت اصلی */
@@ -95,7 +95,11 @@
             overflow: hidden;
             padding: 2rem 2rem 0 2rem;
             border: 1px solid #e3eef7;
-            margin-top: 0;
+        }
+
+        /* ========== رفع مشکل دیده نشدن محتوا زیر هدر ========== */
+        #positionsSection {
+            padding-top: 1rem;
         }
 
         /* مخفی کردن بخش wallet-section قبلی چون الان در هدر است */
@@ -524,13 +528,16 @@
         @media screen and (max-width: 600px) {
             body { padding: 1rem; }
             .sticky-header { padding: 0.5rem 1rem; }
-            .header-spacer { height: 80px; }
+            .header-spacer { height: 70px; }
             .main-card { padding: 1.2rem 1.2rem 0 1.2rem; border-radius: 20px; }
             .positions-header { flex-direction: column; align-items: flex-start; }
             .new-position-section { padding: 1.2rem 1.2rem; }
             .footer-copyright { margin: 0 -1.2rem; padding-left: 1.2rem; padding-right: 1.2rem; }
             .site-icon { width: 36px; height: 36px; font-size: 1.6rem; }
             .site-name { font-size: 0.95rem; }
+            #positionsSection {
+                padding-top: 0.5rem;
+            }
         }
     </style>
 </head>
@@ -807,4 +814,4 @@
         setTimeout(checkAndUpdateConnection, 1000);
     </script>
 </body>
-    </html>
+                </html>
