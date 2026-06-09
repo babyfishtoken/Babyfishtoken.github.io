@@ -80,9 +80,12 @@
             --w3m-accent: #254e64;
         }
 
-        /* فضای خالی برای جبران ارتفاع هدر ثابت */
-        .header-spacer {
-            height: 85px;
+        /* ========== راه حل اصلی: ایجاد یک wrapper با padding-top ========== */
+        .page-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding-top: 95px;
         }
 
         /* تنظیم مجدد کارت اصلی */
@@ -95,11 +98,6 @@
             overflow: hidden;
             padding: 2rem 2rem 0 2rem;
             border: 1px solid #e3eef7;
-        }
-
-        /* ========== رفع مشکل دیده نشدن محتوا زیر هدر ========== */
-        #positionsSection {
-            padding-top: 1rem;
         }
 
         /* مخفی کردن بخش wallet-section قبلی چون الان در هدر است */
@@ -526,18 +524,22 @@
         }
 
         @media screen and (max-width: 600px) {
-            body { padding: 1rem; }
+            body { padding: 0; }
             .sticky-header { padding: 0.5rem 1rem; }
-            .header-spacer { height: 70px; }
-            .main-card { padding: 1.2rem 1.2rem 0 1.2rem; border-radius: 20px; }
+            .page-wrapper {
+                padding-top: 75px;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            .main-card { 
+                padding: 1.2rem 1.2rem 0 1.2rem; 
+                border-radius: 20px;
+            }
             .positions-header { flex-direction: column; align-items: flex-start; }
             .new-position-section { padding: 1.2rem 1.2rem; }
             .footer-copyright { margin: 0 -1.2rem; padding-left: 1.2rem; padding-right: 1.2rem; }
             .site-icon { width: 36px; height: 36px; font-size: 1.6rem; }
             .site-name { font-size: 0.95rem; }
-            #positionsSection {
-                padding-top: 0.5rem;
-            }
         }
     </style>
 </head>
@@ -552,83 +554,85 @@
             <div class="site-icon">💧</div>
         </div>
     </div>
-    <div class="header-spacer"></div>
 
-    <div class="main-card">
-        <div class="hero">
-            <h1>استخر نقدینگی هوشمند</h1>
-        </div>
-        <div class="subhead">
-            مدیریت نقدینگی با بهره‌وری بالا · کاملاً شفاف و سریع
-        </div>
+    <!-- ========== wrapper جدید با padding-top برای جلوگیری از تداخل با هدر ========== -->
+    <div class="page-wrapper">
+        <div class="main-card">
+            <div class="hero">
+                <h1>استخر نقدینگی هوشمند</h1>
+            </div>
+            <div class="subhead">
+                مدیریت نقدینگی با بهره‌وری بالا · کاملاً شفاف و سریع
+            </div>
 
-        <!-- المان اصلی دکمه کیف پول شما (به هدر منتقل شده) -->
-        <div id="wallet-btn" style="display: none;"></div>
+            <!-- المان اصلی دکمه کیف پول شما (به هدر منتقل شده) -->
+            <div id="wallet-btn" style="display: none;"></div>
 
-        <div id="waitingMessage" class="waiting-message">
-            <div class="waiting-icon">🔌</div>
-            <div class="waiting-title">اتصال کیف پول</div>
-            <div style="color: #5f7d94; font-size: 0.9rem;">لطفاً برای مشاهده پوزیشن‌ها، کیف پول خود را متصل کنید</div>
-        </div>
+            <div id="waitingMessage" class="waiting-message">
+                <div class="waiting-icon">🔌</div>
+                <div class="waiting-title">اتصال کیف پول</div>
+                <div style="color: #5f7d94; font-size: 0.9rem;">لطفاً برای مشاهده پوزیشن‌ها، کیف پول خود را متصل کنید</div>
+            </div>
 
-        <div id="positionsSection" class="hidden">
-            <div class="positions-header">
-                <div class="positions-title">
-                    <h2>پوزیشن‌های من</h2>
-                    <button id="newPositionBtn" class="new-button">+ جدید</button>
+            <div id="positionsSection" class="hidden">
+                <div class="positions-header">
+                    <div class="positions-title">
+                        <h2>پوزیشن‌های من</h2>
+                        <button id="newPositionBtn" class="new-button">+ جدید</button>
+                    </div>
+                    <div class="filters">
+                        <div class="filter-item" onclick="alert('فیلتر وضعیت در حال توسعه')">وضعیت ▼</div>
+                        <div class="filter-item" onclick="alert('فیلتر پروتکل در حال توسعه')">پروتکل ▼</div>
+                    </div>
                 </div>
-                <div class="filters">
-                    <div class="filter-item" onclick="alert('فیلتر وضعیت در حال توسعه')">وضعیت ▼</div>
-                    <div class="filter-item" onclick="alert('فیلتر پروتکل در حال توسعه')">پروتکل ▼</div>
-                </div>
+                <div id="positionsList" class="positions-list"></div>
             </div>
-            <div id="positionsList" class="positions-list"></div>
-        </div>
 
-        <div id="newPositionSection" class="new-position-section hidden">
-            <div class="new-position-header">
-                <button id="backToPositionsBtn" class="back-button">←</button>
-                پوزیشن‌های من <span>/ جدید</span>
-            </div>
-            <div class="form-group">
-                <div class="form-label">انتخاب صرافی</div>
-                <div class="custom-select">
-                    <select id="dexSelect">
-                        <option value="" selected disabled>انتخاب صرافی</option>
-                        <option value="uniswap">Uniswap</option>
-                        <option value="sushiswap">SushiSwap</option>
-                        <option value="pancakeswap">PancakeSwap</option>
-                    </select>
+            <div id="newPositionSection" class="new-position-section hidden">
+                <div class="new-position-header">
+                    <button id="backToPositionsBtn" class="back-button">←</button>
+                    پوزیشن‌های من <span>/ جدید</span>
                 </div>
-            </div>
-            <div class="form-group">
-                <div class="form-label">نسخه استخر</div>
-                <div class="custom-select">
-                    <select id="versionSelect" disabled>
-                        <option value="">ابتدا صرافی را انتخاب کنید</option>
-                    </select>
+                <div class="form-group">
+                    <div class="form-label">انتخاب صرافی</div>
+                    <div class="custom-select">
+                        <select id="dexSelect">
+                            <option value="" selected disabled>انتخاب صرافی</option>
+                            <option value="uniswap">Uniswap</option>
+                            <option value="sushiswap">SushiSwap</option>
+                            <option value="pancakeswap">PancakeSwap</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
-            <div class="form-group">
-                <div class="form-label">جفت ارز</div>
-                <div class="input-group">
-                    <input type="text" id="pairInput" placeholder="مثال: ETH/USDT">
-                    <span>جفت</span>
+                <div class="form-group">
+                    <div class="form-label">نسخه استخر</div>
+                    <div class="custom-select">
+                        <select id="versionSelect" disabled>
+                            <option value="">ابتدا صرافی را انتخاب کنید</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
-            <div class="form-group">
-                <div class="form-label">مقدار نقدینگی</div>
-                <div class="input-group">
-                    <input type="text" id="amountInput" placeholder="مقدار مورد نظر">
-                    <span>توکن</span>
+                <div class="form-group">
+                    <div class="form-label">جفت ارز</div>
+                    <div class="input-group">
+                        <input type="text" id="pairInput" placeholder="مثال: ETH/USDT">
+                        <span>جفت</span>
+                    </div>
                 </div>
+                <div class="form-group">
+                    <div class="form-label">مقدار نقدینگی</div>
+                    <div class="input-group">
+                        <input type="text" id="amountInput" placeholder="مقدار مورد نظر">
+                        <span>توکن</span>
+                    </div>
+                </div>
+                <button id="createPositionConfirmBtn" class="create-position-button">ایجاد پوزیشن</button>
             </div>
-            <button id="createPositionConfirmBtn" class="create-position-button">ایجاد پوزیشن</button>
-        </div>
 
-        <div class="footer-copyright">
-            © ۲۰۲۵ استخر نقدینگی هوشمند. تمامی حقوق محفوظ است. | طراحی متوازن و حرفه‌ای
-            <span>— پوزیشن‌ها v1.0</span>
+            <div class="footer-copyright">
+                © ۲۰۲۵ استخر نقدینگی هوشمند. تمامی حقوق محفوظ است. | طراحی متوازن و حرفه‌ای
+                <span>— پوزیشن‌ها v1.0</span>
+            </div>
         </div>
     </div>
 
@@ -814,4 +818,4 @@
         setTimeout(checkAndUpdateConnection, 1000);
     </script>
 </body>
-                </html>
+    </html>
