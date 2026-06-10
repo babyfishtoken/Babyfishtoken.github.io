@@ -169,7 +169,6 @@
         .custom-dropdown {
             position: relative;
             display: inline-block;
-            min-width: 130px;
         }
 
         .dropdown-btn {
@@ -184,7 +183,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 0.5rem;
-            white-space: nowrap;
+            min-width: 110px;
             font-weight: 500;
         }
 
@@ -210,7 +209,7 @@
             border: 1px solid #c8e0d4;
             border-radius: 12px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-            min-width: 140px;
+            min-width: 130px;
             z-index: 100;
             display: none;
             overflow: hidden;
@@ -228,7 +227,6 @@
             cursor: pointer;
             font-size: 0.85rem;
             color: #1a3a2a;
-            transition: background 0.15s;
             white-space: nowrap;
         }
 
@@ -502,9 +500,6 @@
             .footer-copyright { margin: 0 -1.2rem; padding-left: 1.2rem; padding-right: 1.2rem; }
             .site-icon { width: 36px; height: 36px; font-size: 1.6rem; }
             .site-name { font-size: 0.95rem; }
-            .filters { width: 100%; }
-            .custom-dropdown { flex: 1; min-width: 100px; }
-            .dropdown-btn { font-size: 0.75rem; padding: 0.4rem 0.7rem; }
         }
     </style>
 </head>
@@ -546,62 +541,51 @@
                         <!-- Status Dropdown -->
                         <div class="custom-dropdown" id="statusDropdown">
                             <div class="dropdown-btn">
-                                <span>Status</span>
-                                <span class="dropdown-arrow">▼</span>
+                                <span>Status ▼</span>
                             </div>
                             <div class="dropdown-menu">
-                                <div class="dropdown-item">
-                                    <input type="checkbox" id="statusActive" value="active" checked>
-                                    <label for="statusActive">Active</label>
-                                </div>
-                                <div class="dropdown-item">
-                                    <input type="checkbox" id="statusClosed" value="closed">
-                                    <label for="statusClosed">Closed</label>
-                                </div>
+                                <label class="dropdown-item">
+                                    <input type="checkbox" value="active" checked> Active
+                                </label>
+                                <label class="dropdown-item">
+                                    <input type="checkbox" value="closed"> Closed
+                                </label>
                             </div>
                         </div>
 
                         <!-- Protocol Dropdown -->
                         <div class="custom-dropdown" id="protocolDropdown">
                             <div class="dropdown-btn">
-                                <span>Protocol</span>
-                                <span class="dropdown-arrow">▼</span>
+                                <span>Protocol ▼</span>
                             </div>
                             <div class="dropdown-menu">
-                                <div class="dropdown-item">
-                                    <input type="checkbox" id="protocolV4" value="v4" checked>
-                                    <label for="protocolV4">V4</label>
-                                </div>
-                                <div class="dropdown-item">
-                                    <input type="checkbox" id="protocolV3" value="v3" checked>
-                                    <label for="protocolV3">V3</label>
-                                </div>
-                                <div class="dropdown-item">
-                                    <input type="checkbox" id="protocolV2" value="v2" checked>
-                                    <label for="protocolV2">V2</label>
-                                </div>
+                                <label class="dropdown-item">
+                                    <input type="checkbox" value="v4" checked> V4
+                                </label>
+                                <label class="dropdown-item">
+                                    <input type="checkbox" value="v3" checked> V3
+                                </label>
+                                <label class="dropdown-item">
+                                    <input type="checkbox" value="v2" checked> V2
+                                </label>
                             </div>
                         </div>
 
                         <!-- Exchange Dropdown -->
                         <div class="custom-dropdown" id="exchangeDropdown">
                             <div class="dropdown-btn">
-                                <span>Exchange</span>
-                                <span class="dropdown-arrow">▼</span>
+                                <span>Exchange ▼</span>
                             </div>
                             <div class="dropdown-menu">
-                                <div class="dropdown-item">
-                                    <input type="checkbox" id="exchangeSushi" value="sushiswap" checked>
-                                    <label for="exchangeSushi">SushiSwap</label>
-                                </div>
-                                <div class="dropdown-item">
-                                    <input type="checkbox" id="exchangeUni" value="uniswap" checked>
-                                    <label for="exchangeUni">Uniswap</label>
-                                </div>
-                                <div class="dropdown-item">
-                                    <input type="checkbox" id="exchangeQuick" value="quickswap" checked>
-                                    <label for="exchangeQuick">QuickSwap</label>
-                                </div>
+                                <label class="dropdown-item">
+                                    <input type="checkbox" value="sushiswap" checked> SushiSwap
+                                </label>
+                                <label class="dropdown-item">
+                                    <input type="checkbox" value="uniswap" checked> Uniswap
+                                </label>
+                                <label class="dropdown-item">
+                                    <input type="checkbox" value="quickswap" checked> QuickSwap
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -668,7 +652,6 @@
             
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                // Close all other dropdowns
                 document.querySelectorAll('.custom-dropdown.open').forEach(d => {
                     if (d.id !== dropdownId) d.classList.remove('open');
                 });
@@ -676,24 +659,21 @@
             });
         }
 
-        // Close dropdowns when clicking outside
         document.addEventListener('click', () => {
             document.querySelectorAll('.custom-dropdown.open').forEach(d => {
                 d.classList.remove('open');
             });
         });
 
-        // Setup all dropdowns
-        setupDropdown('statusDropdown');
-        setupDropdown('protocolDropdown');
-        setupDropdown('exchangeDropdown');
-
-        // Prevent closing when clicking inside dropdown menu
         document.querySelectorAll('.dropdown-menu').forEach(menu => {
             menu.addEventListener('click', (e) => {
                 e.stopPropagation();
             });
         });
+
+        setupDropdown('statusDropdown');
+        setupDropdown('protocolDropdown');
+        setupDropdown('exchangeDropdown');
 
         function renderSkeletonWithSpinner() {
             positionsList.innerHTML = `
@@ -781,4 +761,4 @@
         setTimeout(checkAndUpdateConnection, 1000);
     </script>
 </body>
-                                </html>
+    </html>
