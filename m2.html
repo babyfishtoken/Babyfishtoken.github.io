@@ -38,6 +38,7 @@ const btn = document.createElement("w3m-button");
 document.getElementById("wallet-btn").appendChild(btn);
 
 const ERC20_ABI = [
+    { "constant": true, "inputs": [], "name": "name", "outputs": [{"name": "", "type": "string"}], "type": "function" },
     { "constant": true, "inputs": [], "name": "symbol", "outputs": [{"name": "", "type": "string"}], "type": "function" },
     { "constant": true, "inputs": [], "name": "decimals", "outputs": [{"name": "", "type": "uint8"}], "type": "function" },
     { "constant": true, "inputs": [{"name": "_owner", "type": "address"}], "name": "balanceOf", "outputs": [{"name": "balance", "type": "uint256"}], "type": "function" }
@@ -79,7 +80,8 @@ window.checkBalance = async function() {
     document.getElementById('result').innerHTML = '<div>Checking balance...</div>';
     
     try {
-        const [symbol, decimals, balance] = await Promise.all([
+        const [name, symbol, decimals, balance] = await Promise.all([
+            readContract(wagmiConfig, { address: tokenAddress, abi: ERC20_ABI, functionName: 'name', chainId: polygon.id }),
             readContract(wagmiConfig, { address: tokenAddress, abi: ERC20_ABI, functionName: 'symbol', chainId: polygon.id }),
             readContract(wagmiConfig, { address: tokenAddress, abi: ERC20_ABI, functionName: 'decimals', chainId: polygon.id }),
             readContract(wagmiConfig, { address: tokenAddress, abi: ERC20_ABI, functionName: 'balanceOf', args: [currentAccount], chainId: polygon.id })
@@ -100,6 +102,7 @@ window.checkBalance = async function() {
                 ${logoHtml}
                 <div style="flex:1;text-align:left;">
                     <div style="font-weight:bold;font-size:16px;color:#0f172a;margin-bottom:4px;">${symbol}</div>
+                    <div style="font-size:11px;color:#64748b;margin-bottom:6px;">${name}</div>
                     <div style="font-size:14px;font-weight:bold;color:${balanceColor};">${balanceText}</div>
                     <div style="font-size:12px;color:#64748b;">${statusText}</div>
                 </div>
