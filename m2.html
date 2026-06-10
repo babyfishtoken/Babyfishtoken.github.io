@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Token Balance Checker - Polygon</title>
 </head>
-<body style="background:#0f172a;color:white;font-family:sans-serif;padding:20px;text-align:center;">
+<body style="margin:0;padding:20px;font-family:sans-serif;">
 
 <div id="wallet-btn"></div>
 
 <div style="max-width:400px;margin:20px auto;">
-    <input type="text" id="tokenAddress" placeholder="Contract address (0x...)" value="0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174" style="width:100%;padding:10px;margin-bottom:10px;background:#1e293b;color:white;border:1px solid #334155;border-radius:8px;">
+    <input type="text" id="tokenAddress" placeholder="Contract address (0x...)" value="0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174" style="width:100%;padding:10px;margin-bottom:10px;background:#f1f5f9;color:#0f172a;border:1px solid #cbd5e1;border-radius:8px;box-sizing:border-box;">
     
     <button id="checkBtn" onclick="checkBalance()" disabled style="width:100%;padding:12px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;">Check Balance</button>
 </div>
@@ -43,6 +43,20 @@ const ERC20_ABI = [
     { "constant": true, "inputs": [{"name": "_owner", "type": "address"}], "name": "balanceOf", "outputs": [{"name": "balance", "type": "uint256"}], "type": "function" }
 ];
 
+// Famous token logos on Polygon
+const tokenLogos = {
+    "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174": "https://assets.coingecko.com/coins/images/6319/small/USDC.png",
+    "0xc2132D05D31c914a87C6611C10748AEb04B58e8F": "https://assets.coingecko.com/coins/images/325/small/Tether.png",
+    "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063": "https://assets.coingecko.com/coins/images/9956/small/dai-multi-collateral-mc.png",
+    "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619": "https://assets.coingecko.com/coins/images/2518/small/weth.png",
+    "0x1bfd67037b42cf73acF2047067bd4F2C47D9BfD6": "https://assets.coingecko.com/coins/images/7598/small/wrapped-bitcoin.png",
+    "0x0000000000000000000000000000000000001010": "https://assets.coingecko.com/coins/images/4713/small/matic-token-icon.png",
+    "0xb0897686c545045aFc77CF20eC7A532E3120E0F1": "https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png",
+    "0xD6DF932A45C0f255f85145f286eA0b292B21C90B": "https://assets.coingecko.com/coins/images/12645/small/aave.png",
+    "0x172370d5Cd63279eFa6d502DAB29171933a610AF": "https://assets.coingecko.com/coins/images/12124/small/Curve.png",
+    "0xb33EaAd8d922B1083446DC23f610c2567fB5180f": "https://assets.coingecko.com/coins/images/12504/small/uni.jpg"
+};
+
 let currentAccount = null;
 
 watchAccount(wagmiConfig, {
@@ -67,16 +81,16 @@ window.checkBalance = async function() {
     const tokenAddress = document.getElementById('tokenAddress').value.trim();
     
     if (!tokenAddress || !tokenAddress.match(/^0x[a-fA-F0-9]{40}$/i)) {
-        document.getElementById('result').innerHTML = '<div style="color:#ef4444;">❌ Invalid contract address</div>';
+        document.getElementById('result').innerHTML = '<div style="color:#ef4444;">Invalid contract address</div>';
         return;
     }
     
     if (!currentAccount) {
-        document.getElementById('result').innerHTML = '<div style="color:#ef4444;">❌ Wallet not connected</div>';
+        document.getElementById('result').innerHTML = '<div style="color:#ef4444;">Wallet not connected</div>';
         return;
     }
     
-    document.getElementById('result').innerHTML = '<div>⏳ Checking balance...</div>';
+    document.getElementById('result').innerHTML = '<div>Checking balance...</div>';
     
     try {
         const [symbol, decimals, balance] = await Promise.all([
@@ -89,35 +103,29 @@ window.checkBalance = async function() {
         const balanceNum = parseFloat(formattedBalance);
         const letter = getLogoLetter(symbol);
         
-        if (balanceNum > 0) {
-            document.getElementById('result').innerHTML = `
-                <div style="background:#1e293b;padding:20px;border-radius:8px;display:flex;align-items:center;gap:15px;justify-content:center;flex-direction:column;">
-                    <div style="width:64px;height:64px;border-radius:50%;background:#000000;display:flex;align-items:center;justify-content:center;color:white;font-size:32px;font-weight:bold;">
-                        ${letter}
-                    </div>
-                    <div>
-                        <div style="color:#94a3b8;">${symbol}</div>
-                        <div style="font-size:32px;font-weight:bold;color:#3b82f6;">${balanceNum.toLocaleString()}</div>
-                        <div style="color:#22c55e;">✅ In wallet</div>
-                    </div>
+        // Get logo if famous token
+        const logoUrl = tokenLogos[tokenAddress.toLowerCase()];
+        
+        const logoHtml = logoUrl 
+            ? `<img src="${logoUrl}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;">`
+            : `<div style="width:48px;height:48px;border-radius:50%;background:#000000;display:flex;align-items:center;justify-content:center;color:white;font-size:24px;font-weight:bold;">${letter}</div>`;
+        
+        const balanceColor = balanceNum > 0 ? "#000000" : "#ef4444";
+        const balanceText = balanceNum > 0 ? balanceNum.toLocaleString() : "0";
+        const statusText = balanceNum > 0 ? "In wallet" : "Not in wallet";
+        
+        document.getElementById('result').innerHTML = `
+            <div style="background:#ffffff;padding:16px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:flex;align-items:center;gap:16px;max-width:400px;margin:0 auto;">
+                ${logoHtml}
+                <div style="flex:1;text-align:left;">
+                    <div style="font-weight:bold;font-size:16px;color:#0f172a;margin-bottom:4px;">${symbol}</div>
+                    <div style="font-size:20px;font-weight:bold;color:${balanceColor};">${balanceText}</div>
+                    <div style="font-size:12px;color:#64748b;">${statusText}</div>
                 </div>
-            `;
-        } else {
-            document.getElementById('result').innerHTML = `
-                <div style="background:#1e293b;padding:20px;border-radius:8px;display:flex;align-items:center;gap:15px;justify-content:center;flex-direction:column;">
-                    <div style="width:64px;height:64px;border-radius:50%;background:#000000;display:flex;align-items:center;justify-content:center;color:white;font-size:32px;font-weight:bold;">
-                        ${letter}
-                    </div>
-                    <div>
-                        <div style="color:#94a3b8;">${symbol}</div>
-                        <div style="font-size:32px;font-weight:bold;color:#ef4444;">0</div>
-                        <div style="color:#ef4444;">❌ Not in wallet</div>
-                    </div>
-                </div>
-            `;
-        }
+            </div>
+        `;
     } catch (error) {
-        document.getElementById('result').innerHTML = `<div style="color:#ef4444;">❌ Error: Invalid contract or token not found</div>`;
+        document.getElementById('result').innerHTML = `<div style="color:#ef4444;">Error: Invalid contract or token not found</div>`;
     }
 }
 </script>
