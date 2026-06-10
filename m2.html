@@ -10,7 +10,7 @@
 <div id="wallet-btn"></div>
 
 <div style="max-width:400px;margin:20px auto;">
-    <input type="text" id="tokenInput" placeholder="Token name (e.g. USDC) or contract address (0x...)" value="USDC" style="width:100%;padding:10px;margin-bottom:10px;background:#1e293b;color:white;border:1px solid #334155;border-radius:8px;">
+    <input type="text" id="tokenAddress" placeholder="Contract address (0x...)" value="0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174" style="width:100%;padding:10px;margin-bottom:10px;background:#1e293b;color:white;border:1px solid #334155;border-radius:8px;">
     
     <button id="checkBtn" onclick="checkBalance()" disabled style="width:100%;padding:12px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;">Check Balance</button>
 </div>
@@ -37,20 +37,6 @@ createWeb3Modal({ wagmiConfig, projectId, chains });
 const btn = document.createElement("w3m-button");
 document.getElementById("wallet-btn").appendChild(btn);
 
-// Popular Polygon tokens list for name search
-const tokenList = [
-    { name: "USDC", address: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174", decimals: 6, symbol: "USDC", logo: "https://assets.coingecko.com/coins/images/6319/small/USDC.png" },
-    { name: "USDT", address: "0xc2132D05D31c914a87C6611C10748AEb04B58e8F", decimals: 6, symbol: "USDT", logo: "https://assets.coingecko.com/coins/images/325/small/Tether.png" },
-    { name: "DAI", address: "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063", decimals: 18, symbol: "DAI", logo: "https://assets.coingecko.com/coins/images/9956/small/dai-multi-collateral-mc.png" },
-    { name: "WETH", address: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619", decimals: 18, symbol: "WETH", logo: "https://assets.coingecko.com/coins/images/2518/small/weth.png" },
-    { name: "WBTC", address: "0x1bfd67037b42cf73acF2047067bd4F2C47D9BfD6", decimals: 8, symbol: "WBTC", logo: "https://assets.coingecko.com/coins/images/7598/small/wrapped-bitcoin.png" },
-    { name: "MATIC", address: "0x0000000000000000000000000000000000001010", decimals: 18, symbol: "MATIC", logo: "https://assets.coingecko.com/coins/images/4713/small/matic-token-icon.png" },
-    { name: "LINK", address: "0xb0897686c545045aFc77CF20eC7A532E3120E0F1", decimals: 18, symbol: "LINK", logo: "https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png" },
-    { name: "AAVE", address: "0xD6DF932A45C0f255f85145f286eA0b292B21C90B", decimals: 18, symbol: "AAVE", logo: "https://assets.coingecko.com/coins/images/12645/small/aave.png" },
-    { name: "CRV", address: "0x172370d5Cd63279eFa6d502DAB29171933a610AF", decimals: 18, symbol: "CRV", logo: "https://assets.coingecko.com/coins/images/12124/small/Curve.png" },
-    { name: "UNI", address: "0xb33EaAd8d922B1083446DC23f610c2567fB5180f", decimals: 18, symbol: "UNI", logo: "https://assets.coingecko.com/coins/images/12504/small/uni.jpg" }
-];
-
 const ERC20_ABI = [
     { "constant": true, "inputs": [], "name": "symbol", "outputs": [{"name": "", "type": "string"}], "type": "function" },
     { "constant": true, "inputs": [], "name": "decimals", "outputs": [{"name": "", "type": "uint8"}], "type": "function" },
@@ -72,11 +58,16 @@ watchAccount(wagmiConfig, {
     }
 });
 
+function getLogoLetter(symbol) {
+    if (!symbol || symbol.length === 0) return '?';
+    return symbol.charAt(0).toUpperCase();
+}
+
 window.checkBalance = async function() {
-    const input = document.getElementById('tokenInput').value.trim();
+    const tokenAddress = document.getElementById('tokenAddress').value.trim();
     
-    if (!input) {
-        document.getElementById('result').innerHTML = '<div style="color:#ef4444;">❌ Please enter token name or contract address</div>';
+    if (!tokenAddress || !tokenAddress.match(/^0x[a-fA-F0-9]{40}$/i)) {
+        document.getElementById('result').innerHTML = '<div style="color:#ef4444;">❌ Invalid contract address</div>';
         return;
     }
     
@@ -85,51 +76,25 @@ window.checkBalance = async function() {
         return;
     }
     
-    let tokenAddress = null;
-    let tokenInfo = null;
-    
-    if (input.match(/^0x[a-fA-F0-9]{40}$/i)) {
-        tokenAddress = input;
-    } else {
-        const searchName = input.toLowerCase();
-        tokenInfo = tokenList.find(t => t.name.toLowerCase() === searchName || t.symbol.toLowerCase() === searchName);
-        if (tokenInfo) {
-            tokenAddress = tokenInfo.address;
-        } else {
-            document.getElementById('result').innerHTML = '<div style="color:#ef4444;">❌ Token not found. Please enter contract address directly</div>';
-            return;
-        }
-    }
-    
     document.getElementById('result').innerHTML = '<div>⏳ Checking balance...</div>';
     
     try {
-        let symbol, decimals, balance, logoUrl;
-        
-        if (tokenInfo) {
-            symbol = tokenInfo.symbol;
-            decimals = tokenInfo.decimals;
-            logoUrl = tokenInfo.logo;
-            balance = await readContract(wagmiConfig, { address: tokenAddress, abi: ERC20_ABI, functionName: 'balanceOf', args: [currentAccount], chainId: polygon.id });
-        } else {
-            const [symbolResult, decimalsResult, balanceResult] = await Promise.all([
-                readContract(wagmiConfig, { address: tokenAddress, abi: ERC20_ABI, functionName: 'symbol', chainId: polygon.id }),
-                readContract(wagmiConfig, { address: tokenAddress, abi: ERC20_ABI, functionName: 'decimals', chainId: polygon.id }),
-                readContract(wagmiConfig, { address: tokenAddress, abi: ERC20_ABI, functionName: 'balanceOf', args: [currentAccount], chainId: polygon.id })
-            ]);
-            symbol = symbolResult;
-            decimals = decimalsResult;
-            balance = balanceResult;
-            logoUrl = `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${tokenAddress}/logo.png`;
-        }
+        const [symbol, decimals, balance] = await Promise.all([
+            readContract(wagmiConfig, { address: tokenAddress, abi: ERC20_ABI, functionName: 'symbol', chainId: polygon.id }),
+            readContract(wagmiConfig, { address: tokenAddress, abi: ERC20_ABI, functionName: 'decimals', chainId: polygon.id }),
+            readContract(wagmiConfig, { address: tokenAddress, abi: ERC20_ABI, functionName: 'balanceOf', args: [currentAccount], chainId: polygon.id })
+        ]);
         
         const formattedBalance = formatUnits(balance, decimals);
         const balanceNum = parseFloat(formattedBalance);
+        const letter = getLogoLetter(symbol);
         
         if (balanceNum > 0) {
             document.getElementById('result').innerHTML = `
                 <div style="background:#1e293b;padding:20px;border-radius:8px;display:flex;align-items:center;gap:15px;justify-content:center;flex-direction:column;">
-                    <img src="${logoUrl}" style="width:64px;height:64px;border-radius:50%;background:#0f172a;padding:5px;" onerror="this.src='https://via.placeholder.com/64?text=${symbol.charAt(0)}'">
+                    <div style="width:64px;height:64px;border-radius:50%;background:#000000;display:flex;align-items:center;justify-content:center;color:white;font-size:32px;font-weight:bold;">
+                        ${letter}
+                    </div>
                     <div>
                         <div style="color:#94a3b8;">${symbol}</div>
                         <div style="font-size:32px;font-weight:bold;color:#3b82f6;">${balanceNum.toLocaleString()}</div>
@@ -140,7 +105,9 @@ window.checkBalance = async function() {
         } else {
             document.getElementById('result').innerHTML = `
                 <div style="background:#1e293b;padding:20px;border-radius:8px;display:flex;align-items:center;gap:15px;justify-content:center;flex-direction:column;">
-                    <img src="${logoUrl}" style="width:64px;height:64px;border-radius:50%;background:#0f172a;padding:5px;" onerror="this.src='https://via.placeholder.com/64?text=${symbol.charAt(0)}'">
+                    <div style="width:64px;height:64px;border-radius:50%;background:#000000;display:flex;align-items:center;justify-content:center;color:white;font-size:32px;font-weight:bold;">
+                        ${letter}
+                    </div>
                     <div>
                         <div style="color:#94a3b8;">${symbol}</div>
                         <div style="font-size:32px;font-weight:bold;color:#ef4444;">0</div>
