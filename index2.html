@@ -96,10 +96,6 @@
             border: 1px solid #c8e0d4;
         }
 
-        .wallet-section {
-            display: none;
-        }
-
         .hero {
             text-align: center;
             margin-bottom: 1.5rem;
@@ -166,20 +162,51 @@
             display: flex;
             gap: 1rem;
             flex-wrap: wrap;
+            align-items: center;
         }
 
-        .filter-item {
-            background: white;
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            background: #f5faf7;
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
             border: 1px solid #c8e0d4;
-            border-radius: 30px;
-            padding: 0.4rem 1.2rem;
-            font-size: 0.9rem;
+        }
+
+        .filter-label {
+            font-size: 0.7rem;
+            font-weight: 600;
             color: #1a5a3a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.8rem;
+            color: #2a6a4a;
             cursor: pointer;
         }
 
-        .filter-item:hover {
-            background: #e8f4ee;
+        .checkbox-item input {
+            width: 14px;
+            height: 14px;
+            cursor: pointer;
+            accent-color: #1a5a3a;
+        }
+
+        .checkbox-item label {
+            cursor: pointer;
         }
 
         .positions-list {
@@ -340,7 +367,6 @@
             text-align: center;
         }
 
-        /* Empty page - completely blank */
         .new-position-empty {
             background: #f5faf7;
             border-radius: 20px;
@@ -374,7 +400,6 @@
             color: #0a3a2a;
         }
 
-        /* Completely empty content area - nothing inside */
         .empty-page-content {
             min-height: 350px;
         }
@@ -437,12 +462,12 @@
             .footer-copyright { margin: 0 -1.2rem; padding-left: 1.2rem; padding-right: 1.2rem; }
             .site-icon { width: 36px; height: 36px; font-size: 1.6rem; }
             .site-name { font-size: 0.95rem; }
-            .empty-page-header { padding: 0.75rem 1rem; }
+            .filter-group { width: 100%; }
+            .checkbox-group { flex-wrap: wrap; }
         }
     </style>
 </head>
 <body>
-    <!-- Fixed header - logo on left, button on right (original order) -->
     <div class="sticky-header">
         <div class="header-left">
             <div class="site-icon">💧</div>
@@ -477,14 +502,55 @@
                         <button id="newPositionBtn" class="new-button">+ New</button>
                     </div>
                     <div class="filters">
-                        <div class="filter-item" onclick="alert('Status filter coming soon')">Status ▼</div>
-                        <div class="filter-item" onclick="alert('Protocol filter coming soon')">Protocol ▼</div>
+                        <!-- Status filter with checkboxes -->
+                        <div class="filter-group">
+                            <div class="filter-label">Status</div>
+                            <div class="checkbox-group" id="statusFilters">
+                                <label class="checkbox-item">
+                                    <input type="checkbox" value="active" checked> Active
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" value="closed"> Closed
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Protocol filter with checkboxes -->
+                        <div class="filter-group">
+                            <div class="filter-label">Protocol</div>
+                            <div class="checkbox-group" id="protocolFilters">
+                                <label class="checkbox-item">
+                                    <input type="checkbox" value="v4" checked> V4
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" value="v3" checked> V3
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" value="v2" checked> V2
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Exchange filter with checkboxes -->
+                        <div class="filter-group">
+                            <div class="filter-label">Exchange</div>
+                            <div class="checkbox-group" id="exchangeFilters">
+                                <label class="checkbox-item">
+                                    <input type="checkbox" value="sushiswap" checked> SushiSwap
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" value="uniswap" checked> Uniswap
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" value="quickswap" checked> QuickSwap
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div id="positionsList" class="positions-list"></div>
             </div>
 
-            <!-- Empty page - only back link that says "Your Positions", completely blank inside -->
             <div id="newPositionSection" class="new-position-empty hidden">
                 <div class="empty-page-header">
                     <button id="backToPositionsBtn" class="back-link">
@@ -532,8 +598,96 @@
         const newPositionBtn = document.getElementById('newPositionBtn');
         const backToPositionsBtn = document.getElementById('backToPositionsBtn');
 
+        // Get all filter checkboxes
+        const statusCheckboxes = document.querySelectorAll('#statusFilters input');
+        const protocolCheckboxes = document.querySelectorAll('#protocolFilters input');
+        const exchangeCheckboxes = document.querySelectorAll('#exchangeFilters input');
+
         let loadingTimer = null;
         let isWalletConnected = false;
+
+        // Sample positions data for demo
+        let samplePositions = [
+            { id: 1, exchange: 'Uniswap', protocol: 'V3', pair: 'ETH/USDT', amount: '10,000', status: 'active' },
+            { id: 2, exchange: 'SushiSwap', protocol: 'V2', pair: 'WBTC/ETH', amount: '5,000', status: 'active' },
+            { id: 3, exchange: 'QuickSwap', protocol: 'V4', pair: 'MATIC/USDC', amount: '8,000', status: 'closed' },
+            { id: 4, exchange: 'Uniswap', protocol: 'V2', pair: 'DAI/USDC', amount: '3,000', status: 'active' },
+            { id: 5, exchange: 'SushiSwap', protocol: 'V3', pair: 'LINK/ETH', amount: '2,500', status: 'closed' }
+        ];
+
+        function renderPositions() {
+            // Get selected filters
+            const selectedStatuses = Array.from(statusCheckboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+            
+            const selectedProtocols = Array.from(protocolCheckboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+            
+            const selectedExchanges = Array.from(exchangeCheckboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+
+            // Filter positions
+            let filtered = samplePositions.filter(pos => {
+                const statusMatch = selectedStatuses.length === 0 || selectedStatuses.includes(pos.status);
+                const protocolMatch = selectedProtocols.length === 0 || selectedProtocols.includes(pos.protocol.toLowerCase());
+                const exchangeMatch = selectedExchanges.length === 0 || selectedExchanges.includes(pos.exchange.toLowerCase());
+                return statusMatch && protocolMatch && exchangeMatch;
+            });
+
+            if (filtered.length === 0) {
+                positionsList.innerHTML = `
+                    <div class="empty-container">
+                        <div class="empty-icon">🔍</div>
+                        <div class="empty-text">No positions match the filters</div>
+                        <div class="empty-subtext">Try changing your filter selections</div>
+                    </div>
+                `;
+                return;
+            }
+
+            positionsList.innerHTML = filtered.map(pos => `
+                <div class="skeleton-card" style="background: white; animation: none;">
+                    <div class="skeleton-left">
+                        <div class="skeleton-icons">
+                            <div class="skeleton-icon" style="background: #1a5a3a20; display: flex; align-items: center; justify-content: center;">💰</div>
+                        </div>
+                        <div>
+                            <div style="font-weight: 600; color: #1a5a3a; margin-bottom: 5px;">${pos.exchange} · ${pos.protocol}</div>
+                            <div style="font-size: 0.85rem; color: #3a7a5a;">${pos.pair}</div>
+                        </div>
+                    </div>
+                    <div class="skeleton-stats">
+                        <div>
+                            <div style="font-size: 0.7rem; color: #5a9a7a;">Amount</div>
+                            <div style="font-weight: 600; color: #1a5a3a;">$${pos.amount}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.7rem; color: #5a9a7a;">Status</div>
+                            <div style="font-weight: 600; color: ${pos.status === 'active' ? '#2a8a4a' : '#8a6a3a'}">${pos.status === 'active' ? '● Active' : '○ Closed'}</div>
+                        </div>
+                    </div>
+                    <div class="skeleton-actions">
+                        <div class="skeleton-action" style="background: #e8f4ee; display: flex; align-items: center; justify-content: center; cursor: pointer;">✏️</div>
+                        <div class="skeleton-action" style="background: #e8f4ee; display: flex; align-items: center; justify-content: center; cursor: pointer;">🗑️</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Add event listeners to all filters
+        function attachFilterEvents() {
+            const allCheckboxes = [...statusCheckboxes, ...protocolCheckboxes, ...exchangeCheckboxes];
+            allCheckboxes.forEach(cb => {
+                cb.addEventListener('change', () => {
+                    if (isWalletConnected) {
+                        renderPositions();
+                    }
+                });
+            });
+        }
 
         function renderSkeletonWithSpinner() {
             positionsList.innerHTML = `
@@ -545,23 +699,13 @@
             `;
         }
 
-        function renderEmpty() {
-            positionsList.innerHTML = `
-                <div class="empty-container">
-                    <div class="empty-icon">🏊</div>
-                    <div class="empty-text">No pools created yet</div>
-                    <div class="empty-subtext">Click the "+ New" button to create your first liquidity pool</div>
-                </div>
-            `;
-        }
-
         function startLoadingSequence() {
             if (!isWalletConnected) return;
             renderSkeletonWithSpinner();
             if (loadingTimer) clearTimeout(loadingTimer);
             loadingTimer = setTimeout(() => {
-                if (isWalletConnected) renderEmpty();
-            }, 8000);
+                if (isWalletConnected) renderPositions();
+            }, 1500);
         }
 
         function stopLoadingSequence() {
@@ -618,7 +762,8 @@
             });
         }
 
+        attachFilterEvents();
         setTimeout(checkAndUpdateConnection, 1000);
     </script>
 </body>
-                </html>
+    </html>
