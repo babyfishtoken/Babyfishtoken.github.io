@@ -160,25 +160,93 @@
 
         .filters {
             display: flex;
-            gap: 1rem;
+            gap: 0.75rem;
             flex-wrap: wrap;
             align-items: center;
         }
 
-        .filter-select {
-            padding: 0.4rem 0.8rem;
-            border-radius: 8px;
-            border: 1px solid #c8e0d4;
-            background: white;
-            color: #1a5a3a;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.85rem;
-            cursor: pointer;
-            outline: none;
+        /* Custom Dropdown Styles */
+        .custom-dropdown {
+            position: relative;
+            display: inline-block;
+            min-width: 130px;
         }
 
-        .filter-select:focus {
-            border-color: #1a5a3a;
+        .dropdown-btn {
+            background: white;
+            border: 1px solid #c8e0d4;
+            border-radius: 10px;
+            padding: 0.45rem 1rem;
+            font-size: 0.85rem;
+            color: #1a5a3a;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            white-space: nowrap;
+            font-weight: 500;
+        }
+
+        .dropdown-btn:hover {
+            background: #f5faf7;
+        }
+
+        .dropdown-arrow {
+            font-size: 0.7rem;
+            transition: transform 0.2s;
+        }
+
+        .custom-dropdown.open .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 0.3rem;
+            background: white;
+            border: 1px solid #c8e0d4;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            min-width: 140px;
+            z-index: 100;
+            display: none;
+            overflow: hidden;
+        }
+
+        .custom-dropdown.open .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.6rem 1rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: #1a3a2a;
+            transition: background 0.15s;
+            white-space: nowrap;
+        }
+
+        .dropdown-item:hover {
+            background: #e8f4ee;
+        }
+
+        .dropdown-item input {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: #1a5a3a;
+            margin: 0;
+        }
+
+        .dropdown-item label {
+            cursor: pointer;
+            flex: 1;
         }
 
         .positions-list {
@@ -434,6 +502,9 @@
             .footer-copyright { margin: 0 -1.2rem; padding-left: 1.2rem; padding-right: 1.2rem; }
             .site-icon { width: 36px; height: 36px; font-size: 1.6rem; }
             .site-name { font-size: 0.95rem; }
+            .filters { width: 100%; }
+            .custom-dropdown { flex: 1; min-width: 100px; }
+            .dropdown-btn { font-size: 0.75rem; padding: 0.4rem 0.7rem; }
         }
     </style>
 </head>
@@ -472,25 +543,67 @@
                         <button id="newPositionBtn" class="new-button">+ New</button>
                     </div>
                     <div class="filters">
-                        <select id="statusSelect" class="filter-select">
-                            <option value="all" selected>Status ▼</option>
-                            <option value="active">Active</option>
-                            <option value="closed">Closed</option>
-                        </select>
+                        <!-- Status Dropdown -->
+                        <div class="custom-dropdown" id="statusDropdown">
+                            <div class="dropdown-btn">
+                                <span>Status</span>
+                                <span class="dropdown-arrow">▼</span>
+                            </div>
+                            <div class="dropdown-menu">
+                                <div class="dropdown-item">
+                                    <input type="checkbox" id="statusActive" value="active" checked>
+                                    <label for="statusActive">Active</label>
+                                </div>
+                                <div class="dropdown-item">
+                                    <input type="checkbox" id="statusClosed" value="closed">
+                                    <label for="statusClosed">Closed</label>
+                                </div>
+                            </div>
+                        </div>
 
-                        <select id="protocolSelect" class="filter-select">
-                            <option value="all" selected>Protocol ▼</option>
-                            <option value="v4">V4</option>
-                            <option value="v3">V3</option>
-                            <option value="v2">V2</option>
-                        </select>
+                        <!-- Protocol Dropdown -->
+                        <div class="custom-dropdown" id="protocolDropdown">
+                            <div class="dropdown-btn">
+                                <span>Protocol</span>
+                                <span class="dropdown-arrow">▼</span>
+                            </div>
+                            <div class="dropdown-menu">
+                                <div class="dropdown-item">
+                                    <input type="checkbox" id="protocolV4" value="v4" checked>
+                                    <label for="protocolV4">V4</label>
+                                </div>
+                                <div class="dropdown-item">
+                                    <input type="checkbox" id="protocolV3" value="v3" checked>
+                                    <label for="protocolV3">V3</label>
+                                </div>
+                                <div class="dropdown-item">
+                                    <input type="checkbox" id="protocolV2" value="v2" checked>
+                                    <label for="protocolV2">V2</label>
+                                </div>
+                            </div>
+                        </div>
 
-                        <select id="exchangeSelect" class="filter-select">
-                            <option value="all" selected>Exchange ▼</option>
-                            <option value="sushiswap">SushiSwap</option>
-                            <option value="uniswap">Uniswap</option>
-                            <option value="quickswap">QuickSwap</option>
-                        </select>
+                        <!-- Exchange Dropdown -->
+                        <div class="custom-dropdown" id="exchangeDropdown">
+                            <div class="dropdown-btn">
+                                <span>Exchange</span>
+                                <span class="dropdown-arrow">▼</span>
+                            </div>
+                            <div class="dropdown-menu">
+                                <div class="dropdown-item">
+                                    <input type="checkbox" id="exchangeSushi" value="sushiswap" checked>
+                                    <label for="exchangeSushi">SushiSwap</label>
+                                </div>
+                                <div class="dropdown-item">
+                                    <input type="checkbox" id="exchangeUni" value="uniswap" checked>
+                                    <label for="exchangeUni">Uniswap</label>
+                                </div>
+                                <div class="dropdown-item">
+                                    <input type="checkbox" id="exchangeQuick" value="quickswap" checked>
+                                    <label for="exchangeQuick">QuickSwap</label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div id="positionsList" class="positions-list"></div>
@@ -545,6 +658,42 @@
 
         let loadingTimer = null;
         let isWalletConnected = false;
+
+        // Setup custom dropdowns
+        function setupDropdown(dropdownId) {
+            const dropdown = document.getElementById(dropdownId);
+            if (!dropdown) return;
+            
+            const btn = dropdown.querySelector('.dropdown-btn');
+            
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Close all other dropdowns
+                document.querySelectorAll('.custom-dropdown.open').forEach(d => {
+                    if (d.id !== dropdownId) d.classList.remove('open');
+                });
+                dropdown.classList.toggle('open');
+            });
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.custom-dropdown.open').forEach(d => {
+                d.classList.remove('open');
+            });
+        });
+
+        // Setup all dropdowns
+        setupDropdown('statusDropdown');
+        setupDropdown('protocolDropdown');
+        setupDropdown('exchangeDropdown');
+
+        // Prevent closing when clicking inside dropdown menu
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            menu.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        });
 
         function renderSkeletonWithSpinner() {
             positionsList.innerHTML = `
@@ -632,4 +781,4 @@
         setTimeout(checkAndUpdateConnection, 1000);
     </script>
 </body>
-</html>
+                                </html>
