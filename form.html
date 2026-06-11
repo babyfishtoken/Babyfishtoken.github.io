@@ -153,6 +153,11 @@
             cursor: pointer;
             margin-top: 0.3rem;
         }
+        .popup button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #9cb8a8;
+        }
         .popup .clear {
             background: #ecf0f1;
             color: #1a2c3e;
@@ -161,7 +166,7 @@
         .popup .clear:hover {
             background: #dfe6e9;
         }
-        .popup button:hover {
+        .popup button:hover:not(:disabled) {
             opacity: 0.9;
         }
         .option-list {
@@ -516,6 +521,26 @@
             flex: 1;
             margin-top: 0;
         }
+        /* Balance display style */
+        .balance-display {
+            font-size: 0.7rem;
+            color: #2b6e47;
+            background: #eaf7ef;
+            padding: 0.25rem 0.7rem;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+        /* Trading pair balance styles */
+        .pair-balance {
+            font-size: 0.65rem;
+            color: #2b6e47;
+            background: #eaf7ef;
+            padding: 0.2rem 0.6rem;
+            border-radius: 16px;
+            display: inline-block;
+            margin-top: 0.3rem;
+        }
     </style>
 </head>
 <body>
@@ -547,6 +572,7 @@
                 <span>▼</span>
             </div>
             <div id="pairInfo" class="selected-info" style="display:none"></div>
+            <div id="pairBalanceInfo" class="pair-balance" style="display:none"></div>
         </div>
         <div class="field token-field">
             <label>Your Token</label>
@@ -636,7 +662,7 @@
         <div id="tokenResult" style="margin-top:12px;"></div>
         <div class="action-buttons">
             <button id="clearBtn" class="clear">Clear</button>
-            <button id="confirmBtn">Confirm Token</button>
+            <button id="confirmBtn" disabled>Confirm Token</button>
         </div>
     </div>
 </div>
@@ -672,6 +698,60 @@
 
     let currentAccount = null;
     let currentTokenData = { address: '', symbol: '', name: '', balance: 0, decimals: 0 };
+    let usdtBalance = 0;
+    let polBalance = 0;
+
+    // Function to fetch USDT balance on Polygon
+    const USDT_ADDRESS = "0xc2132d05d31c914a87c6611c10748aeb04b58e8f";
+    const USDT_ABI = [
+        { "constant": true, "inputs": [{"name": "_owner", "type": "address"}], "name": "balanceOf", "outputs": [{"name": "balance", "type": "uint256"}], "type": "function" },
+        { "constant": true, "inputs": [], "name": "decimals", "outputs": [{"name": "", "type": "uint8"}], "type": "function" }
+    ];
+
+    async function fetchUSDTBalance() {
+        if (!currentAccount) {
+            usdtBalance = 0;
+            updatePairBalanceDisplay();
+            return;
+        }
+        try {
+            const decimals = await readContract(wagmiConfig, { address: USDT_ADDRESS, abi: USDT_ABI, functionName: 'decimals', chainId: polygon.id });
+            const balance = await readContract(wagmiConfig, { address: USDT_ADDRESS, abi: USDT_ABI, functionName: 'balanceOf', args: [currentAccount], chainId: polygon.id });
+            usdtBalance = parseFloat(formatUnits(balance, decimals));
+            updatePairBalanceDisplay();
+        } catch (error) {
+            console.error("Failed to fetch USDT balance:", error);
+            usdtBalance = 0;
+            updatePairBalanceDisplay();
+        }
+    }
+
+    async function fetchPOLBalance() {
+        if (!currentAccount) {
+            polBalance = 0;
+            updatePairBalanceDisplay();
+            return;
+        }
+        try {
+            const balance = await readContract(wagmiConfig, { address: "0x0000000000000000000000000000000000001010", abi: [{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"type":"function"}], functionName: 'balanceOf', args: [currentAccount], chainId: polygon.id });
+            polBalance = parseFloat(formatUnits(balance, 18));
+            updatePairBalanceDisplay();
+        } catch (error) {
+            console.error("Failed to fetch POL balance:", error);
+            polBalance = 0;
+            updatePairBalanceDisplay();
+        }
+    }
+
+    function updatePairBalanceDisplay() {
+        const pairBalanceDiv = document.getElementById('pairBalanceInfo');
+        if (currentAccount) {
+            pairBalanceDiv.style.display = 'inline-block';
+            pairBalanceDiv.innerHTML = `💰 USDT: ${usdtBalance.toLocaleString()} | POL: ${polBalance.toLocaleString()}`;
+        } else {
+            pairBalanceDiv.style.display = 'none';
+        }
+    }
 
     watchAccount(wagmiConfig, {
         onChange(account) {
@@ -679,11 +759,16 @@
                 currentAccount = account.address;
                 const checkBtn = document.getElementById('checkBalanceBtn');
                 if (checkBtn) checkBtn.disabled = false;
+                fetchUSDTBalance();
+                fetchPOLBalance();
             } else {
                 currentAccount = null;
                 const checkBtn = document.getElementById('checkBalanceBtn');
                 if (checkBtn) checkBtn.disabled = true;
                 document.getElementById('tokenResult').innerHTML = '';
+                usdtBalance = 0;
+                polBalance = 0;
+                updatePairBalanceDisplay();
             }
         }
     });
@@ -695,18 +780,22 @@
 
     window.checkTokenBalance = async function() {
         const tokenAddress = document.getElementById('contractInput').value.trim();
+        const confirmBtnElem = document.getElementById('confirmBtn');
         
         if (!tokenAddress || !tokenAddress.match(/^0x[a-fA-F0-9]{40}$/i)) {
             document.getElementById('tokenResult').innerHTML = '<div style="color:#ef4444; text-align:center;">Invalid contract address</div>';
+            confirmBtnElem.disabled = true;
             return;
         }
         
         if (!currentAccount) {
             document.getElementById('tokenResult').innerHTML = '<div style="color:#ef4444; text-align:center;">Wallet not connected</div>';
+            confirmBtnElem.disabled = true;
             return;
         }
         
         document.getElementById('tokenResult').innerHTML = '<div style="text-align:center;">Checking balance...</div>';
+        confirmBtnElem.disabled = true;
         
         try {
             const [name, symbol, decimals, balance] = await Promise.all([
@@ -743,10 +832,12 @@
                     </div>
                 </div>
             `;
+            confirmBtnElem.disabled = false;
         } catch (error) {
             console.error(error);
             document.getElementById('tokenResult').innerHTML = '<div style="color:#ef4444; text-align:center;">Error: Invalid contract or token not found</div>';
             currentTokenData = { address: '', symbol: '', name: '', balance: 0, decimals: 0 };
+            confirmBtnElem.disabled = true;
         }
     };
 
@@ -805,8 +896,6 @@
     const MIN_BONUS = 200;
     const MAX_BONUS = 6000;
     const FEE_PERCENT = 2;
-    
-    let mockTokenBalance = 10000;
     
     function roundNumber(num) {
         if (num === undefined || num === null || isNaN(num)) return 0;
@@ -1105,7 +1194,14 @@
             let toPool = tokenAmount - fee;
             tokenRewardInfo.style.display = 'block';
             tokenRewardInfo.className = 'reward-info success';
-            tokenRewardInfo.innerHTML = `Amount: ${formatNumberForBox(tokenAmount)} | Fee (2%): ${formatNumberForBox(fee)} | To Pool: ${formatNumberForBox(toPool)}`;
+            // نمایش موجودی توکن در همان کادر سبز
+            let balanceText = currentTokenData.balance > 0 ? ` | Balance: ${currentTokenData.balance.toLocaleString()}` : '';
+            tokenRewardInfo.innerHTML = `Amount: ${formatNumberForBox(tokenAmount)} | Fee (2%): ${formatNumberForBox(fee)} | To Pool: ${formatNumberForBox(toPool)}${balanceText}`;
+        } else if (currentTokenData.symbol && currentTokenData.symbol !== '') {
+            // اگر مقدار وارد نشده ولی توکن انتخاب شده، فقط موجودی نمایش داده بشه
+            tokenRewardInfo.style.display = 'block';
+            tokenRewardInfo.className = 'reward-info success';
+            tokenRewardInfo.innerHTML = `💰 Balance: ${currentTokenData.balance.toLocaleString()} ${currentTokenData.symbol}`;
         } else {
             tokenRewardInfo.style.display = 'none';
         }
@@ -1256,6 +1352,7 @@
             currentTokenData = { address: '', symbol: '', name: '', balance: 0, decimals: 0 };
             tokenLabel.innerText = 'Select token';
             tokenInfo.style.display = 'none';
+            tokenRewardInfo.style.display = 'none';
             
             rebuildPoolPopup();
             closeAllPopups();
@@ -1304,12 +1401,15 @@
             let shortSymbol = displaySymbol.length > 16 ? displaySymbol.slice(0,10)+'...'+displaySymbol.slice(-6) : displaySymbol;
             tokenLabel.innerText = shortSymbol;
             tokenInfo.style.display = 'none';
+            updateTokenReward();
         } else if (currentToken && !currentTokenData.symbol) {
             tokenLabel.innerText = 'Token Selected';
             tokenInfo.style.display = 'none';
+            tokenRewardInfo.style.display = 'none';
         } else {
             tokenLabel.innerText = 'Select token';
             tokenInfo.style.display = 'none';
+            tokenRewardInfo.style.display = 'none';
         }
         updateTokenAmountLabel();
         updateBottomValues();
@@ -1327,20 +1427,15 @@
                 contractInput.value = '';
             }
             document.getElementById('tokenResult').innerHTML = '';
+            document.getElementById('confirmBtn').disabled = true;
             setTimeout(() => contractInput.focus(), 50);
         }
     };
     
     confirmBtn.onclick = () => {
         let address = contractInput.value.trim();
-        if (address !== '') {
-            if (currentTokenData.address === address && currentTokenData.symbol) {
-                currentToken = address;
-            } else if (currentTokenData.address !== address && currentTokenData.symbol) {
-                currentToken = address;
-            } else {
-                currentToken = address;
-            }
+        if (address !== '' && currentTokenData.symbol) {
+            currentToken = address;
             updateTokenDisplay();
         }
         closeAllPopups();
@@ -1352,6 +1447,7 @@
         contractInput.value = '';
         tokenAmountInput.value = '';
         document.getElementById('tokenResult').innerHTML = '';
+        document.getElementById('confirmBtn').disabled = true;
         updateTokenDisplay();
         disableAmountFields();
         closeAllPopups();
@@ -1359,8 +1455,8 @@
     };
     
     maxTokenBtn.onclick = () => {
-        if (currentToken !== '' && currentPair !== '') {
-            tokenAmountInput.value = mockTokenBalance;
+        if (currentToken !== '' && currentPair !== '' && currentTokenData.balance > 0) {
+            tokenAmountInput.value = currentTokenData.balance;
             updateTokenReward();
             checkReviewButton();
             logState();
@@ -1397,6 +1493,7 @@
             pair: currentPair || 'not selected',
             pairAmount: pairAmountInput.value,
             token: currentTokenData.symbol || currentToken || 'no token',
+            tokenBalance: currentTokenData.balance,
             tokenAmount: tokenAmountInput.value,
             usdtValue: getUsdtValue(),
             polygonPrice: polygonPrice
@@ -1405,6 +1502,12 @@
     
     getPolygonPrice();
     setInterval(getPolygonPrice, 30000);
+    setInterval(() => {
+        if (currentAccount) {
+            fetchUSDTBalance();
+            fetchPOLBalance();
+        }
+    }, 30000);
     
     updatePairAmountLabel();
     updateTokenAmountLabel();
