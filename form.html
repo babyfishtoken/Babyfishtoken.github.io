@@ -1296,11 +1296,19 @@
     });
     
     function updateTokenDisplay() {
-        if (currentToken) {
+        if (currentToken && currentTokenData.symbol) {
+            // نمایش نماد توکن به جای آدرس
+            let displaySymbol = currentTokenData.symbol;
+            let shortSymbol = displaySymbol.length > 16 ? displaySymbol.slice(0,10)+'...'+displaySymbol.slice(-6) : displaySymbol;
+            tokenLabel.innerText = shortSymbol;
+            tokenInfo.style.display = 'block';
+            tokenInfo.innerHTML = 'Symbol: ' + displaySymbol + '<br><span style="font-size:0.65rem;">Address: ' + currentTokenData.address + '</span>';
+        } else if (currentToken && !currentTokenData.symbol) {
+            // اگر فقط آدرس داشته باشیم و نماد نداشته باشیم (fallback)
             let short = currentToken.length > 16 ? currentToken.slice(0,10)+'...'+currentToken.slice(-6) : currentToken;
             tokenLabel.innerText = short;
             tokenInfo.style.display = 'block';
-            tokenInfo.innerHTML = 'Active: '+short+'<br><span style="font-size:0.65rem;">'+currentToken+'</span>';
+            tokenInfo.innerHTML = 'Address: ' + currentToken;
         } else {
             tokenLabel.innerText = 'Select token';
             tokenInfo.style.display = 'none';
@@ -1406,4 +1414,4 @@
     checkReviewButton();
 </script>
 </body>
-  </html>
+    </html>
