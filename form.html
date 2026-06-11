@@ -181,6 +181,9 @@
             cursor: pointer;
             background: #f8fafb;
             border: 1px solid #dce5e8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .option-item.disabled {
             opacity: 0.5;
@@ -191,6 +194,16 @@
         .option-item:hover:not(.disabled) {
             background: #edf2f5;
             border-color: #2b7a3e;
+        }
+        .option-label {
+            font-weight: normal;
+        }
+        .option-balance {
+            font-size: 0.75rem;
+            color: #2b6e47;
+            background: #eaf7ef;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
         }
         .selected-info {
             margin-top: 0.5rem;
@@ -521,26 +534,6 @@
             flex: 1;
             margin-top: 0;
         }
-        /* Balance display style */
-        .balance-display {
-            font-size: 0.7rem;
-            color: #2b6e47;
-            background: #eaf7ef;
-            padding: 0.25rem 0.7rem;
-            border-radius: 20px;
-            display: inline-block;
-            margin-top: 0.5rem;
-        }
-        /* Trading pair balance styles */
-        .pair-balance {
-            font-size: 0.65rem;
-            color: #2b6e47;
-            background: #eaf7ef;
-            padding: 0.2rem 0.6rem;
-            border-radius: 16px;
-            display: inline-block;
-            margin-top: 0.3rem;
-        }
     </style>
 </head>
 <body>
@@ -572,7 +565,6 @@
                 <span>▼</span>
             </div>
             <div id="pairInfo" class="selected-info" style="display:none"></div>
-            <div id="pairBalanceInfo" class="pair-balance" style="display:none"></div>
         </div>
         <div class="field token-field">
             <label>Your Token</label>
@@ -645,10 +637,7 @@
 <div id="pairPopup" class="popup">
     <div class="popup-header">Trading Pair</div>
     <div class="popup-body">
-        <div class="option-list">
-            <div class="option-item" data-value="USDT">USDT</div>
-            <div class="option-item" data-value="Polygon">Polygon</div>
-        </div>
+        <div class="option-list" id="pairOptionsList"></div>
     </div>
 </div>
 
@@ -711,46 +700,94 @@
     async function fetchUSDTBalance() {
         if (!currentAccount) {
             usdtBalance = 0;
-            updatePairBalanceDisplay();
+            updatePairPopupBalances();
             return;
         }
         try {
             const decimals = await readContract(wagmiConfig, { address: USDT_ADDRESS, abi: USDT_ABI, functionName: 'decimals', chainId: polygon.id });
             const balance = await readContract(wagmiConfig, { address: USDT_ADDRESS, abi: USDT_ABI, functionName: 'balanceOf', args: [currentAccount], chainId: polygon.id });
             usdtBalance = parseFloat(formatUnits(balance, decimals));
-            updatePairBalanceDisplay();
+            updatePairPopupBalances();
         } catch (error) {
             console.error("Failed to fetch USDT balance:", error);
             usdtBalance = 0;
-            updatePairBalanceDisplay();
+            updatePairPopupBalances();
         }
     }
 
     async function fetchPOLBalance() {
         if (!currentAccount) {
             polBalance = 0;
-            updatePairBalanceDisplay();
+            updatePairPopupBalances();
             return;
         }
         try {
             const balance = await readContract(wagmiConfig, { address: "0x0000000000000000000000000000000000001010", abi: [{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"type":"function"}], functionName: 'balanceOf', args: [currentAccount], chainId: polygon.id });
             polBalance = parseFloat(formatUnits(balance, 18));
-            updatePairBalanceDisplay();
+            updatePairPopupBalances();
         } catch (error) {
             console.error("Failed to fetch POL balance:", error);
             polBalance = 0;
-            updatePairBalanceDisplay();
+            updatePairPopupBalances();
         }
     }
 
-    function updatePairBalanceDisplay() {
-        const pairBalanceDiv = document.getElementById('pairBalanceInfo');
-        if (currentAccount) {
-            pairBalanceDiv.style.display = 'inline-block';
-            pairBalanceDiv.innerHTML = `💰 USDT: ${usdtBalance.toLocaleString()} | POL: ${polBalance.toLocaleString()}`;
-        } else {
-            pairBalanceDiv.style.display = 'none';
-        }
+    function updatePairPopupBalances() {
+        const pairOptionsList = document.getElementById('pairOptionsList');
+        if (!pairOptionsList) return;
+        
+        const options = pairOptionsList.querySelectorAll('.option-item');
+        options.forEach(opt => {
+            const value = opt.getAttribute('data-value');
+            const balanceSpan = opt.querySelector('.option-balance');
+            if (value === 'USDT') {
+                if (balanceSpan) {
+                    balanceSpan.textContent = usdtBalance > 0 ? `💰 ${usdtBalance.toLocaleString()} USDT` : '💰 0 USDT';
+                }
+            } else if (value === 'Polygon') {
+                if (balanceSpan) {
+                    balanceSpan.textContent = polBalance > 0 ? `💰 ${polBalance.toLocaleString()} POL` : '💰 0 POL';
+                }
+            }
+        });
+    }
+
+    function buildPairPopup() {
+        const pairOptionsList = document.getElementById('pairOptionsList');
+        pairOptionsList.innerHTML = '';
+        
+        const pairs = [
+            { value: 'USDT', label: 'USDT' },
+            { value: 'Polygon', label: 'Polygon (POL)' }
+        ];
+        
+        pairs.forEach(pair => {
+            const div = document.createElement('div');
+            div.className = 'option-item';
+            div.setAttribute('data-value', pair.value);
+            
+            const labelSpan = document.createElement('span');
+            labelSpan.className = 'option-label';
+            labelSpan.textContent = pair.label;
+            
+            const balanceSpan = document.createElement('span');
+            balanceSpan.className = 'option-balance';
+            if (pair.value === 'USDT') {
+                balanceSpan.textContent = usdtBalance > 0 ? `💰 ${usdtBalance.toLocaleString()} USDT` : '💰 0 USDT';
+            } else if (pair.value === 'Polygon') {
+                balanceSpan.textContent = polBalance > 0 ? `💰 ${polBalance.toLocaleString()} POL` : '💰 0 POL';
+            }
+            
+            div.appendChild(labelSpan);
+            div.appendChild(balanceSpan);
+            
+            div.onclick = () => {
+                updatePairDisplay(pair.value);
+                closeAllPopups();
+            };
+            
+            pairOptionsList.appendChild(div);
+        });
     }
 
     watchAccount(wagmiConfig, {
@@ -761,6 +798,7 @@
                 if (checkBtn) checkBtn.disabled = false;
                 fetchUSDTBalance();
                 fetchPOLBalance();
+                buildPairPopup();
             } else {
                 currentAccount = null;
                 const checkBtn = document.getElementById('checkBalanceBtn');
@@ -768,7 +806,7 @@
                 document.getElementById('tokenResult').innerHTML = '';
                 usdtBalance = 0;
                 polBalance = 0;
-                updatePairBalanceDisplay();
+                buildPairPopup();
             }
         }
     });
@@ -1194,11 +1232,9 @@
             let toPool = tokenAmount - fee;
             tokenRewardInfo.style.display = 'block';
             tokenRewardInfo.className = 'reward-info success';
-            // نمایش موجودی توکن در همان کادر سبز
             let balanceText = currentTokenData.balance > 0 ? ` | Balance: ${currentTokenData.balance.toLocaleString()}` : '';
             tokenRewardInfo.innerHTML = `Amount: ${formatNumberForBox(tokenAmount)} | Fee (2%): ${formatNumberForBox(fee)} | To Pool: ${formatNumberForBox(toPool)}${balanceText}`;
         } else if (currentTokenData.symbol && currentTokenData.symbol !== '') {
-            // اگر مقدار وارد نشده ولی توکن انتخاب شده، فقط موجودی نمایش داده بشه
             tokenRewardInfo.style.display = 'block';
             tokenRewardInfo.className = 'reward-info success';
             tokenRewardInfo.innerHTML = `💰 Balance: ${currentTokenData.balance.toLocaleString()} ${currentTokenData.symbol}`;
@@ -1387,13 +1423,12 @@
         }
     }
     
-    pairBtn.onclick = () => { if (currentExchange) openPopup(pairPopup); };
-    document.querySelectorAll('#pairPopup .option-item').forEach(opt => {
-        opt.onclick = () => {
-            updatePairDisplay(opt.getAttribute('data-value'));
-            closeAllPopups();
-        };
-    });
+    pairBtn.onclick = () => { 
+        if (currentExchange) {
+            buildPairPopup();
+            openPopup(pairPopup);
+        }
+    };
     
     function updateTokenDisplay() {
         if (currentTokenData.symbol && currentTokenData.symbol !== '') {
@@ -1509,6 +1544,7 @@
         }
     }, 30000);
     
+    buildPairPopup();
     updatePairAmountLabel();
     updateTokenAmountLabel();
     updateBottomValues();
