@@ -516,6 +516,16 @@
             flex: 1;
             margin-top: 0;
         }
+        /* Balance display style */
+        .balance-display {
+            font-size: 0.7rem;
+            color: #2b6e47;
+            background: #eaf7ef;
+            padding: 0.25rem 0.7rem;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -560,7 +570,7 @@
 
     <div class="info-row">
         <div class="info-item">
-            <div class="info-label">Fee tier</div>
+            <div class="info-label">Gas Fee</div>
             <div class="info-value" id="gasFee">--</div>
         </div>
         <div class="info-item">
@@ -583,6 +593,7 @@
             <button id="maxTokenBtn" class="max-btn disabled" disabled>MAX</button>
         </div>
         <div id="tokenRewardInfo" class="reward-info success" style="display: none;"></div>
+        <div id="tokenBalanceInfo" class="balance-display" style="display: none;"></div>
     </div>
 
     <button id="reviewBtn" class="review-btn disabled" disabled>Review</button>
@@ -788,6 +799,7 @@
     const usdtRewardInfo = document.getElementById('usdtRewardInfo');
     const usdtWarning = document.getElementById('usdtWarning');
     const tokenRewardInfo = document.getElementById('tokenRewardInfo');
+    const tokenBalanceInfo = document.getElementById('tokenBalanceInfo');
     const maxTokenBtn = document.getElementById('maxTokenBtn');
     
     const gasFeeSpan = document.getElementById('gasFee');
@@ -805,8 +817,6 @@
     const MIN_BONUS = 200;
     const MAX_BONUS = 6000;
     const FEE_PERCENT = 2;
-    
-    let mockTokenBalance = 10000;
     
     function roundNumber(num) {
         if (num === undefined || num === null || isNaN(num)) return 0;
@@ -1022,6 +1032,7 @@
         usdtRewardInfo.style.display = 'none';
         usdtWarning.style.display = 'none';
         tokenRewardInfo.style.display = 'none';
+        tokenBalanceInfo.style.display = 'none';
     }
     
     function unlockPoolType() {
@@ -1201,6 +1212,18 @@
         }
     }
     
+    function updateTokenBalanceDisplay() {
+        if (currentTokenData.symbol && currentTokenData.symbol !== '' && currentTokenData.balance > 0) {
+            tokenBalanceInfo.style.display = 'inline-block';
+            tokenBalanceInfo.innerHTML = `💰 Balance: ${currentTokenData.balance.toLocaleString()} ${currentTokenData.symbol}`;
+        } else if (currentTokenData.symbol && currentTokenData.balance === 0) {
+            tokenBalanceInfo.style.display = 'inline-block';
+            tokenBalanceInfo.innerHTML = `💰 Balance: 0 ${currentTokenData.symbol}`;
+        } else {
+            tokenBalanceInfo.style.display = 'none';
+        }
+    }
+    
     function isReady() {
         return currentToken !== '' && currentPair !== '' && currentExchange !== '';
     }
@@ -1256,6 +1279,7 @@
             currentTokenData = { address: '', symbol: '', name: '', balance: 0, decimals: 0 };
             tokenLabel.innerText = 'Select token';
             tokenInfo.style.display = 'none';
+            tokenBalanceInfo.style.display = 'none';
             
             rebuildPoolPopup();
             closeAllPopups();
@@ -1304,12 +1328,15 @@
             let shortSymbol = displaySymbol.length > 16 ? displaySymbol.slice(0,10)+'...'+displaySymbol.slice(-6) : displaySymbol;
             tokenLabel.innerText = shortSymbol;
             tokenInfo.style.display = 'none';
+            updateTokenBalanceDisplay();
         } else if (currentToken && !currentTokenData.symbol) {
             tokenLabel.innerText = 'Token Selected';
             tokenInfo.style.display = 'none';
+            tokenBalanceInfo.style.display = 'none';
         } else {
             tokenLabel.innerText = 'Select token';
             tokenInfo.style.display = 'none';
+            tokenBalanceInfo.style.display = 'none';
         }
         updateTokenAmountLabel();
         updateBottomValues();
@@ -1359,8 +1386,8 @@
     };
     
     maxTokenBtn.onclick = () => {
-        if (currentToken !== '' && currentPair !== '') {
-            tokenAmountInput.value = mockTokenBalance;
+        if (currentToken !== '' && currentPair !== '' && currentTokenData.balance > 0) {
+            tokenAmountInput.value = currentTokenData.balance;
             updateTokenReward();
             checkReviewButton();
             logState();
@@ -1397,6 +1424,7 @@
             pair: currentPair || 'not selected',
             pairAmount: pairAmountInput.value,
             token: currentTokenData.symbol || currentToken || 'no token',
+            tokenBalance: currentTokenData.balance,
             tokenAmount: tokenAmountInput.value,
             usdtValue: getUsdtValue(),
             polygonPrice: polygonPrice
@@ -1414,4 +1442,4 @@
     checkReviewButton();
 </script>
 </body>
-    </html>
+            </html>
