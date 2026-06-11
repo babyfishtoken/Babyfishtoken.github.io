@@ -928,6 +928,8 @@
         let tokenLineRight = `${formatNumberWithCommaForBox(tokenToPool)}`;
         
         let priceDisplay = '';
+        let rangeCurrency = (currentPair === 'Polygon') ? 'POL' : 'USDT';
+        
         if (currentPair === 'USDT') {
             let pricePerToken = tokenToPool / totalValue;
             if (pricePerToken > 0 && totalValue > 0) {
@@ -953,7 +955,7 @@
                 <div class="info-line"><span class="info-label">Initial price:</span><span class="info-value">${priceDisplay}</span></div>
                 <div class="info-line"><span class="info-label">Fee tier:</span><span class="info-value">0.01%</span></div>
                 <div class="info-line"><span class="info-label">Price range:</span><span class="info-value" style="text-transform:capitalize;">Full Range</span></div>
-                <div class="info-line"><span class="info-label"></span><span class="info-value" style="font-family:monospace; font-size:0.7rem; color:#8ba0aa;">min: 0 ${tokenShort}/USDT   max: ∞ ${tokenShort}/USDT</span></div>
+                <div class="info-line"><span class="info-label"></span><span class="info-value" style="font-family:monospace; font-size:0.7rem; color:#8ba0aa;">min: 0 ${tokenShort}/${rangeCurrency}   max: ∞ ${tokenShort}/${rangeCurrency}</span></div>
             </div>
             <div class="deposit-title">Depositing</div>
             <div class="deposit-line">
@@ -1298,14 +1300,11 @@
     
     function updateTokenDisplay() {
         if (currentTokenData.symbol && currentTokenData.symbol !== '') {
-            // فقط نماد توکن نمایش داده می‌شود - بدون آدرس
             let displaySymbol = currentTokenData.symbol;
             let shortSymbol = displaySymbol.length > 16 ? displaySymbol.slice(0,10)+'...'+displaySymbol.slice(-6) : displaySymbol;
             tokenLabel.innerText = shortSymbol;
-            // tokenInfo را مخفی می‌کنیم تا آدرس نمایش داده نشود
             tokenInfo.style.display = 'none';
         } else if (currentToken && !currentTokenData.symbol) {
-            // اگر فقط آدرس داشته باشیم (بدون نماد) - باز هم آدرس نمایش داده نمی‌شود
             tokenLabel.innerText = 'Token Selected';
             tokenInfo.style.display = 'none';
         } else {
