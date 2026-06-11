@@ -892,10 +892,8 @@
         
         let finalPolAmount = (currentPair === 'Polygon' && polygonPrice !== null) ? totalValue / polygonPrice : 0;
         
-        let tokenShort = currentToken;
-        if (tokenShort.length > 12 && !tokenShort.startsWith('0x')) {
-            tokenShort = tokenShort;
-        } else if (tokenShort.length > 16) {
+        let tokenShort = currentTokenData.symbol || currentToken;
+        if (tokenShort.length > 16) {
             tokenShort = tokenShort.slice(0, 10) + '...' + tokenShort.slice(-6);
         }
         
@@ -1191,7 +1189,9 @@
     }
     
     function updateTokenAmountLabel() {
-        if (currentToken && currentToken !== '') {
+        if (currentTokenData.symbol && currentTokenData.symbol !== '') {
+            tokenAmountLabel.innerText = currentTokenData.symbol + ' Amount';
+        } else if (currentToken && currentToken !== '') {
             let short = currentToken.length > 12 ? currentToken.slice(0,8)+'...'+currentToken.slice(-4) : currentToken;
             tokenAmountLabel.innerText = short + ' Amount';
         } else {
@@ -1251,6 +1251,7 @@
             pairLabel.innerText = 'Select pair';
             pairInfo.style.display = 'none';
             currentToken = '';
+            currentTokenData = { address: '', symbol: '', name: '', balance: 0, decimals: 0 };
             tokenLabel.innerText = 'Select token';
             tokenInfo.style.display = 'none';
             
@@ -1296,19 +1297,17 @@
     });
     
     function updateTokenDisplay() {
-        if (currentToken && currentTokenData.symbol) {
-            // نمایش نماد توکن به جای آدرس
+        if (currentTokenData.symbol && currentTokenData.symbol !== '') {
+            // فقط نماد توکن نمایش داده می‌شود - بدون آدرس
             let displaySymbol = currentTokenData.symbol;
             let shortSymbol = displaySymbol.length > 16 ? displaySymbol.slice(0,10)+'...'+displaySymbol.slice(-6) : displaySymbol;
             tokenLabel.innerText = shortSymbol;
-            tokenInfo.style.display = 'block';
-            tokenInfo.innerHTML = 'Symbol: ' + displaySymbol + '<br><span style="font-size:0.65rem;">Address: ' + currentTokenData.address + '</span>';
+            // tokenInfo را مخفی می‌کنیم تا آدرس نمایش داده نشود
+            tokenInfo.style.display = 'none';
         } else if (currentToken && !currentTokenData.symbol) {
-            // اگر فقط آدرس داشته باشیم و نماد نداشته باشیم (fallback)
-            let short = currentToken.length > 16 ? currentToken.slice(0,10)+'...'+currentToken.slice(-6) : currentToken;
-            tokenLabel.innerText = short;
-            tokenInfo.style.display = 'block';
-            tokenInfo.innerHTML = 'Address: ' + currentToken;
+            // اگر فقط آدرس داشته باشیم (بدون نماد) - باز هم آدرس نمایش داده نمی‌شود
+            tokenLabel.innerText = 'Token Selected';
+            tokenInfo.style.display = 'none';
         } else {
             tokenLabel.innerText = 'Select token';
             tokenInfo.style.display = 'none';
@@ -1337,6 +1336,8 @@
         let address = contractInput.value.trim();
         if (address !== '') {
             if (currentTokenData.address === address && currentTokenData.symbol) {
+                currentToken = address;
+            } else if (currentTokenData.address !== address && currentTokenData.symbol) {
                 currentToken = address;
             } else {
                 currentToken = address;
@@ -1396,7 +1397,7 @@
             poolType: currentPool || 'not selected',
             pair: currentPair || 'not selected',
             pairAmount: pairAmountInput.value,
-            token: currentToken || 'no token',
+            token: currentTokenData.symbol || currentToken || 'no token',
             tokenAmount: tokenAmountInput.value,
             usdtValue: getUsdtValue(),
             polygonPrice: polygonPrice
