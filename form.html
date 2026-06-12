@@ -773,9 +773,9 @@
             const balanceSpan = document.createElement('span');
             balanceSpan.className = 'option-balance';
             if (pair.value === 'USDT') {
-                balanceSpan.textContent = usdtBalance > 0 ? ` ${usdtBalance.toLocaleString()} USDT` : '💰 0 USDT';
+                balanceSpan.textContent = usdtBalance > 0 ? `💰 ${usdtBalance.toLocaleString()} USDT` : '💰 0 USDT';
             } else if (pair.value === 'Polygon') {
-                balanceSpan.textContent = polBalance > 0 ? ` ${polBalance.toLocaleString()} POL` : '💰 0 POL';
+                balanceSpan.textContent = polBalance > 0 ? `💰 ${polBalance.toLocaleString()} POL` : '💰 0 POL';
             }
             
             div.appendChild(labelSpan);
