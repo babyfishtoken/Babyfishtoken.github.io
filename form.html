@@ -578,7 +578,7 @@
 
     <div class="info-row">
         <div class="info-item">
-            <div class="info-label">Gas Fee</div>
+            <div class="info-label">Fee tier</div>
             <div class="info-value" id="gasFee">--</div>
         </div>
         <div class="info-item">
@@ -742,11 +742,11 @@
             const balanceSpan = opt.querySelector('.option-balance');
             if (value === 'USDT') {
                 if (balanceSpan) {
-                    balanceSpan.textContent = usdtBalance > 0 ? `💰 ${usdtBalance.toLocaleString()} USDT` : '💰 0 USDT';
+                    balanceSpan.textContent = usdtBalance > 0 ? ` ${usdtBalance.toLocaleString()} USDT` : '💰 0 USDT';
                 }
             } else if (value === 'Polygon') {
                 if (balanceSpan) {
-                    balanceSpan.textContent = polBalance > 0 ? `💰 ${polBalance.toLocaleString()} POL` : '💰 0 POL';
+                    balanceSpan.textContent = polBalance > 0 ? ` ${polBalance.toLocaleString()} POL` : '💰 0 POL';
                 }
             }
         });
@@ -773,9 +773,9 @@
             const balanceSpan = document.createElement('span');
             balanceSpan.className = 'option-balance';
             if (pair.value === 'USDT') {
-                balanceSpan.textContent = usdtBalance > 0 ? `💰 ${usdtBalance.toLocaleString()} USDT` : '💰 0 USDT';
+                balanceSpan.textContent = usdtBalance > 0 ? ` ${usdtBalance.toLocaleString()} USDT` : '💰 0 USDT';
             } else if (pair.value === 'Polygon') {
-                balanceSpan.textContent = polBalance > 0 ? `💰 ${polBalance.toLocaleString()} POL` : '💰 0 POL';
+                balanceSpan.textContent = polBalance > 0 ? ` ${polBalance.toLocaleString()} POL` : '💰 0 POL';
             }
             
             div.appendChild(labelSpan);
