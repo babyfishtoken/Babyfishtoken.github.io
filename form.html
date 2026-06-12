@@ -578,7 +578,7 @@
 
     <div class="info-row">
         <div class="info-item">
-            <div class="info-label">Fee tier</div>
+            <div class="info-label">Gas Fee</div>
             <div class="info-value" id="gasFee">--</div>
         </div>
         <div class="info-item">
@@ -742,11 +742,11 @@
             const balanceSpan = opt.querySelector('.option-balance');
             if (value === 'USDT') {
                 if (balanceSpan) {
-                    balanceSpan.textContent = usdtBalance > 0 ? ` ${usdtBalance.toLocaleString()} USDT` : '💰 0 USDT';
+                    balanceSpan.textContent = usdtBalance > 0 ? `💰 ${usdtBalance.toLocaleString()} USDT` : '💰 0 USDT';
                 }
             } else if (value === 'Polygon') {
                 if (balanceSpan) {
-                    balanceSpan.textContent = polBalance > 0 ? ` ${polBalance.toLocaleString()} POL` : '💰 0 POL';
+                    balanceSpan.textContent = polBalance > 0 ? `💰 ${polBalance.toLocaleString()} POL` : '💰 0 POL';
                 }
             }
         });
@@ -1058,18 +1058,16 @@
         let rangeCurrency = (currentPair === 'Polygon') ? 'POL' : 'USDT';
         
         if (currentPair === 'USDT') {
-            // اصلاح شده: تعداد توکن به ازای 1 USDT
             let pricePerToken = tokenToPool / totalValue;
             if (pricePerToken > 0 && totalValue > 0) {
-                priceDisplay = `1 USDT = ${formatNumberForPrice(pricePerToken)} ${tokenShort}`;
+                priceDisplay = `${formatNumberForPrice(pricePerToken)} ${tokenShort} = 1 USDT`;
             } else {
                 priceDisplay = 'calculating...';
             }
         } else if (currentPair === 'Polygon' && polygonPrice !== null) {
-            // اصلاح شده: تعداد توکن به ازای 1 POL
-            let pricePerToken = tokenToPool / finalPolAmount;
-            if (pricePerToken > 0 && finalPolAmount > 0) {
-                priceDisplay = `1 POL = ${formatNumberForPrice(pricePerToken)} ${tokenShort}`;
+            let pricePerTokenInPol = tokenToPool / finalPolAmount;
+            if (pricePerTokenInPol > 0 && finalPolAmount > 0) {
+                priceDisplay = `${formatNumberForPrice(pricePerTokenInPol)} ${tokenShort} = 1 POL`;
             } else {
                 priceDisplay = 'calculating...';
             }
