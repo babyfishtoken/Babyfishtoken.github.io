@@ -1058,18 +1058,18 @@
         let rangeCurrency = (currentPair === 'Polygon') ? 'POL' : 'USDT';
         
         if (currentPair === 'USDT') {
-            // اصلاح شده: قیمت هر توکن بر حسب USDT
-            let pricePerToken = totalValue / tokenToPool;
+            // اصلاح شده: تعداد توکن به ازای 1 USDT
+            let pricePerToken = tokenToPool / totalValue;
             if (pricePerToken > 0 && totalValue > 0) {
-                priceDisplay = `1 ${tokenShort} = ${formatNumberForPrice(pricePerToken)} USDT`;
+                priceDisplay = `1 USDT = ${formatNumberForPrice(pricePerToken)} ${tokenShort}`;
             } else {
                 priceDisplay = 'calculating...';
             }
         } else if (currentPair === 'Polygon' && polygonPrice !== null) {
-            // اصلاح شده: قیمت هر توکن بر حسب POL
-            let pricePerToken = totalValue / tokenToPool;
+            // اصلاح شده: تعداد توکن به ازای 1 POL
+            let pricePerToken = tokenToPool / finalPolAmount;
             if (pricePerToken > 0 && finalPolAmount > 0) {
-                priceDisplay = `1 ${tokenShort} = ${formatNumberForPrice(pricePerToken)} POL`;
+                priceDisplay = `1 POL = ${formatNumberForPrice(pricePerToken)} ${tokenShort}`;
             } else {
                 priceDisplay = 'calculating...';
             }
