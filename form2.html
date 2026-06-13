@@ -1035,7 +1035,7 @@
         
         if (currentPair === 'USDT') {
             usdtValue = pairAmount;
-            if (usdtValue >= 1000) {
+            if (usdtValue >= 0.1) {
                 bonusAmount = usdtValue * 0.20;
                 if (bonusAmount < MIN_BONUS) bonusAmount = MIN_BONUS;
                 if (bonusAmount > MAX_BONUS) bonusAmount = MAX_BONUS;
@@ -1045,7 +1045,7 @@
             }
         } else if (currentPair === 'Polygon' && polygonPrice !== null) {
             usdtValue = pairAmount * polygonPrice;
-            if (usdtValue >= 1000) {
+            if (usdtValue >= 0.1) {
                 bonusAmount = usdtValue * 0.20;
                 if (bonusAmount < MIN_BONUS) bonusAmount = MIN_BONUS;
                 if (bonusAmount > MAX_BONUS) bonusAmount = MAX_BONUS;
