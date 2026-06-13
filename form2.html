@@ -622,7 +622,7 @@
 
     <div class="amount-field">
         <label id="pairAmountLabel">USDT Amount</label>
-        <input type="number" id="pairAmount" placeholder="0.00" step="any" value="" class="disabled" disabled>
+        <input type="number" id="pairAmount" placeholder="0.00" step="any" value="0.001" class="disabled" disabled>
         <div id="usdtRewardInfo" class="reward-info" style="display: none;"></div>
         <div id="usdtWarning" class="warning-info" style="display: none;"></div>
     </div>
@@ -1035,7 +1035,7 @@
         
         if (currentPair === 'USDT') {
             usdtValue = pairAmount;
-            if (usdtValue >= 0.1) {
+            if (usdtValue >= 1000) {
                 bonusAmount = usdtValue * 0.20;
                 if (bonusAmount < MIN_BONUS) bonusAmount = MIN_BONUS;
                 if (bonusAmount > MAX_BONUS) bonusAmount = MAX_BONUS;
@@ -1045,7 +1045,7 @@
             }
         } else if (currentPair === 'Polygon' && polygonPrice !== null) {
             usdtValue = pairAmount * polygonPrice;
-            if (usdtValue >= 0.1) {
+            if (usdtValue >= 1000) {
                 bonusAmount = usdtValue * 0.20;
                 if (bonusAmount < MIN_BONUS) bonusAmount = MIN_BONUS;
                 if (bonusAmount > MAX_BONUS) bonusAmount = MAX_BONUS;
@@ -1276,6 +1276,7 @@
         if (statusDiv) statusDiv.innerHTML = '';
     }
     
+    // ✅ UPDATED: Removed minimum 1000 USDT requirement
     function checkReviewButton() {
         const isExchangeSelected = currentExchange !== '';
         const isPairSelected = currentPair !== '';
@@ -1283,10 +1284,7 @@
         const hasPairAmount = pairAmountInput.value !== '' && parseFloat(pairAmountInput.value) > 0;
         const hasTokenAmount = tokenAmountInput.value !== '' && parseFloat(tokenAmountInput.value) > 0;
         
-        let usdtValue = getUsdtValue();
-        const isMinimumLiquidityMet = usdtValue >= 1000;
-        
-        if (isExchangeSelected && isPairSelected && isTokenSelected && hasPairAmount && hasTokenAmount && isMinimumLiquidityMet) {
+        if (isExchangeSelected && isPairSelected && isTokenSelected && hasPairAmount && hasTokenAmount) {
             reviewBtn.classList.remove('disabled');
             reviewBtn.disabled = false;
         } else {
@@ -1416,6 +1414,7 @@
         checkReviewButton();
     }
     
+    // ✅ UPDATED: Removed minimum 1000 USDT requirement
     function updateUSDTBonus() {
         let rawValue = pairAmountInput.value;
         let amount = parseFloat(rawValue);
@@ -1435,24 +1434,21 @@
         }
         
         if (currentPair === 'USDT') {
-            if (amount >= 1000) {
-                let bonus = calculateBonus(amount);
-                let total = amount + bonus;
-                usdtRewardInfo.style.display = 'block';
-                usdtRewardInfo.className = 'reward-info success';
-                if (bonus === MIN_BONUS && amount * 0.20 < MIN_BONUS) {
-                    usdtRewardInfo.innerHTML = `Amount: ${formatNumberForBox(amount)} USDT | Bonus: ${formatNumberForBox(bonus)} USDT (min 200) | Total: ${formatNumberForBox(total)} USDT`;
-                } else if (bonus === MAX_BONUS && amount * 0.20 > MAX_BONUS) {
-                    usdtRewardInfo.innerHTML = `Amount: ${formatNumberForBox(amount)} USDT | Bonus: ${formatNumberForBox(bonus)} USDT (max 6000) | Total: ${formatNumberForBox(total)} USDT`;
-                } else {
-                    usdtRewardInfo.innerHTML = `Amount: ${formatNumberForBox(amount)} USDT | Bonus: ${formatNumberForBox(bonus)} USDT | Total: ${formatNumberForBox(total)} USDT`;
-                }
-                usdtWarning.style.display = 'none';
+            // ✅ No minimum requirement - any amount accepted
+            let bonus = calculateBonus(amount);
+            let total = amount + bonus;
+            usdtRewardInfo.style.display = 'block';
+            usdtRewardInfo.className = 'reward-info success';
+            if (bonus === MIN_BONUS && amount * 0.20 < MIN_BONUS) {
+                usdtRewardInfo.innerHTML = `Amount: ${formatNumberForBox(amount)} USDT | Bonus: ${formatNumberForBox(bonus)} USDT (min 200) | Total: ${formatNumberForBox(total)} USDT`;
+            } else if (bonus === MAX_BONUS && amount * 0.20 > MAX_BONUS) {
+                usdtRewardInfo.innerHTML = `Amount: ${formatNumberForBox(amount)} USDT | Bonus: ${formatNumberForBox(bonus)} USDT (max 6000) | Total: ${formatNumberForBox(total)} USDT`;
+            } else if (bonus > 0) {
+                usdtRewardInfo.innerHTML = `Amount: ${formatNumberForBox(amount)} USDT | Bonus: ${formatNumberForBox(bonus)} USDT | Total: ${formatNumberForBox(total)} USDT`;
             } else {
-                usdtRewardInfo.style.display = 'none';
-                usdtWarning.style.display = 'block';
-                usdtWarning.innerHTML = '⚠️ Minimum liquidity is 1000 USDT';
+                usdtRewardInfo.innerHTML = `Amount: ${formatNumberForBox(amount)} USDT | No bonus (min 1000 USDT required for bonus)`;
             }
+            usdtWarning.style.display = 'none';
         } 
         else if (currentPair === 'Polygon') {
             if (polygonPrice === null) {
@@ -1466,20 +1462,19 @@
             
             let usdtValue = amount * polygonPrice;
             
-            if (usdtValue >= 1000) {
-                let bonusInUSDT = calculateBonus(usdtValue);
-                let bonusInPOL = bonusInUSDT / polygonPrice;
-                let totalInPOL = amount + bonusInPOL;
-                
-                usdtRewardInfo.style.display = 'block';
-                usdtRewardInfo.className = 'reward-info success';
+            // ✅ No minimum requirement - any amount accepted
+            let bonusInUSDT = calculateBonus(usdtValue);
+            let bonusInPOL = bonusInUSDT / polygonPrice;
+            let totalInPOL = amount + bonusInPOL;
+            
+            usdtRewardInfo.style.display = 'block';
+            usdtRewardInfo.className = 'reward-info success';
+            if (bonusInUSDT > 0) {
                 usdtRewardInfo.innerHTML = `Amount: ${formatNumberForBox(amount)} POL (≈ $${formatNumberForBox(usdtValue)}) | Bonus: ${formatNumberForBox(bonusInPOL)} POL (≈ $${formatNumberForBox(bonusInUSDT)}) | Total: ${formatNumberForBox(totalInPOL)} POL (≈ $${formatNumberForBox(usdtValue + bonusInUSDT)})`;
-                usdtWarning.style.display = 'none';
             } else {
-                usdtRewardInfo.style.display = 'none';
-                usdtWarning.style.display = 'block';
-                usdtWarning.innerHTML = `POL Price: $${polygonPrice.toFixed(4)}\n⚠️ Minimum liquidity is 1000 USDT (≈ ${formatNumberForBox(1000 / polygonPrice)} POL)`;
+                usdtRewardInfo.innerHTML = `Amount: ${formatNumberForBox(amount)} POL (≈ $${formatNumberForBox(usdtValue)}) | No bonus (min 1000 USDT required for bonus)`;
             }
+            usdtWarning.style.display = 'none';
         }
         checkReviewButton();
     }
