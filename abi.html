@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DirectRouter - واریز جفت توکن به خزانه</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            color: #1e293b;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .wallet-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .token-input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input, .token-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .token-badge {
+            background: #f1f5f9;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+            white-space: nowrap;
+        }
+
+        .token-badge.usdt {
+            background: #26a17b;
+            color: white;
+        }
+
+        .token-badge.pol {
+            background: #8247e5;
+            color: white;
+        }
+
+        .token-badge.custom {
+            background: #3b82f6;
+            color: white;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-approve {
+            background: #f59e0b;
+            margin-bottom: 12px;
+        }
+
+        .btn-approve:hover:not(:disabled) {
+            background: #d97706;
+        }
+
+        .btn-deposit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .info-box {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 16px;
+            font-size: 12px;
+            color: #64748b;
+            text-align: center;
+        }
+
+        .status {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .status.loading {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 12px;
+            position: relative;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        .address-hint {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <h1>💰 DirectRouter</h1>
+                <p>واریز جفت توکن به خزانه</p>
+            </div>
+
+            <div class="wallet-wrapper" id="wallet-btn"></div>
+
+            <!-- توکن اول: POL (ثابت) -->
+            <div class="form-group">
+                <label>💰 توکن اول (POL)</label>
+                <div class="token-input-wrapper">
+                    <div class="token-badge pol">POL</div>
+                    <input type="text" id="amountPOL" placeholder="مقدار POL به POL" value="0.01">
+                </div>
+                <div class="address-hint">آدرس: 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE</div>
+            </div>
+
+            <!-- توکن دوم: USDT (ثابت) -->
+            <div class="form-group">
+                <label>💵 توکن دوم (USDT)</label>
+                <div class="token-input-wrapper">
+                    <div class="token-badge usdt">USDT</div>
+                    <input type="text" id="amountUSDT" placeholder="مقدار USDT" value="1">
+                </div>
+                <div class="address-hint">آدرس: 0xc2132D05D31c914a87C6611C10748AEb04B58e8F</div>
+            </div>
+
+            <div class="divider">
+                <span>یا</span>
+            </div>
+
+            <!-- توکن دلخواه کاربر -->
+            <div class="form-group">
+                <label>🔧 توکن دلخواه (برای توکن دوم)</label>
+                <div class="token-input-wrapper">
+                    <div class="token-badge custom" id="customTokenBadge">Token</div>
+                    <input type="text" id="customTokenAddress" placeholder="آدرس توکن دلخواه (مثلاً AZIZ)">
+                </div>
+                <input type="text" id="amountCustom" placeholder="مقدار توکن دلخواه" style="margin-top: 8px;">
+            </div>
+
+            <div class="info-box">
+                ℹ️ توکن اول همیشه POL است. توکن دوم می‌تواند USDT یا هر توکن دلخواه شما باشد.
+            </div>
+
+            <button id="approveUSDTBtn" class="btn-approve">✅ Approve USDT به قرارداد</button>
+            <button id="approveCustomBtn" class="btn-approve" style="background:#8b5cf6;">✅ Approve توکن دلخواه</button>
+            <button id="depositBtn" class="btn-deposit">🚀 واریز به خزانه</button>
+
+            <div id="status"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createWeb3Modal, defaultWagmiConfig } from "https://esm.sh/@web3modal/wagmi";
+        import { polygon } from "https://esm.sh/wagmi/chains";
+        import { watchAccount, writeContract, readContract, simulateContract } from "https://esm.sh/wagmi/actions";
+        import { formatUnits, parseUnits } from "https://esm.sh/viem";
+
+        // آدرس قرارداد دیپلوی شده
+        const CONTRACT_ADDRESS = "0xa9bD51648a5EbaF4dBa5d7b37360Ae1a8dF6E40f";
+        
+        // آدرس USDT در پالیگان
+        const USDT_ADDRESS = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
+        
+        // آدرس NATIVE POL (برای توکن اول)
+        const NATIVE_POL = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
+
+        // ABI قرارداد DirectRouter (فقط توابع مورد نیاز)
+        const ROUTER_ABI = [
+            { "inputs": [], "name": "treasury", "outputs": [{ "internalType": "address", "name": "", "type": "address" }], "stateMutability": "view", "type": "function" },
+            { "inputs": [{ "internalType": "uint256", "name": "amount", "type": "uint256" }], "name": "approveUSDT", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
+            { "inputs": [{ "internalType": "address", "name": "token", "type": "address" }, { "internalType": "uint256", "name": "amount", "type": "uint256" }], "name": "approveToken", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
+            { "inputs": [{ "internalType": "address", "name": "tokenA", "type": "address" }, { "internalType": "uint256", "name": "amountA", "type": "uint256" }, { "internalType": "address", "name": "tokenB", "type": "address" }, { "internalType": "uint256", "name": "amountB", "type": "uint256" }], "name": "depositPair", "outputs": [], "stateMutability": "payable", "type": "function" }
+        ];
+
+        // ABI استاندارد ERC20 برای approve
+        const ERC20_ABI = [
+            { "inputs": [{ "name": "spender", "type": "address" }, { "name": "amount", "type": "uint256" }], "name": "approve", "outputs": [{ "name": "", "type": "bool" }], "stateMutability": "nonpayable", "type": "function" },
+            { "inputs": [], "name": "decimals", "outputs": [{ "name": "", "type": "uint8" }], "stateMutability": "view", "type": "function" },
+            { "inputs": [{ "name": "owner", "type": "address" }], "name": "balanceOf", "outputs": [{ "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }
+        ];
+
+        const projectId = "96f13374b0fe2f629a925617de0a2ba3";
+        const chains = [polygon];
+
+        const wagmiConfig = defaultWagmiConfig({
+            chains,
+            projectId,
+            metadata: { name: "DirectRouter DApp", description: "Deposit token pairs to treasury", url: window.location.href, icons: [] }
+        });
+
+        createWeb3Modal({ wagmiConfig, projectId, chains });
+        const btn = document.createElement("w3m-button");
+        document.getElementById("wallet-btn").appendChild(btn);
+
+        let currentAccount = null;
+        let currentChainId = null;
+
+        watchAccount(wagmiConfig, {
+            onChange(account) {
+                if (account?.address) {
+                    currentAccount = account.address;
+                    currentChainId = account.chainId;
+                    enableButtons(true);
+                    showStatus("✅ کیف پول متصل شد: " + account.address.slice(0,6) + "..." + account.address.slice(-4), "success");
+                } else {
+                    currentAccount = null;
+                    enableButtons(false);
+                    showStatus("🔌 لطفاً کیف پول خود را متصل کنید", "error");
+                }
+            }
+        });
+
+        function enableButtons(enabled) {
+            const btns = ["approveUSDTBtn", "approveCustomBtn", "depositBtn"];
+            btns.forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.disabled = !enabled;
+            });
+        }
+
+        function showStatus(msg, type) {
+            const statusDiv = document.getElementById("status");
+            statusDiv.innerHTML = `<div class="status ${type}">${msg}</div>`;
+            setTimeout(() => {
+                if (document.getElementById("status").innerHTML === `<div class="status ${type}">${msg}</div>`) {
+                    document.getElementById("status").innerHTML = "";
+                }
+            }, 5000);
+        }
+
+        // Approve USDT به قرارداد
+        document.getElementById("approveUSDTBtn").addEventListener("click", async () => {
+            if (!currentAccount) {
+                showStatus("❌ لطفاً کیف پول را متصل کنید", "error");
+                return;
+            }
+
+            const amountUSDT = document.getElementById("amountUSDT").value;
+            if (!amountUSDT || parseFloat(amountUSDT) <= 0) {
+                showStatus("❌ مقدار USDT معتبر وارد کنید", "error");
+                return;
+            }
+
+            try {
+                showStatus("🔄 در حال Approve USDT...", "loading");
+                const amountInWei = parseUnits(amountUSDT, 6); // USDT 6 decimal
+
+                const { request } = await simulateContract(wagmiConfig, {
+                    address: CONTRACT_ADDRESS,
+                    abi: ROUTER_ABI,
+                    functionName: "approveUSDT",
+                    args: [amountInWei],
+                    account: currentAccount,
+                    chainId: polygon.id
+                });
+
+                const hash = await writeContract(wagmiConfig, request);
+                showStatus(`✅ Approve USDT ارسال شد! هش: ${hash.slice(0,10)}...`, "success");
+            } catch (error) {
+                console.error(error);
+                showStatus("❌ خطا در Approve: " + error.message.slice(0, 100), "error");
+            }
+        });
+
+        // Approve توکن دلخواه
+        document.getElementById("approveCustomBtn").addEventListener("click", async () => {
+            if (!currentAccount) {
+                showStatus("❌ لطفاً کیف پول را متصل کنید", "error");
+                return;
+            }
+
+            const tokenAddress = document.getElementById("customTokenAddress").value.trim();
+            const amountCustom = document.getElementById("amountCustom").value;
+
+            if (!tokenAddress || !tokenAddress.match(/^0x[a-fA-F0-9]{40}$/i)) {
+                showStatus("❌ آدرس توکن دلخواه معتبر نیست", "error");
+                return;
+            }
+
+            if (!amountCustom || parseFloat(amountCustom) <= 0) {
+                showStatus("❌ مقدار توکن دلخواه را وارد کنید", "error");
+                return;
+            }
+
+            try {
+                showStatus("🔄 در حال دریافت decimals توکن...", "loading");
+                
+                // دریافت decimals توکن
+                const decimals = await readContract(wagmiConfig, {
+                    address: tokenAddress,
+                    abi: ERC20_ABI,
+                    functionName: "decimals",
+                    chainId: polygon.id
+                });
+
+                const amountInWei = parseUnits(amountCustom, decimals);
+                
+                showStatus("🔄 در حال Approve توکن دلخواه...", "loading");
+                const { request } = await simulateContract(wagmiConfig, {
+                    address: CONTRACT_ADDRESS,
+                    abi: ROUTER_ABI,
+                    functionName: "approveToken",
+                    args: [tokenAddress, amountInWei],
+                    account: currentAccount,
+                    chainId: polygon.id
+                });
+
+                const hash = await writeContract(wagmiConfig, request);
+                showStatus(`✅ Approve توکن دلخواه ارسال شد! هش: ${hash.slice(0,10)}...`, "success");
+            } catch (error) {
+                console.error(error);
+                showStatus("❌ خطا در Approve: " + error.message.slice(0, 100), "error");
+            }
+        });
+
+        // تابع واریز
+        document.getElementById("depositBtn").addEventListener("click", async () => {
+            if (!currentAccount) {
+                showStatus("❌ لطفاً کیف پول را متصل کنید", "error");
+                return;
+            }
+
+            const amountPOL = document.getElementById("amountPOL").value;
+            const amountUSDT = document.getElementById("amountUSDT").value;
+            const customTokenAddress = document.getElementById("customTokenAddress").value.trim();
+            const amountCustom = document.getElementById("amountCustom").value;
+
+            let tokenB = USDT_ADDRESS;
+            let amountB = amountUSDT;
+
+            // اگر کاربر توکن دلخواه وارد کرده، از آن استفاده کن
+            if (customTokenAddress && customTokenAddress.match(/^0x[a-fA-F0-9]{40}$/i) && amountCustom && parseFloat(amountCustom) > 0) {
+                tokenB = customTokenAddress;
+                amountB = amountCustom;
+            }
+
+            if (!amountPOL || parseFloat(amountPOL) <= 0) {
+                showStatus("❌ مقدار POL را وارد کنید", "error");
+                return;
+            }
+
+            if (!amountB || parseFloat(amountB) <= 0) {
+                showStatus("❌ مقدار توکن دوم را وارد کنید", "error");
+                return;
+            }
+
+            try {
+                showStatus("🔄 در حال دریافت decimals توکن دوم...", "loading");
+                
+                let decimalsB = 18;
+                if (tokenB !== NATIVE_POL) {
+                    try {
+                        decimalsB = await readContract(wagmiConfig, {
+                            address: tokenB,
+                            abi: ERC20_ABI,
+                            functionName: "decimals",
+                            chainId: polygon.id
+                        });
+                    } catch(e) {
+                        decimalsB = 18;
+                    }
+                }
+
+                const amountPOLInWei = parseUnits(amountPOL, 18);
+                const amountBInWei = parseUnits(amountB, decimalsB);
+                const isNative = (tokenB === NATIVE_POL);
+
+                showStatus("🔄 در حال ارسال تراکنش واریز...", "loading");
+
+                const { request } = await simulateContract(wagmiConfig, {
+                    address: CONTRACT_ADDRESS,
+                    abi: ROUTER_ABI,
+                    functionName: "depositPair",
+                    args: [NATIVE_POL, amountPOLInWei, tokenB, amountBInWei],
+                    account: currentAccount,
+                    chainId: polygon.id,
+                    value: amountPOLInWei
+                });
+
+                const hash = await writeContract(wagmiConfig, request);
+                showStatus(`✅ واریز با موفقیت ارسال شد! هش: ${hash.slice(0,10)}...`, "success");
+            } catch (error) {
+                console.error(error);
+                let errorMsg = error.message.slice(0, 150);
+                if (errorMsg.includes("insufficient")) {
+                    errorMsg = "موجودی کافی برای این تراکنش ندارید";
+                } else if (errorMsg.includes("user rejected")) {
+                    errorMsg = "تراکنش توسط کاربر رد شد";
+                }
+                showStatus("❌ خطا: " + errorMsg, "error");
+            }
+        });
+
+        // آپدیت badge توکن دلخواه
+        document.getElementById("customTokenAddress").addEventListener("input", (e) => {
+            const addr = e.target.value.trim();
+            const badge = document.getElementById("customTokenBadge");
+            if (addr && addr.length > 0) {
+                badge.textContent = addr.slice(0, 6) + "..." + addr.slice(-4);
+            } else {
+                badge.textContent = "Token";
+            }
+        });
+    </script>
+</body>
+  </html>
