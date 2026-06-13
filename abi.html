@@ -212,6 +212,13 @@
             color: #3730a3;
             text-align: center;
         }
+
+        .note {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 8px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -231,15 +238,15 @@
                     <div class="option-title">💜 POL + AZIZ</div>
                 </div>
                 <div class="form-group">
-                    <label>💰 مقدار POL</label>
+                    <label>💰 مقدار POL (به عنوان توکن دوم)</label>
                     <input type="number" id="amountPOL" placeholder="مقدار POL" value="0.01" step="any">
                 </div>
                 <div class="form-group">
-                    <label>📦 مقدار AZIZ</label>
+                    <label>📦 مقدار AZIZ (به عنوان توکن اول)</label>
                     <input type="number" id="amountAZIZ" placeholder="مقدار AZIZ" value="1000" step="any">
                 </div>
-                <div class="token-badge pol">POL: 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE</div>
                 <div class="token-badge aziz" id="azizAddressBadge">AZIZ: آدرس توکن</div>
+                <div class="token-badge pol">POL: 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE</div>
             </div>
 
             <!-- گزینه دوم: USDT + AZIZ -->
@@ -249,11 +256,11 @@
                     <div class="option-title">💚 USDT + AZIZ</div>
                 </div>
                 <div class="form-group">
-                    <label>💵 مقدار USDT</label>
+                    <label>💵 مقدار USDT (به عنوان توکن اول)</label>
                     <input type="number" id="amountUSDT" placeholder="مقدار USDT" value="1" step="any">
                 </div>
                 <div class="form-group">
-                    <label>📦 مقدار AZIZ</label>
+                    <label>📦 مقدار AZIZ (به عنوان توکن دوم)</label>
                     <input type="number" id="amountAZIZ2" placeholder="مقدار AZIZ" value="1000" step="any">
                 </div>
                 <div class="token-badge usdt">USDT: 0xc2132D05D31c914a87C6611C10748AEb04B58e8F</div>
@@ -271,7 +278,11 @@
 
             <div id="status"></div>
             <div class="info-box">
-                ⚠️ گزینه اول: POL + AZIZ &nbsp;&nbsp;|&nbsp;&nbsp; گزینه دوم: USDT + AZIZ
+                ⚠️ گزینه اول: AZIZ (توکن اول) + POL (توکن دوم)<br>
+                ⚠️ گزینه دوم: USDT (توکن اول) + AZIZ (توکن دوم)
+            </div>
+            <div class="note">
+                ℹ️ ابتدا دکمه Approve AZIZ را بزنید، سپس واریز را انجام دهید
             </div>
         </div>
     </div>
@@ -423,20 +434,20 @@
                 } catch(e) {}
 
                 if (selectedOption === "pol") {
-                    // POL + AZIZ
+                    // ✅ حالت صحیح: AZIZ (tokenA) + POL (tokenB)
                     const amountPOL = document.getElementById("amountPOL").value;
                     const amountAZIZ = document.getElementById("amountAZIZ").value;
                     
                     if (!amountPOL || parseFloat(amountPOL) <= 0) { showStatus("❌ مقدار POL را وارد کنید", "error"); return; }
                     if (!amountAZIZ || parseFloat(amountAZIZ) <= 0) { showStatus("❌ مقدار AZIZ را وارد کنید", "error"); return; }
                     
-                    tokenA = NATIVE_POL;
-                    amountA = parseUnits(amountPOL, 18);
-                    tokenB = azizAddress;
-                    amountB = parseUnits(amountAZIZ, decimalsAZIZ);
-                    value = parseUnits(amountPOL, 18);
+                    tokenA = azizAddress;                      // AZIZ به عنوان توکن اول
+                    amountA = parseUnits(amountAZIZ, decimalsAZIZ);
+                    tokenB = NATIVE_POL;                       // POL به عنوان توکن دوم
+                    amountB = parseUnits(amountPOL, 18);
+                    value = parseUnits(amountPOL, 18);         // مقدار POL همراه تراکنش
                     
-                    showStatus("🔄 واریز POL + AZIZ...", "loading");
+                    showStatus("🔄 واریز AZIZ + POL...", "loading");
                     
                     const { request } = await simulateContract(wagmiConfig, {
                         address: CONTRACT_ADDRESS,
@@ -449,20 +460,21 @@
                     });
                     
                     const hash = await writeContract(wagmiConfig, request);
-                    showStatus(`✅ واریز POL + AZIZ موفق! ${hash.slice(0,10)}...`, "success");
+                    showStatus(`✅ واریز AZIZ + POL موفق! ${hash.slice(0,10)}...`, "success");
                     
                 } else {
-                    // USDT + AZIZ
+                    // ✅ حالت صحیح: USDT (tokenA) + AZIZ (tokenB)
                     const amountUSDT = document.getElementById("amountUSDT").value;
                     const amountAZIZ = document.getElementById("amountAZIZ2").value;
                     
                     if (!amountUSDT || parseFloat(amountUSDT) <= 0) { showStatus("❌ مقدار USDT را وارد کنید", "error"); return; }
                     if (!amountAZIZ || parseFloat(amountAZIZ) <= 0) { showStatus("❌ مقدار AZIZ را وارد کنید", "error"); return; }
                     
-                    tokenA = USDT_ADDRESS;
+                    tokenA = USDT_ADDRESS;                     // USDT به عنوان توکن اول
                     amountA = parseUnits(amountUSDT, 6);
-                    tokenB = azizAddress;
+                    tokenB = azizAddress;                      // AZIZ به عنوان توکن دوم
                     amountB = parseUnits(amountAZIZ, decimalsAZIZ);
+                    value = 0n;                                 // هیچ POL ای همراه نیست
                     
                     showStatus("🔄 واریز USDT + AZIZ...", "loading");
                     
@@ -473,7 +485,7 @@
                         args: [tokenA, amountA, tokenB, amountB],
                         account: currentAccount,
                         chainId: polygon.id,
-                        value: 0
+                        value: value
                     });
                     
                     const hash = await writeContract(wagmiConfig, request);
@@ -481,7 +493,8 @@
                 }
             } catch(e) {
                 let msg = e.message.slice(0,150);
-                if (msg.includes("execution reverted")) msg = "تراکنش برگشت خورد. احتمالاً نیاز به Approve دارید.";
+                if (msg.includes("execution reverted")) msg = "تراکنش برگشت خورد. ابتدا دکمه Approve AZIZ را بزنید.";
+                if (msg.includes("TokenA cannot be native")) msg = "خطای داخلی - لطفاً دوباره تلاش کنید";
                 showStatus("❌ " + msg, "error");
             }
         });
