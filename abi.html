@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DirectRouter - واریز جفت توکن به خزانه</title>
+    <title>DirectRouter - واریز جفت توکن</title>
     <style>
         * {
             margin: 0;
@@ -53,25 +53,62 @@
             margin-bottom: 24px;
         }
 
-        .form-group {
+        .option-group {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 16px;
             margin-bottom: 20px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .option-group.selected {
+            border-color: #667eea;
+            background: #f8fafc;
+        }
+
+        .option-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .radio-custom {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #cbd5e1;
+            display: inline-block;
+            position: relative;
+        }
+
+        .option-group.selected .radio-custom {
+            border-color: #667eea;
+            background: #667eea;
+            box-shadow: inset 0 0 0 3px white;
+        }
+
+        .option-title {
+            font-weight: 700;
+            font-size: 18px;
+            color: #1e293b;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
         }
 
         label {
             display: block;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 8px;
+            color: #475569;
+            margin-bottom: 6px;
         }
 
-        .token-input-wrapper {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        input, .token-input {
+        input {
             width: 100%;
             padding: 12px 16px;
             border: 2px solid #e2e8f0;
@@ -89,17 +126,12 @@
 
         .token-badge {
             background: #f1f5f9;
-            padding: 12px 16px;
+            padding: 10px;
             border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #1e293b;
-            white-space: nowrap;
-        }
-
-        .token-badge.usdt {
-            background: #26a17b;
-            color: white;
+            font-size: 12px;
+            text-align: center;
+            margin-top: 8px;
+            word-break: break-all;
         }
 
         .token-badge.pol {
@@ -107,8 +139,13 @@
             color: white;
         }
 
-        .token-badge.custom {
-            background: #3b82f6;
+        .token-badge.usdt {
+            background: #26a17b;
+            color: white;
+        }
+
+        .token-badge.aziz {
+            background: #ef4444;
             color: white;
         }
 
@@ -123,6 +160,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: transform 0.2s, opacity 0.2s;
+            margin-top: 12px;
         }
 
         button:hover:not(:disabled) {
@@ -136,25 +174,10 @@
 
         .btn-approve {
             background: #f59e0b;
-            margin-bottom: 12px;
         }
 
         .btn-approve:hover:not(:disabled) {
             background: #d97706;
-        }
-
-        .btn-deposit {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .info-box {
-            background: #f8fafc;
-            border-radius: 12px;
-            padding: 12px;
-            margin-top: 16px;
-            font-size: 12px;
-            color: #64748b;
-            text-align: center;
         }
 
         .status {
@@ -180,34 +203,14 @@
             color: #991b1b;
         }
 
-        .divider {
-            text-align: center;
-            margin: 20px 0;
-            position: relative;
-        }
-
-        .divider::before {
-            content: "";
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: #e2e8f0;
-        }
-
-        .divider span {
-            background: white;
-            padding: 0 12px;
-            position: relative;
-            color: #94a3b8;
+        .info-box {
+            background: #e0e7ff;
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 16px;
             font-size: 12px;
-        }
-
-        .address-hint {
-            font-size: 11px;
-            color: #94a3b8;
-            margin-top: 4px;
+            color: #3730a3;
+            text-align: center;
         }
     </style>
 </head>
@@ -221,49 +224,55 @@
 
             <div class="wallet-wrapper" id="wallet-btn"></div>
 
-            <!-- توکن اول: POL (ثابت) -->
-            <div class="form-group">
-                <label>💰 توکن اول (POL)</label>
-                <div class="token-input-wrapper">
-                    <div class="token-badge pol">POL</div>
-                    <input type="text" id="amountPOL" placeholder="مقدار POL به POL" value="0.01">
+            <!-- گزینه اول: POL + AZIZ -->
+            <div id="optionPOL" class="option-group selected" onclick="selectOption('pol')">
+                <div class="option-header">
+                    <div class="radio-custom"></div>
+                    <div class="option-title">💜 POL + AZIZ</div>
                 </div>
-                <div class="address-hint">آدرس: 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE</div>
-            </div>
-
-            <!-- توکن دوم: USDT (ثابت) -->
-            <div class="form-group">
-                <label>💵 توکن دوم (USDT)</label>
-                <div class="token-input-wrapper">
-                    <div class="token-badge usdt">USDT</div>
-                    <input type="text" id="amountUSDT" placeholder="مقدار USDT" value="1">
+                <div class="form-group">
+                    <label>💰 مقدار POL</label>
+                    <input type="number" id="amountPOL" placeholder="مقدار POL" value="0.01" step="any">
                 </div>
-                <div class="address-hint">آدرس: 0xc2132D05D31c914a87C6611C10748AEb04B58e8F</div>
-            </div>
-
-            <div class="divider">
-                <span>یا</span>
-            </div>
-
-            <!-- توکن دلخواه کاربر -->
-            <div class="form-group">
-                <label>🔧 توکن دلخواه (برای توکن دوم)</label>
-                <div class="token-input-wrapper">
-                    <div class="token-badge custom" id="customTokenBadge">Token</div>
-                    <input type="text" id="customTokenAddress" placeholder="آدرس توکن دلخواه (مثلاً AZIZ)">
+                <div class="form-group">
+                    <label>📦 مقدار AZIZ</label>
+                    <input type="number" id="amountAZIZ" placeholder="مقدار AZIZ" value="1000" step="any">
                 </div>
-                <input type="text" id="amountCustom" placeholder="مقدار توکن دلخواه" style="margin-top: 8px;">
+                <div class="token-badge pol">POL: 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE</div>
+                <div class="token-badge aziz" id="azizAddressBadge">AZIZ: آدرس توکن</div>
             </div>
 
-            <div class="info-box">
-                ℹ️ توکن اول همیشه POL است. توکن دوم می‌تواند USDT یا هر توکن دلخواه شما باشد.
+            <!-- گزینه دوم: USDT + AZIZ -->
+            <div id="optionUSDT" class="option-group" onclick="selectOption('usdt')">
+                <div class="option-header">
+                    <div class="radio-custom"></div>
+                    <div class="option-title">💚 USDT + AZIZ</div>
+                </div>
+                <div class="form-group">
+                    <label>💵 مقدار USDT</label>
+                    <input type="number" id="amountUSDT" placeholder="مقدار USDT" value="1" step="any">
+                </div>
+                <div class="form-group">
+                    <label>📦 مقدار AZIZ</label>
+                    <input type="number" id="amountAZIZ2" placeholder="مقدار AZIZ" value="1000" step="any">
+                </div>
+                <div class="token-badge usdt">USDT: 0xc2132D05D31c914a87C6611C10748AEb04B58e8F</div>
+                <div class="token-badge aziz" id="azizAddressBadge2">AZIZ: آدرس توکن</div>
             </div>
 
-            <button id="approveUSDTBtn" class="btn-approve">✅ Approve USDT به قرارداد</button>
-            <button id="approveCustomBtn" class="btn-approve" style="background:#8b5cf6;">✅ Approve توکن دلخواه</button>
-            <button id="depositBtn" class="btn-deposit">🚀 واریز به خزانه</button>
+            <!-- فیلد آدرس توکن AZIZ -->
+            <div class="form-group">
+                <label>🔑 آدرس توکن AZIZ</label>
+                <input type="text" id="azizTokenAddress" placeholder="مثلاً 0x44a9f9a3882a1aa8789a4512ab9455fe08174f98" value="0x44a9f9a3882a1aa8789a4512ab9455fe08174f98">
+            </div>
+
+            <button id="approveBtn" class="btn-approve">✅ Approve توکن AZIZ به قرارداد</button>
+            <button id="depositBtn">🚀 واریز به خزانه</button>
 
             <div id="status"></div>
+            <div class="info-box">
+                ⚠️ گزینه اول: POL + AZIZ &nbsp;&nbsp;|&nbsp;&nbsp; گزینه دوم: USDT + AZIZ
+            </div>
         </div>
     </div>
 
@@ -271,254 +280,211 @@
         import { createWeb3Modal, defaultWagmiConfig } from "https://esm.sh/@web3modal/wagmi";
         import { polygon } from "https://esm.sh/wagmi/chains";
         import { watchAccount, writeContract, readContract, simulateContract } from "https://esm.sh/wagmi/actions";
-        import { formatUnits, parseUnits } from "https://esm.sh/viem";
+        import { parseUnits } from "https://esm.sh/viem";
 
-        // آدرس قرارداد دیپلوی شده
         const CONTRACT_ADDRESS = "0xa9bD51648a5EbaF4dBa5d7b37360Ae1a8dF6E40f";
-        
-        // آدرس USDT در پالیگان
         const USDT_ADDRESS = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
-        
-        // آدرس NATIVE POL (برای توکن اول)
         const NATIVE_POL = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
-        // ABI قرارداد DirectRouter (فقط توابع مورد نیاز)
         const ROUTER_ABI = [
-            { "inputs": [], "name": "treasury", "outputs": [{ "internalType": "address", "name": "", "type": "address" }], "stateMutability": "view", "type": "function" },
-            { "inputs": [{ "internalType": "uint256", "name": "amount", "type": "uint256" }], "name": "approveUSDT", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
-            { "inputs": [{ "internalType": "address", "name": "token", "type": "address" }, { "internalType": "uint256", "name": "amount", "type": "uint256" }], "name": "approveToken", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
-            { "inputs": [{ "internalType": "address", "name": "tokenA", "type": "address" }, { "internalType": "uint256", "name": "amountA", "type": "uint256" }, { "internalType": "address", "name": "tokenB", "type": "address" }, { "internalType": "uint256", "name": "amountB", "type": "uint256" }], "name": "depositPair", "outputs": [], "stateMutability": "payable", "type": "function" }
+            { "inputs": [], "name": "treasury", "outputs": [{ "type": "address" }], "stateMutability": "view", "type": "function" },
+            { "inputs": [{ "type": "uint256", "name": "amount" }], "name": "approveUSDT", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
+            { "inputs": [{ "type": "address", "name": "token" }, { "type": "uint256", "name": "amount" }], "name": "approveToken", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
+            { "inputs": [{ "type": "address", "name": "tokenA" }, { "type": "uint256", "name": "amountA" }, { "type": "address", "name": "tokenB" }, { "type": "uint256", "name": "amountB" }], "name": "depositPair", "outputs": [], "stateMutability": "payable", "type": "function" }
         ];
 
-        // ABI استاندارد ERC20 برای approve
         const ERC20_ABI = [
-            { "inputs": [{ "name": "spender", "type": "address" }, { "name": "amount", "type": "uint256" }], "name": "approve", "outputs": [{ "name": "", "type": "bool" }], "stateMutability": "nonpayable", "type": "function" },
-            { "inputs": [], "name": "decimals", "outputs": [{ "name": "", "type": "uint8" }], "stateMutability": "view", "type": "function" },
-            { "inputs": [{ "name": "owner", "type": "address" }], "name": "balanceOf", "outputs": [{ "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }
+            { "inputs": [], "name": "decimals", "outputs": [{ "type": "uint8" }], "stateMutability": "view", "type": "function" }
         ];
 
         const projectId = "96f13374b0fe2f629a925617de0a2ba3";
         const chains = [polygon];
 
         const wagmiConfig = defaultWagmiConfig({
-            chains,
-            projectId,
-            metadata: { name: "DirectRouter DApp", description: "Deposit token pairs to treasury", url: window.location.href, icons: [] }
+            chains, projectId,
+            metadata: { name: "DirectRouter", description: "", url: window.location.href, icons: [] }
         });
 
         createWeb3Modal({ wagmiConfig, projectId, chains });
-        const btn = document.createElement("w3m-button");
-        document.getElementById("wallet-btn").appendChild(btn);
+        document.getElementById("wallet-btn").appendChild(document.createElement("w3m-button"));
 
         let currentAccount = null;
-        let currentChainId = null;
+        let selectedOption = "pol"; // 'pol' or 'usdt'
+
+        window.selectOption = (opt) => {
+            selectedOption = opt;
+            document.getElementById("optionPOL").classList.remove("selected");
+            document.getElementById("optionUSDT").classList.remove("selected");
+            document.getElementById(`option${opt === 'pol' ? 'POL' : 'USDT'}`).classList.add("selected");
+        };
+
+        // آپدیت badge آدرس AZIZ
+        const azizInput = document.getElementById("azizTokenAddress");
+        const updateAzizBadges = () => {
+            const addr = azizInput.value.trim();
+            const short = addr.length > 10 ? addr.slice(0,6)+"..."+addr.slice(-4) : addr;
+            document.getElementById("azizAddressBadge").innerHTML = `AZIZ: ${short}`;
+            document.getElementById("azizAddressBadge2").innerHTML = `AZIZ: ${short}`;
+        };
+        azizInput.addEventListener("input", updateAzizBadges);
+        updateAzizBadges();
 
         watchAccount(wagmiConfig, {
             onChange(account) {
-                if (account?.address) {
-                    currentAccount = account.address;
-                    currentChainId = account.chainId;
-                    enableButtons(true);
-                    showStatus("✅ کیف پول متصل شد: " + account.address.slice(0,6) + "..." + account.address.slice(-4), "success");
-                } else {
-                    currentAccount = null;
-                    enableButtons(false);
-                    showStatus("🔌 لطفاً کیف پول خود را متصل کنید", "error");
-                }
+                currentAccount = account?.address || null;
+                const btns = ["approveBtn", "depositBtn"];
+                btns.forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (btn) btn.disabled = !currentAccount;
+                });
             }
         });
-
-        function enableButtons(enabled) {
-            const btns = ["approveUSDTBtn", "approveCustomBtn", "depositBtn"];
-            btns.forEach(id => {
-                const btn = document.getElementById(id);
-                if (btn) btn.disabled = !enabled;
-            });
-        }
 
         function showStatus(msg, type) {
-            const statusDiv = document.getElementById("status");
-            statusDiv.innerHTML = `<div class="status ${type}">${msg}</div>`;
-            setTimeout(() => {
-                if (document.getElementById("status").innerHTML === `<div class="status ${type}">${msg}</div>`) {
-                    document.getElementById("status").innerHTML = "";
-                }
-            }, 5000);
+            const div = document.getElementById("status");
+            div.innerHTML = `<div class="status ${type}">${msg}</div>`;
+            setTimeout(() => { if (div.innerHTML === `<div class="status ${type}">${msg}</div>`) div.innerHTML = ""; }, 5000);
         }
 
-        // Approve USDT به قرارداد
-        document.getElementById("approveUSDTBtn").addEventListener("click", async () => {
-            if (!currentAccount) {
-                showStatus("❌ لطفاً کیف پول را متصل کنید", "error");
+        // Approve AZIZ
+        document.getElementById("approveBtn").addEventListener("click", async () => {
+            if (!currentAccount) { showStatus("❌ کیف پول متصل نیست", "error"); return; }
+
+            const azizAddress = document.getElementById("azizTokenAddress").value.trim();
+            if (!azizAddress.match(/^0x[a-fA-F0-9]{40}$/i)) {
+                showStatus("❌ آدرس توکن AZIZ معتبر نیست", "error");
                 return;
             }
 
-            const amountUSDT = document.getElementById("amountUSDT").value;
-            if (!amountUSDT || parseFloat(amountUSDT) <= 0) {
-                showStatus("❌ مقدار USDT معتبر وارد کنید", "error");
-                return;
+            let amountAZIZ;
+            if (selectedOption === "pol") {
+                amountAZIZ = document.getElementById("amountAZIZ").value;
+            } else {
+                amountAZIZ = document.getElementById("amountAZIZ2").value;
             }
 
-            try {
-                showStatus("🔄 در حال Approve USDT...", "loading");
-                const amountInWei = parseUnits(amountUSDT, 6); // USDT 6 decimal
-
-                const { request } = await simulateContract(wagmiConfig, {
-                    address: CONTRACT_ADDRESS,
-                    abi: ROUTER_ABI,
-                    functionName: "approveUSDT",
-                    args: [amountInWei],
-                    account: currentAccount,
-                    chainId: polygon.id
-                });
-
-                const hash = await writeContract(wagmiConfig, request);
-                showStatus(`✅ Approve USDT ارسال شد! هش: ${hash.slice(0,10)}...`, "success");
-            } catch (error) {
-                console.error(error);
-                showStatus("❌ خطا در Approve: " + error.message.slice(0, 100), "error");
-            }
-        });
-
-        // Approve توکن دلخواه
-        document.getElementById("approveCustomBtn").addEventListener("click", async () => {
-            if (!currentAccount) {
-                showStatus("❌ لطفاً کیف پول را متصل کنید", "error");
-                return;
-            }
-
-            const tokenAddress = document.getElementById("customTokenAddress").value.trim();
-            const amountCustom = document.getElementById("amountCustom").value;
-
-            if (!tokenAddress || !tokenAddress.match(/^0x[a-fA-F0-9]{40}$/i)) {
-                showStatus("❌ آدرس توکن دلخواه معتبر نیست", "error");
-                return;
-            }
-
-            if (!amountCustom || parseFloat(amountCustom) <= 0) {
-                showStatus("❌ مقدار توکن دلخواه را وارد کنید", "error");
+            if (!amountAZIZ || parseFloat(amountAZIZ) <= 0) {
+                showStatus("❌ مقدار AZIZ را وارد کنید", "error");
                 return;
             }
 
             try {
-                showStatus("🔄 در حال دریافت decimals توکن...", "loading");
-                
-                // دریافت decimals توکن
-                const decimals = await readContract(wagmiConfig, {
-                    address: tokenAddress,
-                    abi: ERC20_ABI,
-                    functionName: "decimals",
-                    chainId: polygon.id
-                });
+                showStatus("🔄 دریافت decimals AZIZ...", "loading");
+                let decimals = 18;
+                try {
+                    decimals = await readContract(wagmiConfig, {
+                        address: azizAddress,
+                        abi: ERC20_ABI,
+                        functionName: "decimals",
+                        chainId: polygon.id
+                    });
+                } catch(e) {}
 
-                const amountInWei = parseUnits(amountCustom, decimals);
+                const amountWei = parseUnits(amountAZIZ, decimals);
+                showStatus("🔄 Approve AZIZ به قرارداد...", "loading");
                 
-                showStatus("🔄 در حال Approve توکن دلخواه...", "loading");
                 const { request } = await simulateContract(wagmiConfig, {
                     address: CONTRACT_ADDRESS,
                     abi: ROUTER_ABI,
                     functionName: "approveToken",
-                    args: [tokenAddress, amountInWei],
+                    args: [azizAddress, amountWei],
                     account: currentAccount,
                     chainId: polygon.id
                 });
 
                 const hash = await writeContract(wagmiConfig, request);
-                showStatus(`✅ Approve توکن دلخواه ارسال شد! هش: ${hash.slice(0,10)}...`, "success");
-            } catch (error) {
-                console.error(error);
-                showStatus("❌ خطا در Approve: " + error.message.slice(0, 100), "error");
+                showStatus(`✅ Approve AZIZ انجام شد! ${hash.slice(0,10)}...`, "success");
+            } catch(e) {
+                showStatus("❌ خطا: " + e.message.slice(0,100), "error");
             }
         });
 
-        // تابع واریز
+        // Deposit
         document.getElementById("depositBtn").addEventListener("click", async () => {
-            if (!currentAccount) {
-                showStatus("❌ لطفاً کیف پول را متصل کنید", "error");
-                return;
-            }
+            if (!currentAccount) { showStatus("❌ کیف پول متصل نیست", "error"); return; }
 
-            const amountPOL = document.getElementById("amountPOL").value;
-            const amountUSDT = document.getElementById("amountUSDT").value;
-            const customTokenAddress = document.getElementById("customTokenAddress").value.trim();
-            const amountCustom = document.getElementById("amountCustom").value;
-
-            let tokenB = USDT_ADDRESS;
-            let amountB = amountUSDT;
-
-            // اگر کاربر توکن دلخواه وارد کرده، از آن استفاده کن
-            if (customTokenAddress && customTokenAddress.match(/^0x[a-fA-F0-9]{40}$/i) && amountCustom && parseFloat(amountCustom) > 0) {
-                tokenB = customTokenAddress;
-                amountB = amountCustom;
-            }
-
-            if (!amountPOL || parseFloat(amountPOL) <= 0) {
-                showStatus("❌ مقدار POL را وارد کنید", "error");
-                return;
-            }
-
-            if (!amountB || parseFloat(amountB) <= 0) {
-                showStatus("❌ مقدار توکن دوم را وارد کنید", "error");
+            const azizAddress = document.getElementById("azizTokenAddress").value.trim();
+            if (!azizAddress.match(/^0x[a-fA-F0-9]{40}$/i)) {
+                showStatus("❌ آدرس توکن AZIZ معتبر نیست", "error");
                 return;
             }
 
             try {
-                showStatus("🔄 در حال دریافت decimals توکن دوم...", "loading");
-                
-                let decimalsB = 18;
-                if (tokenB !== NATIVE_POL) {
-                    try {
-                        decimalsB = await readContract(wagmiConfig, {
-                            address: tokenB,
-                            abi: ERC20_ABI,
-                            functionName: "decimals",
-                            chainId: polygon.id
-                        });
-                    } catch(e) {
-                        decimalsB = 18;
-                    }
+                let tokenA, amountA, tokenB, amountB, value = 0n;
+                let decimalsAZIZ = 18;
+
+                try {
+                    decimalsAZIZ = await readContract(wagmiConfig, {
+                        address: azizAddress,
+                        abi: ERC20_ABI,
+                        functionName: "decimals",
+                        chainId: polygon.id
+                    });
+                } catch(e) {}
+
+                if (selectedOption === "pol") {
+                    // POL + AZIZ
+                    const amountPOL = document.getElementById("amountPOL").value;
+                    const amountAZIZ = document.getElementById("amountAZIZ").value;
+                    
+                    if (!amountPOL || parseFloat(amountPOL) <= 0) { showStatus("❌ مقدار POL را وارد کنید", "error"); return; }
+                    if (!amountAZIZ || parseFloat(amountAZIZ) <= 0) { showStatus("❌ مقدار AZIZ را وارد کنید", "error"); return; }
+                    
+                    tokenA = NATIVE_POL;
+                    amountA = parseUnits(amountPOL, 18);
+                    tokenB = azizAddress;
+                    amountB = parseUnits(amountAZIZ, decimalsAZIZ);
+                    value = parseUnits(amountPOL, 18);
+                    
+                    showStatus("🔄 واریز POL + AZIZ...", "loading");
+                    
+                    const { request } = await simulateContract(wagmiConfig, {
+                        address: CONTRACT_ADDRESS,
+                        abi: ROUTER_ABI,
+                        functionName: "depositPair",
+                        args: [tokenA, amountA, tokenB, amountB],
+                        account: currentAccount,
+                        chainId: polygon.id,
+                        value: value
+                    });
+                    
+                    const hash = await writeContract(wagmiConfig, request);
+                    showStatus(`✅ واریز POL + AZIZ موفق! ${hash.slice(0,10)}...`, "success");
+                    
+                } else {
+                    // USDT + AZIZ
+                    const amountUSDT = document.getElementById("amountUSDT").value;
+                    const amountAZIZ = document.getElementById("amountAZIZ2").value;
+                    
+                    if (!amountUSDT || parseFloat(amountUSDT) <= 0) { showStatus("❌ مقدار USDT را وارد کنید", "error"); return; }
+                    if (!amountAZIZ || parseFloat(amountAZIZ) <= 0) { showStatus("❌ مقدار AZIZ را وارد کنید", "error"); return; }
+                    
+                    tokenA = USDT_ADDRESS;
+                    amountA = parseUnits(amountUSDT, 6);
+                    tokenB = azizAddress;
+                    amountB = parseUnits(amountAZIZ, decimalsAZIZ);
+                    
+                    showStatus("🔄 واریز USDT + AZIZ...", "loading");
+                    
+                    const { request } = await simulateContract(wagmiConfig, {
+                        address: CONTRACT_ADDRESS,
+                        abi: ROUTER_ABI,
+                        functionName: "depositPair",
+                        args: [tokenA, amountA, tokenB, amountB],
+                        account: currentAccount,
+                        chainId: polygon.id,
+                        value: 0
+                    });
+                    
+                    const hash = await writeContract(wagmiConfig, request);
+                    showStatus(`✅ واریز USDT + AZIZ موفق! ${hash.slice(0,10)}...`, "success");
                 }
-
-                const amountPOLInWei = parseUnits(amountPOL, 18);
-                const amountBInWei = parseUnits(amountB, decimalsB);
-                const isNative = (tokenB === NATIVE_POL);
-
-                showStatus("🔄 در حال ارسال تراکنش واریز...", "loading");
-
-                const { request } = await simulateContract(wagmiConfig, {
-                    address: CONTRACT_ADDRESS,
-                    abi: ROUTER_ABI,
-                    functionName: "depositPair",
-                    args: [NATIVE_POL, amountPOLInWei, tokenB, amountBInWei],
-                    account: currentAccount,
-                    chainId: polygon.id,
-                    value: amountPOLInWei
-                });
-
-                const hash = await writeContract(wagmiConfig, request);
-                showStatus(`✅ واریز با موفقیت ارسال شد! هش: ${hash.slice(0,10)}...`, "success");
-            } catch (error) {
-                console.error(error);
-                let errorMsg = error.message.slice(0, 150);
-                if (errorMsg.includes("insufficient")) {
-                    errorMsg = "موجودی کافی برای این تراکنش ندارید";
-                } else if (errorMsg.includes("user rejected")) {
-                    errorMsg = "تراکنش توسط کاربر رد شد";
-                }
-                showStatus("❌ خطا: " + errorMsg, "error");
-            }
-        });
-
-        // آپدیت badge توکن دلخواه
-        document.getElementById("customTokenAddress").addEventListener("input", (e) => {
-            const addr = e.target.value.trim();
-            const badge = document.getElementById("customTokenBadge");
-            if (addr && addr.length > 0) {
-                badge.textContent = addr.slice(0, 6) + "..." + addr.slice(-4);
-            } else {
-                badge.textContent = "Token";
+            } catch(e) {
+                let msg = e.message.slice(0,150);
+                if (msg.includes("execution reverted")) msg = "تراکنش برگشت خورد. احتمالاً نیاز به Approve دارید.";
+                showStatus("❌ " + msg, "error");
             }
         });
     </script>
 </body>
-  </html>
+    </html>
