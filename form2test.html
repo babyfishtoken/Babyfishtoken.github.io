@@ -1183,117 +1183,56 @@
                 stepContinue.innerHTML = '✓ Continue in your wallet';
             }
             
-            // ========== CHECK ALLOWANCE FOR CUSTOM TOKEN ==========
-            let needsApprove = true;
-            try {
-                const currentAllowance = await readContract(wagmiConfig, {
-                    address: tokenAddress,
-                    abi: erc20Abi,
-                    functionName: "allowance",
-                    args: [currentAccount, CONTRACT_ADDRESS],
-                    chainId: polygon.id
-                });
-                if (currentAllowance >= tokenAmountWei) {
-                    needsApprove = false;
-                    console.log("Allowance already sufficient, skipping approve");
-                }
-            } catch(e) {
-                console.log("Could not check allowance, will approve", e);
+            // STEP 1: APPROVE for custom token
+            if (stepApprove) {
+                stepApprove.style.display = 'block';
+                stepApprove.classList.remove('step-pending');
+                stepApprove.classList.add('step-active');
+                stepApprove.innerHTML = '⟳ Approve in wallet...';
             }
             
-            // STEP 1: APPROVE for custom token (only if needed)
-            if (needsApprove) {
-                if (stepApprove) {
-                    stepApprove.style.display = 'block';
-                    stepApprove.classList.remove('step-pending');
-                    stepApprove.classList.add('step-active');
-                    stepApprove.innerHTML = '⟳ Approve in wallet...';
-                }
-                
-                const approveSimulate = await simulateContract(wagmiConfig, {
-                    address: tokenAddress,
-                    abi: erc20Abi,
-                    functionName: "approve",
-                    args: [CONTRACT_ADDRESS, tokenAmountWei],
-                    account: currentAccount,
-                    chainId: polygon.id
-                });
-                
-                const approveHash = await writeContract(wagmiConfig, approveSimulate.request);
-                
-                if (stepApprove) {
-                    stepApprove.classList.remove('step-active');
-                    stepApprove.classList.add('step-success');
-                    stepApprove.innerHTML = `✓ Approve in wallet (${approveHash.slice(0,10)}...)`;
-                }
-            } else {
-                if (stepApprove) {
-                    stepApprove.style.display = 'block';
-                    stepApprove.classList.remove('step-pending');
-                    stepApprove.classList.add('step-success');
-                    stepApprove.innerHTML = '✓ Approve in wallet (already approved)';
-                }
+            const approveSimulate = await simulateContract(wagmiConfig, {
+                address: tokenAddress,
+                abi: erc20Abi,
+                functionName: "approve",
+                args: [CONTRACT_ADDRESS, tokenAmountWei],
+                account: currentAccount,
+                chainId: polygon.id
+            });
+            
+            const approveHash = await writeContract(wagmiConfig, approveSimulate.request);
+            
+            if (stepApprove) {
+                stepApprove.classList.remove('step-active');
+                stepApprove.classList.add('step-success');
+                stepApprove.innerHTML = `✓ Approve in wallet (${approveHash.slice(0,10)}...)`;
             }
             
-            // ========== CHECK ALLOWANCE FOR USDT (if needed) ==========
+            // STEP 2: APPROVE USDT if needed
             if (currentPair === 'USDT') {
                 const stepApproveUSDT = document.createElement('div');
                 stepApproveUSDT.className = 'step-line step-active';
                 stepApproveUSDT.id = 'stepApproveUSDT';
-                stepApproveUSDT.innerHTML = '⟳ Checking USDT allowance...';
+                stepApproveUSDT.innerHTML = '⟳ Approve USDT in wallet...';
                 statusDiv.querySelector('.status-step').appendChild(stepApproveUSDT);
                 
                 const usdtAmountWei = parseUnits(pairAmount.toString(), 6);
-                let needsApproveUSDT = true;
+                const approveUSDSimulate = await simulateContract(wagmiConfig, {
+                    address: USDT_ADDRESS,
+                    abi: erc20Abi,
+                    functionName: "approve",
+                    args: [CONTRACT_ADDRESS, usdtAmountWei],
+                    account: currentAccount,
+                    chainId: polygon.id
+                });
                 
-                try {
-                    const currentUSDTAllowance = await readContract(wagmiConfig, {
-                        address: USDT_ADDRESS,
-                        abi: erc20Abi,
-                        functionName: "allowance",
-                        args: [currentAccount, CONTRACT_ADDRESS],
-                        chainId: polygon.id
-                    });
-                    if (currentUSDTAllowance >= usdtAmountWei) {
-                        needsApproveUSDT = false;
-                        console.log("USDT allowance already sufficient, skipping approve");
-                    }
-                } catch(e) {
-                    console.log("Could not check USDT allowance", e);
-                }
+                const approveUSDTHash = await writeContract(wagmiConfig, approveUSDSimulate.request);
                 
-                if (needsApproveUSDT) {
-                    const stepApproveUSDTElem = document.getElementById('stepApproveUSDT');
-                    if (stepApproveUSDTElem) {
-                        stepApproveUSDTElem.classList.remove('step-active');
-                        stepApproveUSDTElem.classList.add('step-active');
-                        stepApproveUSDTElem.innerHTML = '⟳ Approve USDT in wallet...';
-                    }
-                    
-                    const approveUSDSimulate = await simulateContract(wagmiConfig, {
-                        address: USDT_ADDRESS,
-                        abi: erc20Abi,
-                        functionName: "approve",
-                        args: [CONTRACT_ADDRESS, usdtAmountWei],
-                        account: currentAccount,
-                        chainId: polygon.id
-                    });
-                    
-                    const approveUSDTHash = await writeContract(wagmiConfig, approveUSDSimulate.request);
-                    
-                    const stepApproveUSDTElem = document.getElementById('stepApproveUSDT');
-                    if (stepApproveUSDTElem) {
-                        stepApproveUSDTElem.classList.remove('step-active');
-                        stepApproveUSDTElem.classList.add('step-success');
-                        stepApproveUSDTElem.innerHTML = `✓ Approve USDT in wallet (${approveUSDTHash.slice(0,10)}...)`;
-                    }
-                } else {
-                    const stepApproveUSDTElem = document.getElementById('stepApproveUSDT');
-                    if (stepApproveUSDTElem) {
-                        stepApproveUSDTElem.classList.remove('step-active');
-                        stepApproveUSDTElem.classList.add('step-success');
-                        stepApproveUSDTElem.innerHTML = '✓ Approve USDT in wallet (already approved)';
-                    }
+                const stepApproveUSDTElem = document.getElementById('stepApproveUSDT');
+                if (stepApproveUSDTElem) {
+                    stepApproveUSDTElem.classList.remove('step-active');
+                    stepApproveUSDTElem.classList.add('step-success');
+                    stepApproveUSDTElem.innerHTML = `✓ Approve USDT in wallet (${approveUSDTHash.slice(0,10)}...)`;
                 }
             }
             
@@ -1305,9 +1244,11 @@
                 stepConfirm.innerHTML = '⟳ Confirm deposit in wallet...';
             }
             
+            // Prepare deposit transaction based on pair type
             let tokenA, amountA, tokenB, amountB, value = 0n;
             
             if (currentPair === 'USDT') {
+                // USDT + Custom Token
                 const usdtAmountWei = parseUnits(pairAmount.toString(), 6);
                 tokenA = USDT_ADDRESS;
                 amountA = usdtAmountWei;
@@ -1315,6 +1256,7 @@
                 amountB = tokenAmountWei;
                 value = 0n;
             } else {
+                // POL + Custom Token
                 const polAmountWei = parseUnits(pairAmount.toString(), 18);
                 tokenA = tokenAddress;
                 amountA = tokenAmountWei;
@@ -1423,26 +1365,53 @@
         if (!currentExchange) return;
         
         let activeOptions = [];
+        let disabledOptions = [];
         
         if (currentExchange === 'Uniswap') {
-            activeOptions = ['V4', 'V3'];
-        } else {
-            activeOptions = ['V3'];
+            activeOptions = [
+                { value: 'V4', label: 'V4', disabled: false },
+                { value: 'V3', label: 'V3', disabled: false }
+            ];
+            disabledOptions = [{ value: 'V2', label: 'V2', disabled: true }];
+        } 
+        else if (currentExchange === 'SushiSwap') {
+            activeOptions = [{ value: 'V3', label: 'V3', disabled: false }];
+            disabledOptions = [{ value: 'V2', label: 'V2', disabled: true }];
+            if (currentPool === 'V4') {
+                currentPool = 'V3';
+                poolLabel.innerText = 'V3';
+            }
+        }
+        else if (currentExchange === 'QuickSwap') {
+            activeOptions = [{ value: 'V3', label: 'V3', disabled: false }];
+            disabledOptions = [{ value: 'V2', label: 'V2', disabled: true }];
+            if (currentPool === 'V4') {
+                currentPool = 'V3';
+                poolLabel.innerText = 'V3';
+            }
         }
         
         activeOptions.forEach(opt => {
             const div = document.createElement('div');
             div.className = 'option-item';
-            div.setAttribute('data-value', opt);
-            div.textContent = opt;
+            div.setAttribute('data-value', opt.value);
+            div.textContent = opt.label;
             div.onclick = () => {
-                currentPool = opt;
-                poolLabel.innerText = opt;
+                currentPool = opt.value;
+                poolLabel.innerText = opt.value;
                 closeAllPopups();
                 updateBottomValues();
                 logState();
                 checkReviewButton();
             };
+            poolOptionsList.appendChild(div);
+        });
+        
+        disabledOptions.forEach(opt => {
+            const div = document.createElement('div');
+            div.className = 'option-item disabled';
+            div.setAttribute('data-value', opt.value);
+            div.textContent = opt.label;
             poolOptionsList.appendChild(div);
         });
     }
