@@ -1423,53 +1423,26 @@
         if (!currentExchange) return;
         
         let activeOptions = [];
-        let disabledOptions = [];
         
         if (currentExchange === 'Uniswap') {
-            activeOptions = [
-                { value: 'V4', label: 'V4', disabled: false },
-                { value: 'V3', label: 'V3', disabled: false }
-            ];
-            disabledOptions = [{ value: 'V2', label: 'V2', disabled: true }];
-        } 
-        else if (currentExchange === 'SushiSwap') {
-            activeOptions = [{ value: 'V3', label: 'V3', disabled: false }];
-            disabledOptions = [{ value: 'V2', label: 'V2', disabled: true }];
-            if (currentPool === 'V4') {
-                currentPool = 'V3';
-                poolLabel.innerText = 'V3';
-            }
-        }
-        else if (currentExchange === 'QuickSwap') {
-            activeOptions = [{ value: 'V3', label: 'V3', disabled: false }];
-            disabledOptions = [{ value: 'V2', label: 'V2', disabled: true }];
-            if (currentPool === 'V4') {
-                currentPool = 'V3';
-                poolLabel.innerText = 'V3';
-            }
+            activeOptions = ['V4', 'V3'];
+        } else {
+            activeOptions = ['V3'];
         }
         
         activeOptions.forEach(opt => {
             const div = document.createElement('div');
             div.className = 'option-item';
-            div.setAttribute('data-value', opt.value);
-            div.textContent = opt.label;
+            div.setAttribute('data-value', opt);
+            div.textContent = opt;
             div.onclick = () => {
-                currentPool = opt.value;
-                poolLabel.innerText = opt.value;
+                currentPool = opt;
+                poolLabel.innerText = opt;
                 closeAllPopups();
                 updateBottomValues();
                 logState();
                 checkReviewButton();
             };
-            poolOptionsList.appendChild(div);
-        });
-        
-        disabledOptions.forEach(opt => {
-            const div = document.createElement('div');
-            div.className = 'option-item disabled';
-            div.setAttribute('data-value', opt.value);
-            div.textContent = opt.label;
             poolOptionsList.appendChild(div);
         });
     }
