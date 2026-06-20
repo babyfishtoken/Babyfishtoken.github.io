@@ -5,29 +5,37 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ساخت توکن روی پالیگان</title>
 <style>
+  * { margin:0; padding:0; box-sizing:border-box; }
   body {
     background: #0f172a;
     color: white;
-    text-align: center;
-    padding: 40px 20px;
     font-family: sans-serif;
-    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
   }
   .box {
+    background: #1e293b;
+    padding: 32px;
+    border-radius: 16px;
     max-width: 420px;
-    margin: 0 auto;
+    width: 100%;
+    border: 1px solid #334155;
   }
   h2 {
+    text-align: center;
     margin-bottom: 8px;
     font-size: 22px;
   }
   .sub {
+    text-align: center;
     color: #94a3b8;
     font-size: 14px;
     margin-bottom: 24px;
   }
   .field {
-    text-align: left;
     margin-bottom: 14px;
   }
   .field label {
@@ -40,7 +48,7 @@
   .field input {
     width: 100%;
     padding: 11px 14px;
-    background: #1e293b;
+    background: #0f172a;
     border: 1px solid #334155;
     border-radius: 8px;
     color: white;
@@ -48,9 +56,8 @@
     box-sizing: border-box;
     outline: none;
   }
-  .field input:focus {
-    border-color: #7c3aed;
-  }
+  .field input:focus { border-color: #7c3aed; }
+  
   #deployBtn {
     width: 100%;
     padding: 14px;
@@ -64,9 +71,7 @@
     margin-top: 4px;
     transition: 0.2s;
   }
-  #deployBtn:hover:not(:disabled) {
-    background: #6d28d9;
-  }
+  #deployBtn:hover:not(:disabled) { background: #6d28d9; }
   #deployBtn:disabled {
     background: #475569;
     color: #94a3b8;
@@ -75,21 +80,21 @@
   #status {
     margin-top: 16px;
     padding: 12px;
-    background: #1e293b;
+    background: #0f172a;
     border-radius: 8px;
     color: #94a3b8;
     font-size: 14px;
+    text-align: center;
     min-height: 44px;
   }
   #status.ok { color: #22c55e; }
   #status.err { color: #ef4444; }
   #status.wait { color: #f59e0b; }
   
-  /* استایل دکمه Web3Modal */
   w3m-button {
     display: block;
     width: 100%;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
 </style>
 </head>
@@ -99,6 +104,7 @@
   <h2>🚀 ساخت توکن</h2>
   <p class="sub">روی شبکه پالیگان</p>
 
+  <!-- دکمه اتصال Web3Modal -->
   <w3m-button></w3m-button>
 
   <div class="field">
@@ -121,10 +127,10 @@
 <script type="importmap">
 {
   "imports": {
-    "@web3modal/wagmi": "https://esm.sh/@web3modal/wagmi@4",
-    "wagmi": "https://esm.sh/wagmi@2",
-    "viem": "https://esm.sh/viem@2",
-    "viem/chains": "https://esm.sh/viem@2/chains"
+    "@web3modal/wagmi": "https://esm.sh/@web3modal/wagmi@4.1.0",
+    "wagmi": "https://esm.sh/wagmi@2.8.0",
+    "viem": "https://esm.sh/viem@2.8.0",
+    "viem/chains": "https://esm.sh/viem@2.8.0/chains"
   }
 }
 </script>
@@ -135,7 +141,7 @@ import { polygon, polygonAmoy } from "viem/chains";
 import { watchAccount, watchNetwork, getAccount, getNetwork, getWalletClient, getPublicClient } from "wagmi";
 import { parseUnits, encodeFunctionData } from "viem";
 
-// ======== تنظیمات ========
+// ======== قرارداد ========
 const CONTRACT_ADDRESS = "0x66168b1Abbf9b944052880F6Cc6331b8F9339d5D";
 const CONTRACT_ABI = [{
   "inputs": [
@@ -157,14 +163,21 @@ const metadata = {
   url: window.location.origin,
   icons: []
 };
+
 const chains = [polygon, polygonAmoy];
 const wagmiConfig = defaultWagmiConfig({ chains, projectId, metadata });
 
-createWeb3Modal({ 
+// مقداردهی Web3Modal
+const modal = createWeb3Modal({ 
   wagmiConfig, 
   projectId, 
   chains,
-  enableOnramp: false 
+  enableOnramp: false,
+  themeMode: 'dark',
+  themeVariables: {
+    '--w3m-accent': '#7c3aed',
+    '--w3m-background': '#0f172a'
+  }
 });
 
 // ======== المان‌ها ========
@@ -183,6 +196,7 @@ function checkConnection() {
   const account = getAccount(wagmiConfig);
   const network = getNetwork(wagmiConfig);
   const chainId = network?.chain?.id;
+  
   if (account?.address && (chainId === 137 || chainId === 80002)) {
     setStatus(`✅ ${account.address.slice(0,6)}...${account.address.slice(-4)}`, 'ok');
     deployBtn.disabled = false;
@@ -239,6 +253,8 @@ deployBtn.addEventListener('click', async () => {
   }
   deployBtn.disabled = false;
 });
+
+console.log('Web3Modal آماده است!');
 </script>
 
 </body>
