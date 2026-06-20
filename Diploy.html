@@ -131,9 +131,7 @@
 </script>
 
 <script type="module">
-console.log("🚀 Script started");
-
-// ======== تنظیمات قرارداد ========
+// ======== تنظیمات ========
 const CONTRACT_ADDRESS = "0x66168b1Abbf9b944052880F6Cc6331b8F9339d5D";
 const CONTRACT_ABI = [{
   "inputs": [
@@ -147,32 +145,17 @@ const CONTRACT_ABI = [{
   "type": "function"
 }];
 
-console.log("📦 Importing...");
-
-// ======== Importهای اصلاح‌شده ========
 import { createWeb3Modal, defaultWagmiConfig } from "@web3modal/wagmi";
-console.log("✅ Web3Modal imported");
-
 import { polygon, polygonAmoy } from "viem/chains";
-console.log("✅ Chains imported");
-
-// فقط توابعی که واقعاً نیاز داریم
+import { parseUnits, encodeFunctionData } from "viem";
 import { 
   getAccount, 
-  getNetwork, 
-  watchAccount, 
-  watchNetwork,
+  watchAccount,
   getWalletClient,
   getPublicClient
 } from "wagmi";
-console.log("✅ Wagmi functions imported");
-
-import { parseUnits, encodeFunctionData } from "viem";
-console.log("✅ Viem functions imported");
 
 // ======== Web3Modal ========
-console.log("🔧 Configuring Web3Modal...");
-
 const projectId = "96f13374b0fe2f629a925617de0a2ba3";
 
 const metadata = {
@@ -190,23 +173,15 @@ const wagmiConfig = defaultWagmiConfig({
   metadata
 });
 
-console.log("✅ Config created");
-
 createWeb3Modal({
   wagmiConfig,
   projectId,
   chains
 });
 
-console.log("✅ Modal created");
-
 // ======== ساخت دکمه ========
-console.log("🔘 Creating button...");
-
 const btn = document.createElement("w3m-button");
 document.getElementById("wallet-btn").appendChild(btn);
-
-console.log("✅ Button created and added to DOM");
 
 // ======== المان‌ها ========
 const deployBtn = document.getElementById('deployBtn');
@@ -220,13 +195,14 @@ function setStatus(msg, type = '') {
   statusEl.className = type || '';
 }
 
-// ======== بررسی اتصال (با try/catch) ========
+// ======== بررسی اتصال ========
 function checkConnection() {
   try {
-    console.log("🔍 Checking connection...");
     const account = getAccount(wagmiConfig);
-    const network = getNetwork(wagmiConfig);
-    const chainId = network?.chain?.id;
+    
+    // دریافت network از wagmi
+    const network = wagmiConfig.getClient().chain;
+    const chainId = network?.id;
     
     if (account?.address && (chainId === 137 || chainId === 80002)) {
       setStatus(`✅ ${account.address.slice(0,6)}...${account.address.slice(-4)}`, 'connected');
@@ -239,43 +215,31 @@ function checkConnection() {
       deployBtn.disabled = true;
     }
   } catch (error) {
-    console.error("❌ Error in checkConnection:", error);
+    console.error("Error checking connection:", error);
     setStatus('⚠️ خطا در بررسی اتصال', 'error');
   }
 }
 
-// ======== Watchers ========
-try {
-  watchAccount(wagmiConfig, { 
-    onChange: () => {
-      console.log("📡 Account changed");
-      checkConnection();
-    }
-  });
-  console.log("✅ Account watcher set");
-} catch (error) {
-  console.error("❌ Error setting account watcher:", error);
-}
+// ======== Watch Account ========
+watchAccount(wagmiConfig, { 
+  onChange: () => {
+    checkConnection();
+  }
+});
 
-try {
-  watchNetwork(wagmiConfig, { 
-    onChange: () => {
-      console.log("📡 Network changed");
-      checkConnection();
-    }
+// ======== بررسی تغییر شبکه ========
+// در Wagmi v2 برای شبکه از event listener استفاده می‌کنیم
+if (window.ethereum) {
+  window.ethereum.on('chainChanged', () => {
+    checkConnection();
   });
-  console.log("✅ Network watcher set");
-} catch (error) {
-  console.error("❌ Error setting network watcher:", error);
 }
 
 // بررسی اولیه
-checkConnection();
+setTimeout(checkConnection, 1000);
 
 // ======== ساخت توکن ========
 deployBtn.addEventListener('click', async () => {
-  console.log("🔘 Deploy button clicked");
-  
   try {
     const account = getAccount(wagmiConfig);
     if (!account?.address) { 
@@ -299,41 +263,34 @@ deployBtn.addEventListener('click', async () => {
     deployBtn.disabled = true;
     setStatus('⏳ در حال ارسال تراکنش...', 'loading');
 
-    console.log("📤 Getting wallet client...");
     const walletClient = await getWalletClient(wagmiConfig);
     
-    console.log("📝 Encoding data...");
     const data = encodeFunctionData({
       abi: CONTRACT_ABI,
       functionName: 'createToken',
       args: [name, symbol, parseUnits(supply, 18)]
     });
 
-    console.log("📨 Sending transaction...");
     const hash = await walletClient.sendTransaction({
       account: account.address,
       to: CONTRACT_ADDRESS,
       data
     });
 
-    console.log("✅ Transaction sent:", hash);
     setStatus(`⏳ تایید تراکنش... ${hash.slice(0,10)}...`, 'loading');
 
-    console.log("⏳ Waiting for receipt...");
     const publicClient = getPublicClient(wagmiConfig);
     const receipt = await publicClient.waitForTransactionReceipt({ hash });
 
     if (receipt.status === 'success') {
-      console.log("✅ Token created successfully!");
       setStatus(`✅ توکن "${name}" با موفقیت ساخته شد! 🎉`, 'connected');
       deployBtn.textContent = '✅ ساخته شد';
     } else {
-      console.error("❌ Transaction failed");
       setStatus('❌ تراکنش ناموفق بود', 'error');
     }
 
   } catch (error) {
-    console.error("❌ Error in deploy:", error);
+    console.error(error);
     if (error.message?.includes('rejected')) {
       setStatus('❌ تراکنش توسط کاربر رد شد', 'error');
     } else {
@@ -344,7 +301,7 @@ deployBtn.addEventListener('click', async () => {
   deployBtn.disabled = false;
 });
 
-console.log("🎉 Script completed successfully!");
+console.log("✅ Script loaded successfully!");
 </script>
 
 </body>
