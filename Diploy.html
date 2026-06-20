@@ -97,7 +97,6 @@
   <h2>🚀 ساخت توکن روی پالیگان</h2>
   <p class="sub">کیف پول خود را متصل کنید و توکن بسازید</p>
 
-  <!-- دکمه اتصال شما -->
   <div id="wallet-btn"></div>
 
   <div class="form-group">
@@ -123,21 +122,18 @@
 <script type="importmap">
 {
   "imports": {
-    "@web3modal/wagmi": "https://esm.sh/@web3modal/wagmi@4",
-    "wagmi": "https://esm.sh/wagmi@2",
-    "viem": "https://esm.sh/viem@2",
-    "viem/chains": "https://esm.sh/viem@2/chains"
+    "@web3modal/wagmi": "https://esm.sh/@web3modal/wagmi@4.1.0",
+    "wagmi": "https://esm.sh/wagmi@2.8.0",
+    "viem": "https://esm.sh/viem@2.8.0",
+    "viem/chains": "https://esm.sh/viem@2.8.0/chains"
   }
 }
 </script>
 
 <script type="module">
-import { createWeb3Modal, defaultWagmiConfig } from "@web3modal/wagmi";
-import { polygon, polygonAmoy } from "viem/chains";
-import { watchAccount, watchNetwork, getAccount, getNetwork, getWalletClient, getPublicClient } from "wagmi";
-import { parseUnits, encodeFunctionData } from "viem";
+console.log("🚀 Script started");
 
-// ======== تنظیمات ========
+// ======== تنظیمات قرارداد ========
 const CONTRACT_ADDRESS = "0x66168b1Abbf9b944052880F6Cc6331b8F9339d5D";
 const CONTRACT_ABI = [{
   "inputs": [
@@ -151,7 +147,32 @@ const CONTRACT_ABI = [{
   "type": "function"
 }];
 
-// ======== کد خود شما (دقیقاً همین) ========
+console.log("📦 Importing...");
+
+// ======== Importهای اصلاح‌شده ========
+import { createWeb3Modal, defaultWagmiConfig } from "@web3modal/wagmi";
+console.log("✅ Web3Modal imported");
+
+import { polygon, polygonAmoy } from "viem/chains";
+console.log("✅ Chains imported");
+
+// فقط توابعی که واقعاً نیاز داریم
+import { 
+  getAccount, 
+  getNetwork, 
+  watchAccount, 
+  watchNetwork,
+  getWalletClient,
+  getPublicClient
+} from "wagmi";
+console.log("✅ Wagmi functions imported");
+
+import { parseUnits, encodeFunctionData } from "viem";
+console.log("✅ Viem functions imported");
+
+// ======== Web3Modal ========
+console.log("🔧 Configuring Web3Modal...");
+
 const projectId = "96f13374b0fe2f629a925617de0a2ba3";
 
 const metadata = {
@@ -169,15 +190,23 @@ const wagmiConfig = defaultWagmiConfig({
   metadata
 });
 
+console.log("✅ Config created");
+
 createWeb3Modal({
   wagmiConfig,
   projectId,
   chains
 });
 
-// دکمه را دستی می‌سازیم (دقیقاً مثل کد خودتان)
+console.log("✅ Modal created");
+
+// ======== ساخت دکمه ========
+console.log("🔘 Creating button...");
+
 const btn = document.createElement("w3m-button");
 document.getElementById("wallet-btn").appendChild(btn);
+
+console.log("✅ Button created and added to DOM");
 
 // ======== المان‌ها ========
 const deployBtn = document.getElementById('deployBtn');
@@ -191,79 +220,120 @@ function setStatus(msg, type = '') {
   statusEl.className = type || '';
 }
 
+// ======== بررسی اتصال (با try/catch) ========
 function checkConnection() {
-  const account = getAccount(wagmiConfig);
-  const network = getNetwork(wagmiConfig);
-  const chainId = network?.chain?.id;
-  
-  if (account?.address && (chainId === 137 || chainId === 80002)) {
-    setStatus(`✅ ${account.address.slice(0,6)}...${account.address.slice(-4)}`, 'connected');
-    deployBtn.disabled = false;
-  } else if (account?.address) {
-    setStatus('⚠️ شبکه را به پالیگان تغییر دهید', 'error');
-    deployBtn.disabled = true;
-  } else {
-    setStatus('⏳ منتظر اتصال کیف پول...', '');
-    deployBtn.disabled = true;
+  try {
+    console.log("🔍 Checking connection...");
+    const account = getAccount(wagmiConfig);
+    const network = getNetwork(wagmiConfig);
+    const chainId = network?.chain?.id;
+    
+    if (account?.address && (chainId === 137 || chainId === 80002)) {
+      setStatus(`✅ ${account.address.slice(0,6)}...${account.address.slice(-4)}`, 'connected');
+      deployBtn.disabled = false;
+    } else if (account?.address) {
+      setStatus('⚠️ شبکه را به پالیگان تغییر دهید', 'error');
+      deployBtn.disabled = true;
+    } else {
+      setStatus('⏳ منتظر اتصال کیف پول...', '');
+      deployBtn.disabled = true;
+    }
+  } catch (error) {
+    console.error("❌ Error in checkConnection:", error);
+    setStatus('⚠️ خطا در بررسی اتصال', 'error');
   }
 }
 
-watchAccount(wagmiConfig, { onChange: checkConnection });
-watchNetwork(wagmiConfig, { onChange: checkConnection });
+// ======== Watchers ========
+try {
+  watchAccount(wagmiConfig, { 
+    onChange: () => {
+      console.log("📡 Account changed");
+      checkConnection();
+    }
+  });
+  console.log("✅ Account watcher set");
+} catch (error) {
+  console.error("❌ Error setting account watcher:", error);
+}
+
+try {
+  watchNetwork(wagmiConfig, { 
+    onChange: () => {
+      console.log("📡 Network changed");
+      checkConnection();
+    }
+  });
+  console.log("✅ Network watcher set");
+} catch (error) {
+  console.error("❌ Error setting network watcher:", error);
+}
+
+// بررسی اولیه
 checkConnection();
 
 // ======== ساخت توکن ========
 deployBtn.addEventListener('click', async () => {
-  const account = getAccount(wagmiConfig);
-  if (!account?.address) { 
-    setStatus('❌ کیف پول متصل نیست', 'error'); 
-    return; 
-  }
-
-  const name = nameInput.value.trim();
-  const symbol = symbolInput.value.trim();
-  const supply = supplyInput.value.trim();
+  console.log("🔘 Deploy button clicked");
   
-  if (!name || !symbol || !supply) { 
-    setStatus('❌ همه فیلدها را پر کنید', 'error'); 
-    return; 
-  }
-  if (isNaN(supply) || Number(supply) <= 0) { 
-    setStatus('❌ مقدار معتبر نیست', 'error'); 
-    return; 
-  }
-
-  deployBtn.disabled = true;
-  setStatus('⏳ در حال ارسال تراکنش...', 'loading');
-
   try {
+    const account = getAccount(wagmiConfig);
+    if (!account?.address) { 
+      setStatus('❌ کیف پول متصل نیست', 'error'); 
+      return; 
+    }
+
+    const name = nameInput.value.trim();
+    const symbol = symbolInput.value.trim();
+    const supply = supplyInput.value.trim();
+    
+    if (!name || !symbol || !supply) { 
+      setStatus('❌ همه فیلدها را پر کنید', 'error'); 
+      return; 
+    }
+    if (isNaN(supply) || Number(supply) <= 0) { 
+      setStatus('❌ مقدار معتبر نیست', 'error'); 
+      return; 
+    }
+
+    deployBtn.disabled = true;
+    setStatus('⏳ در حال ارسال تراکنش...', 'loading');
+
+    console.log("📤 Getting wallet client...");
     const walletClient = await getWalletClient(wagmiConfig);
+    
+    console.log("📝 Encoding data...");
     const data = encodeFunctionData({
       abi: CONTRACT_ABI,
       functionName: 'createToken',
       args: [name, symbol, parseUnits(supply, 18)]
     });
 
+    console.log("📨 Sending transaction...");
     const hash = await walletClient.sendTransaction({
       account: account.address,
       to: CONTRACT_ADDRESS,
       data
     });
 
+    console.log("✅ Transaction sent:", hash);
     setStatus(`⏳ تایید تراکنش... ${hash.slice(0,10)}...`, 'loading');
 
+    console.log("⏳ Waiting for receipt...");
     const publicClient = getPublicClient(wagmiConfig);
     const receipt = await publicClient.waitForTransactionReceipt({ hash });
 
     if (receipt.status === 'success') {
+      console.log("✅ Token created successfully!");
       setStatus(`✅ توکن "${name}" با موفقیت ساخته شد! 🎉`, 'connected');
       deployBtn.textContent = '✅ ساخته شد';
     } else {
+      console.error("❌ Transaction failed");
       setStatus('❌ تراکنش ناموفق بود', 'error');
     }
 
   } catch (error) {
-    console.error(error);
+    console.error("❌ Error in deploy:", error);
     if (error.message?.includes('rejected')) {
       setStatus('❌ تراکنش توسط کاربر رد شد', 'error');
     } else {
@@ -274,6 +344,7 @@ deployBtn.addEventListener('click', async () => {
   deployBtn.disabled = false;
 });
 
+console.log("🎉 Script completed successfully!");
 </script>
 
 </body>
