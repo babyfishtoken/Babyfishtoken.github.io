@@ -3,158 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Polygon Token Creator</title>
-
-<style>
-body{
-    margin:0;
-    background:#0f172a;
-    color:#fff;
-    font-family:Arial,sans-serif;
-}
-
-.container{
-    max-width:500px;
-    margin:40px auto;
-    padding:20px;
-}
-
-.card{
-    background:#1e293b;
-    padding:20px;
-    border-radius:15px;
-}
-
-h1{
-    text-align:center;
-    margin-bottom:10px;
-}
-
-p{
-    text-align:center;
-    color:#94a3b8;
-}
-
-#wallet-btn{
-    display:flex;
-    justify-content:center;
-    margin:20px 0;
-}
-
-input{
-    width:100%;
-    box-sizing:border-box;
-    padding:12px;
-    margin-top:10px;
-    border:none;
-    border-radius:10px;
-    background:#334155;
-    color:white;
-}
-
-button{
-    width:100%;
-    padding:14px;
-    margin-top:15px;
-    border:none;
-    border-radius:10px;
-    background:#7c3aed;
-    color:white;
-    font-size:16px;
-    cursor:pointer;
-}
-
-button:hover{
-    background:#6d28d9;
-}
-
-#status{
-    margin-top:20px;
-    padding:12px;
-    border-radius:10px;
-    background:#0f172a;
-    word-break:break-word;
-}
-</style>
+<title>Wallet Test</title>
 </head>
+<body style="background:#0f172a;color:white;text-align:center;padding-top:100px;font-family:sans-serif;">
 
-<body>
-
-<div class="container">
-
-<div class="card">
-
-<h1>🚀 Polygon Token Creator</h1>
-
-<p>Create ERC20 Token</p>
+<h2>Wallet Connect Test</h2>
 
 <div id="wallet-btn"></div>
 
-<input id="name" placeholder="Token Name">
-
-<input id="symbol" placeholder="Token Symbol">
-
-<input id="supply" type="number" placeholder="Initial Supply">
-
-<button id="createBtn">
-Create Token
-</button>
-
-<div id="status">
-Connect Wallet First
-</div>
-
-</div>
-</div>
-
 <script type="module">
 
-import {
-  createWeb3Modal,
-  defaultWagmiConfig
-} from "https://esm.sh/@web3modal/wagmi";
+import { createWeb3Modal, defaultWagmiConfig }
+from "https://esm.sh/@web3modal/wagmi";
 
-import {
-  polygon
-} from "https://esm.sh/wagmi/chains";
+import { polygon, polygonAmoy }
+from "https://esm.sh/wagmi/chains";
 
-import {
-  encodeFunctionData
-} from "https://esm.sh/viem";
-
-import {
-  getAccount,
-  getWalletClient
-} from "https://esm.sh/wagmi";
-
-const CONTRACT_ADDRESS =
-"0x66168b1Abbf9b944052880F6Cc6331b8F9339d5D";
-
-const CONTRACT_ABI = [{
-  inputs:[
-    {name:"name",type:"string"},
-    {name:"symbol",type:"string"},
-    {name:"initialSupply",type:"uint256"}
-  ],
-  name:"createToken",
-  outputs:[
-    {type:"address"}
-  ],
-  stateMutability:"nonpayable",
-  type:"function"
-}];
-
-const projectId =
-"96f13374b0fe2f629a925617de0a2ba3";
+const projectId = "96f13374b0fe2f629a925617de0a2ba3";
 
 const metadata = {
-  name:"Token Creator",
-  description:"Polygon Token Creator",
-  url:window.location.origin,
-  icons:[]
+  name: "Test App",
+  description: "Wallet Test",
+  url: "https://example.com",
+  icons: []
 };
 
-const chains = [polygon];
+const chains = [polygon, polygonAmoy];
 
 const wagmiConfig = defaultWagmiConfig({
   chains,
@@ -168,89 +42,8 @@ createWeb3Modal({
   chains
 });
 
-const walletButton =
-document.createElement("w3m-button");
-
-document
-.getElementById("wallet-btn")
-.appendChild(walletButton);
-
-const status =
-document.getElementById("status");
-
-document
-.getElementById("createBtn")
-.addEventListener("click", async()=>{
-
-try{
-
-const account =
-getAccount(wagmiConfig);
-
-if(!account.address){
-status.innerHTML =
-"❌ Connect wallet first";
-return;
-}
-
-const tokenName =
-document.getElementById("name").value;
-
-const tokenSymbol =
-document.getElementById("symbol").value;
-
-const tokenSupply =
-document.getElementById("supply").value;
-
-if(
-!tokenName ||
-!tokenSymbol ||
-!tokenSupply
-){
-status.innerHTML =
-"❌ Fill all fields";
-return;
-}
-
-status.innerHTML =
-"⏳ Sending Transaction...";
-
-const walletClient =
-await getWalletClient(wagmiConfig);
-
-const data =
-encodeFunctionData({
-abi: CONTRACT_ABI,
-functionName:"createToken",
-args:[
-tokenName,
-tokenSymbol,
-BigInt(tokenSupply)
-]
-});
-
-const hash =
-await walletClient.sendTransaction({
-account: account.address,
-to: CONTRACT_ADDRESS,
-data
-});
-
-status.innerHTML = `
-✅ Transaction Sent<br><br>
-${hash}
-`;
-
-}catch(error){
-
-console.error(error);
-
-status.innerHTML =
-"❌ " + error.message;
-
-}
-
-});
+const btn = document.createElement("w3m-button");
+document.getElementById("wallet-btn").appendChild(btn);
 
 </script>
 
