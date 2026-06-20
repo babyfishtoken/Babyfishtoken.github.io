@@ -5,136 +5,155 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ساخت توکن روی پالیگان</title>
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
   body {
     background: #0f172a;
-    font-family: sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 20px;
-  }
-  .card {
-    background: #1e293b;
-    padding: 32px;
-    border-radius: 16px;
-    max-width: 450px;
-    width: 100%;
-    border: 1px solid #334155;
-  }
-  h2 {
     color: white;
     text-align: center;
-    margin-bottom: 24px;
-    font-size: 22px;
+    padding-top: 40px;
+    font-family: sans-serif;
+    margin: 0;
   }
-  label {
+  
+  .container {
+    max-width: 450px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  
+  h2 {
+    margin-bottom: 8px;
+  }
+  
+  .sub {
     color: #94a3b8;
     font-size: 14px;
-    font-weight: 600;
+    margin-bottom: 24px;
+  }
+  
+  #wallet-btn {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  
+  .form-group {
+    text-align: left;
+    margin-bottom: 16px;
+  }
+  
+  .form-group label {
     display: block;
-    margin-top: 12px;
+    color: #94a3b8;
+    font-size: 13px;
+    font-weight: 600;
     margin-bottom: 4px;
   }
-  input {
+  
+  .form-group input {
     width: 100%;
     padding: 12px;
-    background: #0f172a;
+    background: #1e293b;
     border: 1px solid #334155;
     border-radius: 8px;
     color: white;
     font-size: 14px;
+    box-sizing: border-box;
     outline: none;
   }
-  input:focus {
+  
+  .form-group input:focus {
     border-color: #7c3aed;
   }
-  button {
+  
+  #deployBtn {
     width: 100%;
     padding: 14px;
-    margin-top: 12px;
+    background: #7c3aed;
+    color: white;
     border: none;
     border-radius: 10px;
     font-size: 16px;
     font-weight: 700;
     cursor: pointer;
     transition: 0.2s;
+    margin-top: 8px;
   }
-  #connectBtn {
-    background: #7c3aed;
-    color: white;
+  
+  #deployBtn:hover:not(:disabled) {
+    background: #6d28d9;
   }
-  #connectBtn:hover { background: #6d28d9; }
-  #connectBtn.connected {
-    background: #22c55e;
-  }
-  #deployBtn {
-    background: #f59e0b;
-    color: #0f172a;
-  }
-  #deployBtn:hover { background: #d97706; }
+  
   #deployBtn:disabled {
     background: #475569;
     color: #94a3b8;
     cursor: not-allowed;
   }
+  
   #status {
     margin-top: 16px;
     padding: 12px;
-    background: #0f172a;
+    background: #1e293b;
     border-radius: 8px;
     color: #94a3b8;
     font-size: 14px;
-    text-align: center;
-    min-height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    min-height: 44px;
   }
-  #status.green { color: #22c55e; }
-  #status.red { color: #ef4444; }
-  #status.yellow { color: #f59e0b; }
+  
+  #status.connected { color: #22c55e; }
+  #status.error { color: #ef4444; }
+  #status.loading { color: #f59e0b; }
 </style>
 </head>
 <body>
 
-<div class="card">
+<div class="container">
   <h2>🚀 ساخت توکن روی پالیگان</h2>
+  <p class="sub">کیف پول خود را متصل کنید و توکن بسازید</p>
 
-  <label>نام توکن</label>
-  <input type="text" id="tokenName" placeholder="مثلاً: MyCoin" value="TestToken">
+  <div id="wallet-btn"></div>
 
-  <label>نماد توکن</label>
-  <input type="text" id="tokenSymbol" placeholder="مثلاً: TKN" value="TEST">
+  <div class="form-group">
+    <label>نام توکن</label>
+    <input type="text" id="tokenName" placeholder="مثلاً: MyCoin" value="TestToken">
+  </div>
 
-  <label>تعداد کل (با ۱۸ رقم اعشار)</label>
-  <input type="number" id="initialSupply" placeholder="مثلاً: 1000000" value="1000000">
+  <div class="form-group">
+    <label>نماد توکن</label>
+    <input type="text" id="tokenSymbol" placeholder="مثلاً: TKN" value="TEST">
+  </div>
 
-  <button id="connectBtn">🔗 اتصال کیف پول</button>
+  <div class="form-group">
+    <label>تعداد کل (با ۱۸ رقم اعشار)</label>
+    <input type="number" id="initialSupply" placeholder="مثلاً: 1000000" value="1000000">
+  </div>
+
   <button id="deployBtn" disabled>⛏ استقرار توکن</button>
 
-  <div id="status">⏳ منتظر اتصال...</div>
+  <div id="status">⏳ منتظر اتصال کیف پول...</div>
 </div>
 
 <script type="importmap">
 {
   "imports": {
-    "viem": "https://esm.sh/viem@2.x",
-    "viem/chains": "https://esm.sh/viem@2.x/chains"
+    "@web3modal/wagmi": "https://esm.sh/@web3modal/wagmi@4",
+    "wagmi": "https://esm.sh/wagmi@2",
+    "viem": "https://esm.sh/viem@2",
+    "viem/chains": "https://esm.sh/viem@2/chains"
   }
 }
 </script>
 
 <script type="module">
-import { createWalletClient, custom, parseUnits, encodeFunctionData } from "viem";
+import { createWeb3Modal, defaultWagmiConfig } from "@web3modal/wagmi";
 import { polygon, polygonAmoy } from "viem/chains";
+import { watchAccount, watchNetwork, getAccount, getNetwork } from "wagmi";
+import { parseUnits, encodeFunctionData } from "viem";
 
 // ======== تنظیمات ========
-// آدرس قرارداد هوشمند خود را اینجا بگذارید
+// ⚠️ آدرس قرارداد خود را اینجا بگذارید
 const CONTRACT_ADDRESS = "0xYourContractAddressHere";
 
-// ABI قرارداد (فقط متد createToken)
+// ABI قرارداد
 const CONTRACT_ABI = [{
   "inputs": [
     { "name": "name", "type": "string" },
@@ -147,84 +166,99 @@ const CONTRACT_ABI = [{
   "type": "function"
 }];
 
+// ======== Web3Modal ========
+const projectId = "96f13374b0fe2f629a925617de0a2ba3";
+
+const metadata = {
+  name: "Polygon Token Maker",
+  description: "ساخت توکن روی شبکه پالیگان",
+  url: window.location.origin,
+  icons: []
+};
+
+const chains = [polygon, polygonAmoy];
+
+const wagmiConfig = defaultWagmiConfig({
+  chains,
+  projectId,
+  metadata
+});
+
+const modal = createWeb3Modal({
+  wagmiConfig,
+  projectId,
+  chains
+});
+
+// ساخت دکمه
+const btn = document.createElement("w3m-button");
+document.getElementById("wallet-btn").appendChild(btn);
+
 // ======== المان‌ها ========
-const connectBtn = document.getElementById('connectBtn');
 const deployBtn = document.getElementById('deployBtn');
 const statusEl = document.getElementById('status');
 const nameInput = document.getElementById('tokenName');
 const symbolInput = document.getElementById('tokenSymbol');
 const supplyInput = document.getElementById('initialSupply');
 
-let walletClient = null;
-let account = null;
-let chainId = null;
+let isConnected = false;
+let isPolygon = false;
+let signer = null;
 
 // ======== وضعیت ========
 function setStatus(msg, type = '') {
   statusEl.textContent = msg;
-  statusEl.className = type;
+  statusEl.className = type || '';
 }
 
-// ======== اتصال کیف پول ========
-async function connectWallet() {
-  if (!window.ethereum) {
-    setStatus('❌ متاماسک نصب نیست!', 'red');
-    return;
-  }
-
-  try {
-    setStatus('⏳ در حال اتصال...', 'yellow');
-    connectBtn.disabled = true;
-
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    account = accounts[0];
-
-    const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
-    chainId = parseInt(chainIdHex, 16);
-
-    // بررسی شبکه
-    if (chainId !== 137 && chainId !== 80002) {
-      setStatus('⚠️ لطفاً شبکه را به پالیگان تغییر دهید', 'red');
-      connectBtn.disabled = false;
-      
-      // دکمه تغییر شبکه
-      connectBtn.textContent = '🔄 تغییر به پالیگان';
-      connectBtn.onclick = async () => {
-        try {
-          await window.ethereum.request({
-            method: 'wallet_switchEthereumChain',
-            params: [{ chainId: '0x89' }] // 137
-          });
-        } catch (e) {}
-      };
-      return;
+// ======== بررسی وضعیت اتصال ========
+function checkConnection() {
+  const account = getAccount(wagmiConfig);
+  const network = getNetwork(wagmiConfig);
+  
+  if (account?.address) {
+    isConnected = true;
+    const addr = account.address;
+    const chainId = network?.chain?.id;
+    
+    if (chainId === 137 || chainId === 80002) {
+      isPolygon = true;
+      setStatus(`✅ متصل: ${addr.slice(0,6)}...${addr.slice(-4)}`, 'connected');
+      deployBtn.disabled = false;
+      deployBtn.textContent = '⛏ استقرار توکن';
+    } else {
+      isPolygon = false;
+      setStatus('⚠️ لطفاً شبکه را به پالیگان تغییر دهید', 'error');
+      deployBtn.disabled = true;
     }
-
-    walletClient = createWalletClient({
-      chain: chainId === 137 ? polygon : polygonAmoy,
-      transport: custom(window.ethereum)
-    });
-
-    const shortAddr = `${account.slice(0,6)}...${account.slice(-4)}`;
-    setStatus(`✅ متصل: ${shortAddr}`, 'green');
-    connectBtn.textContent = '✅ متصل شد';
-    connectBtn.classList.add('connected');
-    connectBtn.disabled = false;
-    deployBtn.disabled = false;
-
-    // برگرداندن دکمه به حالت عادی
-    connectBtn.onclick = () => { window.location.reload(); };
-
-  } catch (error) {
-    setStatus(`❌ ${error.message}`, 'red');
-    connectBtn.disabled = false;
+  } else {
+    isConnected = false;
+    isPolygon = false;
+    setStatus('⏳ منتظر اتصال کیف پول...', '');
+    deployBtn.disabled = true;
   }
 }
+
+// ======== گوش دادن به تغییرات ========
+watchAccount(wagmiConfig, {
+  onChange() {
+    checkConnection();
+  }
+});
+
+watchNetwork(wagmiConfig, {
+  onChange() {
+    checkConnection();
+  }
+});
+
+// بررسی اولیه
+checkConnection();
 
 // ======== استقرار توکن ========
-async function deployToken() {
-  if (!walletClient || !account) {
-    setStatus('❌ ابتدا کیف پول را متصل کنید', 'red');
+deployBtn.addEventListener('click', async () => {
+  if (!isConnected || !isPolygon) {
+    setStatus('❌ ابتدا کیف پول را به پالیگان متصل کنید', 'error');
     return;
   }
 
@@ -233,19 +267,26 @@ async function deployToken() {
   const supply = supplyInput.value.trim();
 
   if (!name || !symbol || !supply) {
-    setStatus('❌ همه فیلدها را پر کنید', 'red');
+    setStatus('❌ همه فیلدها را پر کنید', 'error');
     return;
   }
 
   if (isNaN(supply) || Number(supply) <= 0) {
-    setStatus('❌ مقدار معتبر وارد کنید', 'red');
+    setStatus('❌ مقدار معتبر وارد کنید', 'error');
     return;
   }
 
   deployBtn.disabled = true;
-  setStatus('⏳ در حال ارسال تراکنش...', 'yellow');
+  deployBtn.textContent = '⏳ در حال ارسال...';
+  setStatus('⏳ در حال ارسال تراکنش...', 'loading');
 
   try {
+    const account = getAccount(wagmiConfig);
+    
+    if (!account?.address) {
+      throw new Error('کیف پول متصل نیست');
+    }
+
     const supplyWei = parseUnits(supply, 18);
 
     // ساخت داده تراکنش
@@ -255,72 +296,45 @@ async function deployToken() {
       args: [name, symbol, supplyWei]
     });
 
+    // دریافت provider از wagmi
+    const { getWalletClient } = await import('wagmi');
+    const walletClient = await getWalletClient(wagmiConfig);
+
     // ارسال تراکنش
     const hash = await walletClient.sendTransaction({
-      account: account,
+      account: account.address,
       to: CONTRACT_ADDRESS,
-      data: data,
-      chain: chainId === 137 ? polygon : polygonAmoy
+      data: data
     });
 
-    setStatus(`⏳ در حال تایید... هش: ${hash.slice(0,10)}...`, 'yellow');
+    setStatus(`⏳ منتظر تایید... هش: ${hash.slice(0,10)}...`, 'loading');
 
     // منتظر تایید
-    const receipt = await walletClient.waitForTransactionReceipt({ hash });
-    
+    const { getPublicClient } = await import('wagmi');
+    const publicClient = getPublicClient(wagmiConfig);
+    const receipt = await publicClient.waitForTransactionReceipt({ hash });
+
     if (receipt.status === 'success') {
-      setStatus(`✅ توکن "${name}" ساخته شد! 🎉`, 'green');
+      setStatus(`✅ توکن "${name}" با موفقیت ساخته شد! 🎉`, 'connected');
       deployBtn.textContent = '✅ ساخته شد';
     } else {
-      setStatus('❌ تراکنش ناموفق بود', 'red');
+      setStatus('❌ تراکنش ناموفق بود', 'error');
+      deployBtn.textContent = '⛏ استقرار توکن';
     }
 
   } catch (error) {
     console.error(error);
-    if (error.message.includes('rejected')) {
-      setStatus('❌ تراکنش رد شد', 'red');
+    if (error.message?.includes('rejected')) {
+      setStatus('❌ تراکنش توسط کاربر رد شد', 'error');
     } else {
-      setStatus(`❌ ${error.message}`, 'red');
+      setStatus(`❌ ${error.message}`, 'error');
     }
+    deployBtn.textContent = '⛏ استقرار توکن';
   }
 
   deployBtn.disabled = false;
-}
+});
 
-// ======== رویدادها ========
-connectBtn.addEventListener('click', connectWallet);
-deployBtn.addEventListener('click', deployToken);
-
-// گوش دادن به تغییرات
-if (window.ethereum) {
-  window.ethereum.on('chainChanged', () => window.location.reload());
-  window.ethereum.on('accountsChanged', () => window.location.reload());
-}
-
-// بررسی اتصال قبلی
-(async function init() {
-  if (window.ethereum) {
-    try {
-      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-      if (accounts && accounts.length > 0) {
-        account = accounts[0];
-        const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
-        chainId = parseInt(chainIdHex, 16);
-        if (chainId === 137 || chainId === 80002) {
-          walletClient = createWalletClient({
-            chain: chainId === 137 ? polygon : polygonAmoy,
-            transport: custom(window.ethereum)
-          });
-          const shortAddr = `${account.slice(0,6)}...${account.slice(-4)}`;
-          setStatus(`✅ متصل: ${shortAddr}`, 'green');
-          connectBtn.textContent = '✅ متصل شد';
-          connectBtn.classList.add('connected');
-          deployBtn.disabled = false;
-        }
-      }
-    } catch (e) {}
-  }
-})();
 </script>
 
 </body>
