@@ -5,202 +5,357 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>اتصال کیف پول - پالیگان</title>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
   background: #0f172a;
-  color: white;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  padding: 20px;
 }
-.container {
+
+.card {
   background: #1e293b;
-  padding: 48px 40px;
-  border-radius: 24px;
-  max-width: 500px;
-  width: 90%;
+  padding: 40px 32px;
+  border-radius: 20px;
+  max-width: 440px;
+  width: 100%;
   text-align: center;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
   border: 1px solid #334155;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.5);
 }
-.logo {
-  font-size: 48px;
+
+.icon {
+  font-size: 56px;
   margin-bottom: 12px;
 }
+
 h2 {
-  font-size: 24px;
+  color: white;
+  font-size: 22px;
   font-weight: 700;
-  margin-bottom: 8px;
-  background: linear-gradient(135deg, #a855f7, #6366f1);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  margin-bottom: 6px;
 }
-.subtitle {
+
+.sub {
   color: #94a3b8;
   font-size: 14px;
-  margin-bottom: 32px;
-}
-.network-badge {
-  display: inline-block;
-  background: #22c55e20;
-  color: #22c55e;
-  border: 1px solid #22c55e40;
-  padding: 6px 18px;
-  border-radius: 50px;
-  font-size: 13px;
-  font-weight: 600;
   margin-bottom: 24px;
 }
-#wallet-btn {
+
+.badge {
+  display: inline-block;
+  background: #22c55e15;
+  color: #22c55e;
+  border: 1px solid #22c55e30;
+  padding: 5px 16px;
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 28px;
+}
+
+#connectBtn {
+  width: 100%;
+  padding: 16px;
+  background: #7c3aed;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
   display: flex;
+  align-items: center;
   justify-content: center;
-  margin: 16px 0;
+  gap: 10px;
 }
-w3m-button {
-  --w3m-accent: #8247e5;
-  --w3m-border-radius: 12px;
-  width: 100% !important;
+
+#connectBtn:hover {
+  background: #6d28d9;
+  transform: scale(1.01);
 }
-.status-box {
-  margin-top: 20px;
+
+#connectBtn:disabled {
+  background: #475569;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+#status {
+  margin-top: 18px;
   padding: 14px;
   background: #0f172a;
   border-radius: 12px;
   border: 1px solid #334155;
-  font-size: 14px;
   color: #94a3b8;
-  min-height: 52px;
+  font-size: 14px;
+  min-height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
 }
-.status-box.connected {
+
+#status.connected {
   border-color: #22c55e;
   color: #22c55e;
 }
-.status-box.error {
+
+#status.error {
   border-color: #ef4444;
   color: #ef4444;
 }
+
 .dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
   display: inline-block;
+  flex-shrink: 0;
 }
+
 .dot.green { background: #22c55e; }
 .dot.red { background: #ef4444; }
-.dot.yellow { background: #eab308; }
+.dot.yellow { background: #f59e0b; }
+.dot.gray { background: #64748b; }
+
+#networkInfo {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 12px;
+  padding: 8px;
+  background: #0f172a;
+  border-radius: 8px;
+}
 </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="logo">🟣</div>
+<div class="card">
+  <div class="icon">🟣</div>
   <h2>اتصال کیف پول</h2>
-  <p class="subtitle">فقط شبکه پالیگان (Polygon)</p>
-  
-  <div class="network-badge">✅ Polygon Mainnet + Amoy Testnet</div>
-  
-  <div id="wallet-btn"></div>
-  
-  <div id="status" class="status-box">
-    <span class="dot yellow"></span>
-    در انتظار اتصال کیف پول...
+  <p class="sub">فقط شبکه پالیگان</p>
+  <div class="badge">✅ Polygon Mainnet + Amoy</div>
+
+  <button id="connectBtn">
+    🔗 اتصال کیف پول
+  </button>
+
+  <div id="status">
+    <span class="dot gray"></span>
+    منتظر اتصال...
   </div>
+
+  <div id="networkInfo">🌐 شبکه: —</div>
 </div>
 
-<script type="module">
-import { createWeb3Modal, defaultWagmiConfig } 
-from "https://esm.sh/@web3modal/wagmi";
-
-import { polygon, polygonAmoy } 
-from "https://esm.sh/wagmi/chains";
-
-import { watchAccount } from "https://esm.sh/wagmi";
-
-const projectId = "96f13374b0fe2f629a925617de0a2ba3";
-
-const metadata = {
-  name: "Polygon Token Maker",
-  description: "ساخت توکن روی شبکه پالیگان",
-  url: window.location.origin,
-  icons: []
-};
-
-// ✅ فقط همین دو شبکه مجاز هستند
-const chains = [polygon, polygonAmoy];
-
-const wagmiConfig = defaultWagmiConfig({
-  chains,
-  projectId,
-  metadata
-});
-
-const web3modal = createWeb3Modal({
-  wagmiConfig,
-  projectId,
-  chains
-});
-
-// ساخت دکمه
-const btn = document.createElement("w3m-button");
-document.getElementById("wallet-btn").appendChild(btn);
-
-// وضعیت اتصال
-const statusEl = document.getElementById("status");
-
-watchAccount(wagmiConfig, {
-  onChange(account) {
-    if (account?.address) {
-      const addr = account.address;
-      statusEl.innerHTML = `
-        <span class="dot green"></span>
-        ✅ متصل: ${addr.slice(0,6)}...${addr.slice(-4)}
-      `;
-      statusEl.className = "status-box connected";
-    } else {
-      statusEl.innerHTML = `
-        <span class="dot yellow"></span>
-        در انتظار اتصال کیف پول...
-      `;
-      statusEl.className = "status-box";
-    }
+<script type="importmap">
+{
+  "imports": {
+    "viem": "https://esm.sh/viem@2.x",
+    "viem/chains": "https://esm.sh/viem@2.x/chains"
   }
-});
-
-// بررسی تغییر شبکه
-import { watchNetwork } from "https://esm.sh/wagmi";
-
-watchNetwork(wagmiConfig, {
-  onChange(network) {
-    const chainId = network?.chain?.id;
-    if (chainId && chainId !== 137 && chainId !== 80002) {
-      statusEl.innerHTML = `
-        <span class="dot red"></span>
-        ⚠️ لطفاً شبکه را به Polygon (پالیگان) تغییر دهید
-      `;
-      statusEl.className = "status-box error";
-    } else if (chainId === 137) {
-      statusEl.innerHTML = `
-        <span class="dot green"></span>
-        ✅ متصل به Polygon Mainnet
-      `;
-      statusEl.className = "status-box connected";
-    } else if (chainId === 80002) {
-      statusEl.innerHTML = `
-        <span class="dot green"></span>
-        ✅ متصل به Polygon Amoy (تست)
-      `;
-      statusEl.className = "status-box connected";
-    }
-  }
-});
-
+}
 </script>
 
+<script type="module">
+import { createWalletClient, custom, getAccount, getNetwork, switchChain } from "viem";
+import { polygon, polygonAmoy } from "viem/chains";
+
+const connectBtn = document.getElementById('connectBtn');
+const statusEl = document.getElementById('status');
+const networkEl = document.getElementById('networkInfo');
+
+let walletClient = null;
+let account = null;
+
+// بررسی وجود متاماسک
+if (!window.ethereum) {
+  statusEl.innerHTML = `<span class="dot red"></span> ❌ متاماسک نصب نیست!`;
+  statusEl.className = 'status error';
+  connectBtn.disabled = true;
+}
+
+// تابع به‌روزرسانی وضعیت
+function updateStatus(text, type = 'idle') {
+  statusEl.innerHTML = text;
+  statusEl.className = 'status';
+  if (type === 'connected') statusEl.classList.add('connected');
+  if (type === 'error') statusEl.classList.add('error');
+}
+
+// تابع اتصال
+async function connectWallet() {
+  try {
+    connectBtn.disabled = true;
+    connectBtn.innerHTML = '⏳ در حال اتصال...';
+    updateStatus(`<span class="dot yellow"></span> در حال اتصال...`);
+
+    // درخواست اتصال
+    const accounts = await window.ethereum.request({ 
+      method: 'eth_requestAccounts' 
+    });
+
+    if (!accounts || accounts.length === 0) {
+      throw new Error('کیف پول متصل نشد');
+    }
+
+    // ایجاد کلاینت
+    walletClient = createWalletClient({
+      chain: polygon,
+      transport: custom(window.ethereum)
+    });
+
+    account = accounts[0];
+
+    // بررسی شبکه فعلی
+    const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+    const chainIdNumber = parseInt(chainId, 16);
+
+    // اگر شبکه پالیگان نبود، درخواست تغییر
+    if (chainIdNumber !== 137 && chainIdNumber !== 80002) {
+      updateStatus(
+        `<span class="dot red"></span> ⚠️ لطفاً شبکه را به پالیگان تغییر دهید`,
+        'error'
+      );
+      
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x89' }] // 137 = 0x89
+        });
+        // بعد از تغییر شبکه، دوباره اطلاعات را می‌گیریم
+        setTimeout(() => updateConnectionStatus(), 1000);
+      } catch (switchError) {
+        // کاربر تغییر نداد
+        connectBtn.disabled = false;
+        connectBtn.innerHTML = '🔗 اتصال کیف پول';
+        return;
+      }
+    }
+
+    await updateConnectionStatus();
+
+  } catch (error) {
+    console.error(error);
+    updateStatus(
+      `<span class="dot red"></span> ❌ ${error.message || 'خطا در اتصال'}`,
+      'error'
+    );
+    connectBtn.disabled = false;
+    connectBtn.innerHTML = '🔗 اتصال کیف پول';
+  }
+}
+
+// به‌روزرسانی اطلاعات پس از اتصال
+async function updateConnectionStatus() {
+  try {
+    const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+    const chainIdNumber = parseInt(chainId, 16);
+
+    let chainName = 'ناشناخته';
+    let isPolygon = false;
+
+    if (chainIdNumber === 137) {
+      chainName = 'Polygon Mainnet 🟣';
+      isPolygon = true;
+    } else if (chainIdNumber === 80002) {
+      chainName = 'Polygon Amoy (تست) 🧪';
+      isPolygon = true;
+    } else {
+      chainName = `شبکه ${chainIdNumber} (غیرمجاز)`;
+      isPolygon = false;
+    }
+
+    networkEl.innerHTML = `🌐 شبکه: ${chainName}`;
+
+    if (isPolygon && account) {
+      const shortAddr = `${account.slice(0,6)}...${account.slice(-4)}`;
+      updateStatus(
+        `<span class="dot green"></span> ✅ متصل: ${shortAddr}`,
+        'connected'
+      );
+      connectBtn.innerHTML = '✅ متصل شد';
+      connectBtn.style.background = '#22c55e';
+      connectBtn.disabled = false;
+    } else if (!isPolygon) {
+      updateStatus(
+        `<span class="dot red"></span> ⚠️ شبکه اشتباه! به پالیگان بروید`,
+        'error'
+      );
+      connectBtn.innerHTML = '🔄 تغییر شبکه';
+      connectBtn.style.background = '#ef4444';
+      connectBtn.disabled = false;
+      
+      // دکمه برای تغییر شبکه
+      connectBtn.onclick = async () => {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0x89' }]
+          });
+        } catch (e) {
+          console.log(e);
+        }
+      };
+      return;
+    }
+
+    // بازیابی دکمه
+    connectBtn.disabled = false;
+    connectBtn.innerHTML = '✅ متصل شد';
+    connectBtn.style.background = '#22c55e';
+    
+    // دکمه برای قطع اتصال (اختیاری)
+    connectBtn.onclick = () => {
+      // فقط رفرش می‌کند
+      window.location.reload();
+    };
+
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// رویداد کلیک دکمه
+connectBtn.addEventListener('click', connectWallet);
+
+// گوش دادن به تغییرات شبکه
+if (window.ethereum) {
+  window.ethereum.on('chainChanged', () => {
+    window.location.reload();
+  });
+  window.ethereum.on('accountsChanged', () => {
+    window.location.reload();
+  });
+}
+
+// بررسی اتصال قبلی در شروع
+(async function init() {
+  try {
+    if (window.ethereum) {
+      const accounts = await window.ethereum.request({ 
+        method: 'eth_accounts' 
+      });
+      if (accounts && accounts.length > 0) {
+        account = accounts[0];
+        await updateConnectionStatus();
+      }
+    }
+  } catch (e) {
+    console.log(e);
+  }
+})();
+
+</script>
 </body>
 </html>
