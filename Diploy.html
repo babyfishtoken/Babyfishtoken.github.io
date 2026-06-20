@@ -3,32 +3,92 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wallet Test</title>
+<title>Token Factory Test</title>
+<style>
+body{
+background:#0f172a;
+color:white;
+font-family:sans-serif;
+max-width:500px;
+margin:auto;
+padding:30px;
+}
+input{
+width:100%;
+padding:12px;
+margin:8px 0;
+box-sizing:border-box;
+}
+button{
+width:100%;
+padding:12px;
+margin-top:10px;
+}
+#wallet-btn{
+margin-bottom:20px;
+}
+#result{
+margin-top:20px;
+word-break:break-all;
+}
+</style>
 </head>
-<body style="background:#0f172a;color:white;text-align:center;padding-top:100px;font-family:sans-serif;">
+<body>
 
-<h2>Wallet Connect Test</h2>
+<h2>Polygon Token Factory</h2>
 
 <div id="wallet-btn"></div>
+
+<input id="name" placeholder="Token Name">
+<input id="symbol" placeholder="Symbol">
+<input id="supply" type="number" placeholder="Supply">
+
+<button id="createToken">
+Create Token
+</button>
+
+<div id="result"></div>
 
 <script type="module">
 
 import { createWeb3Modal, defaultWagmiConfig }
 from "https://esm.sh/@web3modal/wagmi";
 
-import { polygon, polygonAmoy }
+import { polygon }
 from "https://esm.sh/wagmi/chains";
 
-const projectId = "96f13374b0fe2f629a925617de0a2ba3";
+import { encodeFunctionData }
+from "https://esm.sh/viem";
+
+import { getAccount, getWalletClient }
+from "https://esm.sh/wagmi";
+
+const CONTRACT =
+"0x66168b1Abbf9b944052880F6Cc6331b8F9339d5D";
+
+const ABI = [{
+  "inputs":[
+    {"name":"name","type":"string"},
+    {"name":"symbol","type":"string"},
+    {"name":"initialSupply","type":"uint256"}
+  ],
+  "name":"createToken",
+  "outputs":[{"type":"address"}],
+  "stateMutability":"nonpayable",
+  "type":"function"
+}];
+
+const projectId =
+"96f13374b0fe2f629a925617de0a2ba3";
 
 const metadata = {
-  name: "Test App",
-  description: "Wallet Test",
-  url: "https://example.com",
-  icons: []
+  name:"Token Factory",
+  description:"Create Polygon Token",
+  url:"https://example.com",
+  icons:[]
 };
 
-const chains = [polygon, polygonAmoy];
+const chains = [polygon];
 
 const wagmiConfig = defaultWagmiConfig({
   chains,
@@ -42,8 +102,58 @@ createWeb3Modal({
   chains
 });
 
-const btn = document.createElement("w3m-button");
-document.getElementById("wallet-btn").appendChild(btn);
+document
+.getElementById("wallet-btn")
+.appendChild(document.createElement("w3m-button"));
+
+document
+.getElementById("createToken")
+.onclick = async () => {
+
+try {
+
+const account =
+getAccount(wagmiConfig);
+
+if(!account.address){
+alert("Connect wallet first");
+return;
+}
+
+const walletClient =
+await getWalletClient(wagmiConfig);
+
+const data =
+encodeFunctionData({
+abi: ABI,
+functionName: "createToken",
+args: [
+document.getElementById("name").value,
+document.getElementById("symbol").value,
+BigInt(document.getElementById("supply").value)
+]
+});
+
+const hash =
+await walletClient.sendTransaction({
+account: account.address,
+to: CONTRACT,
+data
+});
+
+document.getElementById("result").innerHTML =
+"Transaction Hash:<br>" + hash;
+
+} catch(err){
+
+document.getElementById("result").innerHTML =
+err.message;
+
+console.error(err);
+
+}
+
+};
 
 </script>
 
