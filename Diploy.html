@@ -26,11 +26,6 @@
     font-size: 14px;
     margin-bottom: 24px;
   }
-  #wallet-btn {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 24px;
-  }
   .field {
     text-align: left;
     margin-bottom: 14px;
@@ -89,6 +84,13 @@
   #status.ok { color: #22c55e; }
   #status.err { color: #ef4444; }
   #status.wait { color: #f59e0b; }
+  
+  /* استایل دکمه Web3Modal */
+  w3m-button {
+    display: block;
+    width: 100%;
+    margin-bottom: 24px;
+  }
 </style>
 </head>
 <body>
@@ -97,7 +99,7 @@
   <h2>🚀 ساخت توکن</h2>
   <p class="sub">روی شبکه پالیگان</p>
 
-  <div id="wallet-btn"></div>
+  <w3m-button></w3m-button>
 
   <div class="field">
     <label>نام توکن</label>
@@ -147,7 +149,7 @@ const CONTRACT_ABI = [{
   "type": "function"
 }];
 
-// ======== دکمه شما ========
+// ======== Web3Modal ========
 const projectId = "96f13374b0fe2f629a925617de0a2ba3";
 const metadata = {
   name: "Polygon Token Maker",
@@ -157,9 +159,13 @@ const metadata = {
 };
 const chains = [polygon, polygonAmoy];
 const wagmiConfig = defaultWagmiConfig({ chains, projectId, metadata });
-createWeb3Modal({ wagmiConfig, projectId, chains });
-const btn = document.createElement("w3m-button");
-document.getElementById("wallet-btn").appendChild(btn);
+
+createWeb3Modal({ 
+  wagmiConfig, 
+  projectId, 
+  chains,
+  enableOnramp: false 
+});
 
 // ======== المان‌ها ========
 const deployBtn = document.getElementById('deployBtn');
