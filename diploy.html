@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<body style="background:#111;color:white;padding:40px">
+
+<div id="wallet-btn"></div>
+
+<script type="module">
+
+import { createWeb3Modal, defaultWagmiConfig }
+from "https://esm.sh/@web3modal/wagmi";
+
+import { polygon }
+from "https://esm.sh/wagmi/chains";
+
+import { getAccount }
+from "https://esm.sh/wagmi";
+
+const projectId =
+"96f13374b0fe2f629a925617de0a2ba3";
+
+const wagmiConfig = defaultWagmiConfig({
+chains:[polygon],
+projectId,
+metadata:{
+name:"Test",
+description:"Test",
+url:"https://example.com",
+icons:[]
+}
+});
+
+createWeb3Modal({
+wagmiConfig,
+projectId,
+chains:[polygon]
+});
+
+document
+.getElementById("wallet-btn")
+.appendChild(
+document.createElement("w3m-button")
+);
+
+setInterval(() => {
+
+try {
+
+const account =
+getAccount(wagmiConfig);
+
+document.body.insertAdjacentHTML(
+"beforeend",
+"<div>"+(account?.address||"not connected")+"</div>"
+);
+
+} catch(e){
+
+document.body.insertAdjacentHTML(
+"beforeend",
+"<div style='color:red'>ERROR</div>"
+);
+
+}
+
+},3000);
+
+</script>
+
+</body>
+</html>
