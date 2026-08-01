@@ -1,185 +1,33 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Vanity Address Generator</title>
+<title>Test</title>
 
-<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.min.js"></script>
-
-<style>
-body{
-    background:#111827;
-    color:white;
-    font-family:Arial;
-    text-align:center;
-    padding:30px;
-}
-
-.box{
-    max-width:600px;
-    margin:auto;
-    background:#1f2937;
-    padding:25px;
-    border-radius:15px;
-}
-
-input,button{
-    width:90%;
-    padding:12px;
-    margin:8px;
-    border-radius:8px;
-    border:0;
-}
-
-button{
-    background:#8247e5;
-    color:white;
-    cursor:pointer;
-}
-
-.result{
-    background:#000;
-    padding:15px;
-    margin-top:20px;
-    word-break:break-all;
-    border-radius:10px;
-}
-</style>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js"></script>
 
 </head>
 
 <body>
 
-<div class="box">
+<button onclick="test()">
+Generate
+</button>
 
-<h2>Vanity Address Generator</h2>
-
-<input id="pattern" placeholder="الگوی دلخواه (اختیاری)">
-
-<button onclick="start()">شروع</button>
-
-<button onclick="stop()">توقف</button>
-
-
-<h3 id="count">
-تعداد تولید شده: 0
-</h3>
-
-<h3 id="speed">
-سرعت: 0 آدرس/ثانیه
-</h3>
-
-
-<div class="result" id="result">
-هنوز شروع نشده
-</div>
-
-
-</div>
-
+<p id="a"></p>
 
 <script>
 
-let running=false;
-let counter=0;
-let startTime;
+function test(){
 
+const wallet = ethers.Wallet.createRandom();
 
-async function start(){
-
-if(running) return;
-
-running=true;
-counter=0;
-startTime=Date.now();
-
-
-let pattern=document
-.getElementById("pattern")
-.value
-.toLowerCase()
-.replace("0x","");
-
-
-while(running){
-
-
-let wallet =
-ethers.Wallet.createRandom();
-
-
-let address =
-wallet.address.toLowerCase();
-
-
-counter++;
-
-
-document.getElementById("count")
-.innerHTML=
-"تعداد تولید شده: "+counter;
-
-
-let seconds=
-(Date.now()-startTime)/1000;
-
-
-let speed=
-Math.floor(counter/seconds);
-
-
-document.getElementById("speed")
-.innerHTML=
-"سرعت: "+speed+" آدرس/ثانیه";
-
-
-document.getElementById("result")
-.innerHTML=
-`
-آخرین آدرس:
-
-${wallet.address}
-
-<br><br>
-
-Private Key:
-
-${wallet.privateKey}
-`;
-
-
-
-// اگر الگو وارد شده بود بررسی کن
-
-if(pattern){
-
-if(address.startsWith("0x"+pattern)){
-
-running=false;
-
-alert("آدرس پیدا شد!");
-
-}
-
-}
-
-
-await new Promise(r=>setTimeout(r,0));
-
-}
-
-}
-
-
-
-function stop(){
-
-running=false;
+document.getElementById("a").innerHTML =
+wallet.address;
 
 }
 
 </script>
-
 
 </body>
 </html>
