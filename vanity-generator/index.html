@@ -2,44 +2,43 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>Polygon Vanity Address Generator</title>
+<title>Vanity Address Generator</title>
 
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.min.js"></script>
 
 <style>
-body {
-    font-family: Arial;
+body{
     background:#111827;
     color:white;
+    font-family:Arial;
     text-align:center;
-    padding:40px;
+    padding:30px;
 }
 
-.box {
+.box{
     max-width:600px;
     margin:auto;
     background:#1f2937;
-    padding:30px;
+    padding:25px;
     border-radius:15px;
 }
 
-input,button {
+input,button{
     width:90%;
     padding:12px;
-    margin:10px;
+    margin:8px;
     border-radius:8px;
-    border:none;
-    font-size:16px;
+    border:0;
 }
 
-button {
+button{
     background:#8247e5;
     color:white;
     cursor:pointer;
 }
 
-.result {
-    background:#111;
+.result{
+    background:#000;
     padding:15px;
     margin-top:20px;
     word-break:break-all;
@@ -53,19 +52,28 @@ button {
 
 <div class="box">
 
-<h1>Vanity Address Generator</h1>
+<h2>Vanity Address Generator</h2>
 
-<p>
-ساخت آدرس رند Ethereum / Polygon
-</p>
+<input id="pattern" placeholder="الگوی دلخواه (اختیاری)">
 
-<input id="pattern" placeholder="مثلا: ABCD">
+<button onclick="start()">شروع</button>
 
-<button onclick="start()">شروع جستجو</button>
+<button onclick="stop()">توقف</button>
 
-<div id="status"></div>
 
-<div class="result" id="result"></div>
+<h3 id="count">
+تعداد تولید شده: 0
+</h3>
+
+<h3 id="speed">
+سرعت: 0 آدرس/ثانیه
+</h3>
+
+
+<div class="result" id="result">
+هنوز شروع نشده
+</div>
+
 
 </div>
 
@@ -73,77 +81,100 @@ button {
 <script>
 
 let running=false;
+let counter=0;
+let startTime;
 
 
 async function start(){
 
-    if(running) return;
+if(running) return;
 
-    let pattern =
-    document.getElementById("pattern")
-    .value
-    .toLowerCase()
-    .replace("0x","");
+running=true;
+counter=0;
+startTime=Date.now();
 
 
-    if(!pattern){
-        alert("الگو وارد کنید");
-        return;
-    }
+let pattern=document
+.getElementById("pattern")
+.value
+.toLowerCase()
+.replace("0x","");
 
 
-    running=true;
-
-    let count=0;
-
-    document.getElementById("result").innerHTML="";
+while(running){
 
 
-    while(running){
-
-        let wallet =
-        ethers.Wallet.createRandom();
+let wallet =
+ethers.Wallet.createRandom();
 
 
-        let address =
-        wallet.address
-        .toLowerCase()
-        .replace("0x","");
+let address =
+wallet.address.toLowerCase();
 
 
-        count++;
+counter++;
 
 
-        document.getElementById("status").innerHTML =
-        "تعداد تلاش: " + count;
+document.getElementById("count")
+.innerHTML=
+"تعداد تولید شده: "+counter;
 
 
-        if(address.startsWith(pattern)){
+let seconds=
+(Date.now()-startTime)/1000;
 
-            running=false;
+
+let speed=
+Math.floor(counter/seconds);
 
 
-            document.getElementById("result").innerHTML =
-            `
-            <h3>پیدا شد!</h3>
-            
-            Address:
-            <br>
-            ${wallet.address}
+document.getElementById("speed")
+.innerHTML=
+"سرعت: "+speed+" آدرس/ثانیه";
 
-            <hr>
 
-            Private Key:
-            <br>
-            ${wallet.privateKey}
+document.getElementById("result")
+.innerHTML=
+`
+آخرین آدرس:
 
-            `;
+${wallet.address}
 
-        }
+<br><br>
 
-        // جلوگیری از فریز شدن مرورگر
-        await new Promise(r=>setTimeout(r,0));
-    }
+Private Key:
+
+${wallet.privateKey}
+`;
+
+
+
+// اگر الگو وارد شده بود بررسی کن
+
+if(pattern){
+
+if(address.startsWith("0x"+pattern)){
+
+running=false;
+
+alert("آدرس پیدا شد!");
+
+}
+
+}
+
+
+await new Promise(r=>setTimeout(r,0));
+
+}
+
+}
+
+
+
+function stop(){
+
+running=false;
 
 }
 
@@ -151,4 +182,4 @@ async function start(){
 
 
 </body>
-  </html>
+</html>
