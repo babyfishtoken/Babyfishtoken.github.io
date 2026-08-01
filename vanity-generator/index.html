@@ -1,29 +1,107 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Wallet Generator</title>
 
 <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js"></script>
+
+<style>
+
+body{
+    background:#111827;
+    color:white;
+    font-family:Arial;
+    padding:30px;
+    text-align:center;
+}
+
+button{
+    padding:15px 35px;
+    font-size:18px;
+    border:none;
+    border-radius:10px;
+    background:#8247e5;
+    color:white;
+    cursor:pointer;
+}
+
+.box{
+    margin:auto;
+    margin-top:30px;
+    max-width:800px;
+    background:#1f2937;
+    padding:20px;
+    border-radius:12px;
+    word-break:break-all;
+    text-align:left;
+}
+
+.title{
+    color:#60a5fa;
+    margin-top:15px;
+    font-weight:bold;
+}
+
+.value{
+    color:#fff;
+}
+
+</style>
 
 </head>
 
 <body>
 
-<button onclick="test()">
-Generate
+<h1>Ethereum / Polygon Wallet Generator</h1>
+
+<button onclick="generateWallet()">
+Generate Wallet
 </button>
 
-<p id="a"></p>
+<div class="box" id="output">
+Press the button...
+</div>
 
 <script>
 
-function test(){
+function generateWallet(){
 
-const wallet = ethers.Wallet.createRandom();
+    const wallet = ethers.Wallet.createRandom();
 
-document.getElementById("a").innerHTML =
-wallet.address;
+    let mnemonic = "Not Available";
+
+    if(wallet.mnemonic){
+        mnemonic = wallet.mnemonic.phrase;
+    }
+
+    document.getElementById("output").innerHTML = `
+
+<div class="title">Address</div>
+
+<div class="value">
+${wallet.address}
+</div>
+
+<br>
+
+<div class="title">Private Key</div>
+
+<div class="value">
+${wallet.privateKey}
+</div>
+
+<br>
+
+<div class="title">Mnemonic</div>
+
+<div class="value">
+${mnemonic}
+</div>
+
+`;
 
 }
 
