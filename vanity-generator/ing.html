@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Wallet Generator با جستجو</title>
+
+<script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js"></script>
+
+<style>
+
+body{
+    background:#111827;
+    color:white;
+    font-family:Arial;
+    padding:30px;
+    text-align:center;
+}
+
+button{
+    padding:15px 35px;
+    font-size:18px;
+    border:none;
+    border-radius:10px;
+    background:#8247e5;
+    color:white;
+    cursor:pointer;
+    margin:5px;
+}
+
+button:hover{
+    background:#6d3bc7;
+}
+
+button:disabled{
+    background:#4b5563;
+    cursor:not-allowed;
+}
+
+input{
+    padding:12px 20px;
+    font-size:16px;
+    border-radius:10px;
+    border:2px solid #4b5563;
+    background:#1f2937;
+    color:white;
+    width:300px;
+    margin:10px;
+    direction:ltr;
+}
+
+input:focus{
+    outline:none;
+    border-color:#8247e5;
+}
+
+.box{
+    margin:auto;
+    margin-top:30px;
+    max-width:800px;
+    background:#1f2937;
+    padding:20px;
+    border-radius:12px;
+    word-break:break-all;
+    text-align:left;
+}
+
+.title{
+    color:#60a5fa;
+    margin-top:15px;
+    font-weight:bold;
+}
+
+.value{
+    color:#fff;
+}
+
+.search-info{
+    color:#9ca3af;
+    font-size:14px;
+    margin:10px 0;
+}
+
+.status{
+    color:#fbbf24;
+    margin:10px 0;
+}
+
+.attempts{
+    color:#6b7280;
+    font-size:14px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Ethereum / Polygon Wallet Generator</h1>
+
+<div>
+    <input type="text" id="searchPrefix" placeholder="مثال: 0xAAAA یا 0x1234" value="0xAAAA">
+    <br>
+    <button onclick="generateWallet()">تولید تصادفی</button>
+    <button onclick="searchWallet()" id="searchBtn">جستجو و تولید</button>
+    <button onclick="stopSearch()" id="stopBtn" style="display:none; background:#dc2626;">متوقف کن</button>
+</div>
+
+<div class="box" id="output">
+    دکمه را بزنید...
+</div>
+
+<script>
+
+let searchInterval = null;
+let isSearching = false;
+
+function generateWallet(){
+
+    // توقف جستجو اگر در حال اجراست
+    stopSearch();
+
+    const wallet = ethers.Wallet.createRandom();
+
+    let mnemonic = "Not Available";
+
+    if(wallet.mnemonic){
+        mnemonic = wallet.mnemonic.phrase;
+    }
+
+    document.getElementById("output").innerHTML = `
+
+<div class="title">آدرس</div>
+
+<div class="value">
+${wallet.address}
+</div>
+
+<br>
+
+<div class="title">کلید خصوصی</div>
+
+<div class="value">
+${wallet.privateKey}
+</div>
+
+<br>
+
+<div class="title">Mnemonic</div>
+
+<div class="value">
+${mnemonic}
+</div>
+
+`;
+
+}
+
+function searchWallet(){
+
+    // اگر قبلاً جستجو در حال اجراست، آن را متوقف کن
+    if(isSearching){
+        stopSearch();
+        return;
+    }
+
+    const prefix = document.getElementById("searchPrefix").value.trim();
+
+    // بررسی اعتبار ورودی
+    if(!prefix || !prefix.startsWith("0x") || prefix.length < 3){
+        document.getElementById("output").innerHTML = `
+<div style="color:#ef4444;">
+لطفاً یک پیشوند معتبر وارد کنید که با 0x شروع شود
+<br>
+مثال: 0xAAAA یا 0x1234
+</div>
+        `;
+        return;
+    }
+
+    // تبدیل به حروف بزرگ برای تطابق دقیق
+    const searchPrefix = prefix.toUpperCase();
+    let attempts = 0;
+    const maxAttempts = 1000000; // حداکثر تعداد تلاش برای جلوگیری از حلقه بی‌نهایت
+    
+    isSearching = true;
+    document.getElementById("searchBtn").textContent = "در حال جستجو...";
+    document.getElementById("searchBtn").disabled = true;
+    document.getElementById("stopBtn").style.display = "inline-block";
+    
+    document.getElementById("output").innerHTML = `
+<div class="status">🔍 در حال جستجو برای آدرس با پیشوند: <strong>${searchPrefix}</strong></div>
+<div class="attempts" id="attemptCount">تعداد تلاش: 0</div>
+<div style="color:#9ca3af; margin-top:20px;">در حال تولید کیف پول‌ها...</div>
+    `;
+
+    // تابع جستجو
+    function findWallet(){
+        // بررسی اینکه آیا هنوز در حال جستجو هستیم
+        if(!isSearching){
+            return;
+        }
+
+        attempts++;
+        
+        // به‌روزرسانی تعداد تلاش‌ها (هر 100 بار برای عملکرد بهتر)
+        if(attempts % 100 === 0){
+            document.getElementById("attemptCount").textContent = `تعداد تلاش: ${attempts}`;
+        }
+
+        // ایجاد کیف پول تصادفی
+        const wallet = ethers.Wallet.createRandom();
+        const address = wallet.address.toUpperCase();
+
+        // بررسی تطابق پیشوند
+        if(address.startsWith(searchPrefix)){
+            // پیدا شد! نمایش نتیجه
+            let mnemonic = "Not Available";
+            if(wallet.mnemonic){
+                mnemonic = wallet.mnemonic.phrase;
+            }
+
+            document.getElementById("output").innerHTML = `
+
+<div style="color:#4ade80; margin-bottom:15px;">✅ آدرس مورد نظر پیدا شد!</div>
+
+<div style="color:#9ca3af; margin-bottom:10px;">تعداد تلاش: ${attempts}</div>
+
+<div class="title">آدرس</div>
+
+<div class="value" style="color:#4ade80;">
+${wallet.address}
+</div>
+
+<br>
+
+<div class="title">کلید خصوصی</div>
+
+<div class="value">
+${wallet.privateKey}
+</div>
+
+<br>
+
+<div class="title">Mnemonic</div>
+
+<div class="value">
+${mnemonic}
+</div>
+
+`;
+
+            // توقف جستجو
+            stopSearch();
+            return;
+        }
+
+        // اگر به حداکثر تلاش رسیدیم
+        if(attempts >= maxAttempts){
+            document.getElementById("output").innerHTML = `
+<div style="color:#ef4444;">
+❌ پس از ${attempts} تلاش، آدرس با پیشوند ${searchPrefix} پیدا نشد
+<br>
+<span style="font-size:14px; color:#9ca3af;">
+نکته: هرچه پیشوند طولانی‌تر باشد، پیدا کردن سخت‌تر است
+</span>
+</div>
+            `;
+            stopSearch();
+            return;
+        }
+
+        // ادامه جستجو با تاخیر کم برای جلوگیری از هنگ کردن مرورگر
+        searchInterval = setTimeout(findWallet, 0);
+    }
+
+    // شروع جستجو
+    searchInterval = setTimeout(findWallet, 0);
+}
+
+function stopSearch(){
+    if(searchInterval){
+        clearTimeout(searchInterval);
+        searchInterval = null;
+    }
+    isSearching = false;
+    document.getElementById("searchBtn").textContent = "جستجو و تولید";
+    document.getElementById("searchBtn").disabled = false;
+    document.getElementById("stopBtn").style.display = "none";
+}
+
+// اضافه کردن قابلیت تولید با کلید Enter
+document.getElementById("searchPrefix").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+        searchWallet();
+    }
+});
+
+</script>
+
+</body>
+</html>
