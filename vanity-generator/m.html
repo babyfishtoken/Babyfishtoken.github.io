@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polygon Wallet Scanner</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #111827;
+            color: white;
+            font-family: Tahoma, Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            text-align: center;
+        }
+
+        h1 {
+            color: #60a5fa;
+        }
+
+        textarea {
+            width: 100%;
+            height: 250px;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #374151;
+            background: #1f2937;
+            color: white;
+            font-size: 15px;
+            direction: ltr;
+            font-family: monospace;
+        }
+
+        .buttons {
+            margin: 20px 0;
+        }
+
+        button {
+            padding: 12px 25px;
+            margin: 5px;
+            border: 0;
+            border-radius: 10px;
+            background: #2563eb;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #status {
+            margin: 15px;
+            padding: 12px;
+            background: #1f2937;
+            border-radius: 10px;
+            font-size: 14px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #1f2937;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th {
+            background: #2563eb;
+            padding: 12px;
+            border: 1px solid #374151;
+            font-size: 14px;
+        }
+
+        td {
+            padding: 12px;
+            border: 1px solid #374151;
+            font-size: 13px;
+            direction: ltr;
+            font-family: monospace;
+            word-break: break-all;
+        }
+
+        .row-number {
+            color: #60a5fa;
+            font-weight: bold;
+        }
+
+        .balance-positive {
+            color: #34d399;
+        }
+
+        .balance-zero {
+            color: #9ca3af;
+        }
+
+        .balance-error {
+            color: #f87171;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            table {
+                font-size: 11px;
+            }
+            td,
+            th {
+                padding: 6px;
+            }
+            textarea {
+                height: 150px;
+                font-size: 13px;
+            }
+            button {
+                padding: 10px 15px;
+                font-size: 14px;
+                width: 100%;
+                margin: 5px 0;
+            }
+            .buttons {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #374151;
+            border-top: 3px solid #60a5fa;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .total-balance {
+            background: #1f2937;
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin-top: 10px;
+            display: inline-block;
+            border: 1px solid #374151;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🔍 Polygon Wallet Scanner</h1>
+        <p>آدرس کیف پول‌ها را وارد کنید (هر خط یک آدرس)</p>
+
+        <textarea id="wallets" placeholder="0x123...&#10;0x456...&#10;0x789..."></textarea>
+
+        <div class="buttons">
+            <button onclick="scanWallets()" id="scanBtn">🚀 شروع اسکن</button>
+            <button onclick="downloadCSV()">📥 دانلود CSV</button>
+            <button onclick="clearAll()">🗑️ پاک کردن</button>
+        </div>
+
+        <div id="status">✅ آماده اسکن</div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:60px;">ردیف</th>
+                    <th>آدرس کیف پول</th>
+                    <th style="width:150px;">موجودی POL</th>
+                </tr>
+            </thead>
+            <tbody id="result"></tbody>
+        </table>
+    </div>
+
+    <script>
+        // ============ RPC Core ============
+        // RPC های عمومی و معتبر Polygon
+        const RPC_LIST = [
+            "https://polygon-rpc.com",
+            "https://polygon.drpc.org",
+            "https://rpc-mainnet.maticvigil.com",
+            "https://polygon-mainnet.public.blastapi.io"
+        ];
+
+        let currentRPCIndex = 0;
+
+        async function rpcRequest(method, params, timeout = 15000) {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), timeout);
+
+            // امتحان RPC های مختلف
+            for (let attempt = 0; attempt < RPC_LIST.length; attempt++) {
+                const rpcUrl = RPC_LIST[(currentRPCIndex + attempt) % RPC_LIST.length];
+
+                try {
+                    const response = await fetch(rpcUrl, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            jsonrpc: "2.0",
+                            method: method,
+                            params: params,
+                            id: Date.now() + Math.random()
+                        }),
+                        signal: controller.signal
+                    });
+
+                    clearTimeout(timer);
+
+                    if (!response.ok) continue;
+
+                    const data = await response.json();
+                    if (data.error) continue;
+
+                    // RPC موفق - به‌روزرسانی ایندکس برای دفعه بعد
+                    currentRPCIndex = (currentRPCIndex + attempt) % RPC_LIST.length;
+
+                    return data.result;
+                } catch (error) {
+                    // ادامه به RPC بعدی
+                    console.warn(`RPC ${rpcUrl} failed:`, error.message);
+                    continue;
+                }
+            }
+
+            clearTimeout(timer);
+            throw new Error("All RPCs failed");
+        }
+
+        async function getPOLBalance(address) {
+            try {
+                if (!address || !address.startsWith("0x") || address.length !== 42) {
+                    return "Invalid Address";
+                }
+
+                const balanceHex = await rpcRequest("eth_getBalance", [address, "latest"]);
+                if (!balanceHex) return "0";
+
+                const balance = Number(BigInt(balanceHex)) / 1e18;
+                return balance.toFixed(8);
+            } catch (error) {
+                console.error(`Error for ${address}:`, error.message);
+                return "Error";
+            }
+        }
+
+        // ============ App Logic ============
+        let results = [];
+        const CONCURRENCY = 8;
+        let isScanning = false;
+
+        async function scanWallets() {
+            if (isScanning) {
+                alert("اسکن در حال اجراست، لطفاً صبر کنید...");
+                return;
+            }
+
+            results = [];
+            const table = document.getElementById("result");
+            const status = document.getElementById("status");
+
+            table.innerHTML = "";
+
+            const text = document.getElementById("wallets").value.trim();
+
+            if (!text) {
+                alert("لطفاً آدرس‌ها را وارد کنید");
+                return;
+            }
+
+            const wallets = text
+                .split("\n")
+                .map(x => x.trim())
+                .filter(x => x.length > 0 && x.startsWith("0x") && x.length === 42);
+
+            if (wallets.length === 0) {
+                alert("هیچ آدرس معتبری پیدا نشد (باید با 0x شروع شوند و 42 کاراکتر باشند)");
+                return;
+            }
+
+            isScanning = true;
+            const scanBtn = document.getElementById("scanBtn");
+            scanBtn.disabled = true;
+            scanBtn.innerHTML = '⏳ در حال اسکن...';
+
+            status.innerHTML = `
+                <div class="loading-spinner"></div>
+                شروع اسکن ${wallets.length} آدرس...
+            `;
+
+            let index = 0;
+            let completed = 0;
+            let errorCount = 0;
+
+            async function worker() {
+                while (index < wallets.length) {
+                    const current = index++;
+                    const address = wallets[current];
+
+                    const balance = await getPOLBalance(address);
+
+                    if (balance === "Error") {
+                        errorCount++;
+                    }
+
+                    const item = {
+                        address: address,
+                        balance: balance
+                    };
+
+                    results.push(item);
+                    addRow(current + 1, address, balance);
+
+                    completed++;
+                    status.innerHTML = `
+                        <div class="loading-spinner"></div>
+                        اسکن شده: ${completed} از ${wallets.length}
+                        (${Math.round(completed / wallets.length * 100)}%)
+                        ${errorCount > 0 ? `| ❌ خطا: ${errorCount}` : ''}
+                    `;
+
+                    if (current % 20 === 0) {
+                        await new Promise(r => setTimeout(r, 50));
+                    }
+                }
+            }
+
+            const workers = [];
+            const workerCount = Math.min(CONCURRENCY, wallets.length);
+
+            for (let i = 0; i < workerCount; i++) {
+                workers.push(worker());
+            }
+
+            await Promise.all(workers);
+
+            // مرتب‌سازی بر اساس موجودی
+            results.sort((a, b) => {
+                const aNum = parseFloat(a.balance);
+                const bNum = parseFloat(b.balance);
+                if (isNaN(aNum)) return 1;
+                if (isNaN(bNum)) return -1;
+                return bNum - aNum;
+            });
+
+            table.innerHTML = "";
+            results.forEach((item, i) => {
+                addRow(i + 1, item.address, item.balance);
+            });
+
+            const validBalances = results
+                .filter(r => !isNaN(parseFloat(r.balance)) && r.balance !== "Error" && r.balance !== "Invalid Address")
+                .map(r => parseFloat(r.balance));
+
+            const totalPOL = validBalances.reduce((sum, val) => sum + val, 0);
+            const nonZeroCount = validBalances.filter(b => b > 0).length;
+
+            let statusMessage = `
+                ✅ اسکن ${wallets.length} آدرس با موفقیت پایان یافت
+                <br>
+                <span class="total-balance">
+                    💰 مجموع موجودی: ${totalPOL.toFixed(8)} POL
+                    ${nonZeroCount > 0 ? `| 🟢 ${nonZeroCount} کیف پول غیرصفر` : ''}
+                </span>
+            `;
+
+            if (errorCount > 0) {
+                statusMessage += `<br><span style="color:#f87171;">⚠️ ${errorCount} آدرس خطا داشت</span>`;
+            }
+
+            status.innerHTML = statusMessage;
+
+            isScanning = false;
+            scanBtn.disabled = false;
+            scanBtn.innerHTML = '🚀 شروع اسکن';
+        }
+
+        function addRow(number, address, balance) {
+            const table = document.getElementById("result");
+            const row = document.createElement("tr");
+
+            const num = parseFloat(balance);
+            let balanceClass = "balance-zero";
+            let displayBalance = balance;
+
+            if (balance === "Error" || balance === "Invalid Address") {
+                balanceClass = "balance-error";
+            } else if (!isNaN(num) && num > 0) {
+                balanceClass = "balance-positive";
+            }
+
+            if (!isNaN(num) && balance !== "Error" && balance !== "Invalid Address") {
+                displayBalance = `${num.toFixed(8)} POL`;
+            }
+
+            row.innerHTML = `
+                <td class="row-number">${number}</td>
+                <td>${address}</td>
+                <td class="${balanceClass}">${displayBalance}</td>
+            `;
+
+            table.appendChild(row);
+        }
+
+        function downloadCSV() {
+            if (results.length === 0) {
+                alert("ابتدا اسکن را انجام دهید");
+                return;
+            }
+
+            let csv = "Address,Balance POL\n";
+
+            results.forEach(item => {
+                const cleanBalance = isNaN(parseFloat(item.balance)) ? 
+                    item.balance : 
+                    parseFloat(item.balance).toFixed(8);
+                csv += `${item.address},${cleanBalance}\n`;
+            });
+
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `wallet-results-${new Date().toISOString().slice(0,10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function clearAll() {
+            if (results.length > 0 && !confirm("همه نتایج پاک شوند؟")) {
+                return;
+            }
+
+            document.getElementById("wallets").value = "";
+            document.getElementById("result").innerHTML = "";
+            document.getElementById("status").innerHTML = "🗑️ پاک شد";
+            results = [];
+        }
+
+        // Enter key support
+        document.getElementById("wallets").addEventListener("keydown", function(e) {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                scanWallets();
+            }
+        });
+
+        // نمایش تعداد آدرس‌ها
+        document.getElementById("wallets").addEventListener("input", function() {
+            const count = this.value
+                .split("\n")
+                .filter(x => x.trim().startsWith("0x") && x.trim().length === 42)
+                .length;
+
+            if (count > 0) {
+                document.getElementById("status").innerHTML = `📝 ${count} آدرس معتبر شناسایی شد`;
+            }
+        });
+
+        console.log("✅ Polygon Wallet Scanner loaded!");
+        console.log(`🔄 Using ${RPC_LIST.length} RPC endpoints (fallback enabled)`);
+        console.log(`⚡ Concurrency: ${CONCURRENCY}`);
+    </script>
+
+</body>
+</html>
