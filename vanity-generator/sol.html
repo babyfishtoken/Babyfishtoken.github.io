@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Solana Vanity Wallet Generator</title>
+
+<!-- کتابخانه‌ها -->
+<script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.87.6/lib/index.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tweetnacl-util@0.15.1/nacl-util.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bs58@5.0.0/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.min.js"></script>
+
+<!-- تنظیم Buffer برای مرورگر -->
+<script>
+window.Buffer = buffer.Buffer;
+</script>
+
+<style>
+
+body{
+    background:#111827;
+    color:white;
+    font-family:Arial;
+    padding:30px;
+    text-align:center;
+}
+
+button{
+    padding:15px 35px;
+    font-size:18px;
+    border:none;
+    border-radius:10px;
+    background:#9945FF;
+    color:white;
+    cursor:pointer;
+    margin:5px;
+    transition: all 0.3s;
+}
+
+button:hover{
+    background:#7a35cc;
+    transform: scale(1.02);
+}
+
+button:disabled{
+    background:#4b5563;
+    cursor:not-allowed;
+    transform: none;
+}
+
+input{
+    padding:12px 20px;
+    font-size:16px;
+    border-radius:10px;
+    border:2px solid #4b5563;
+    background:#1f2937;
+    color:white;
+    width:350px;
+    margin:10px;
+    direction:ltr;
+    transition: border-color 0.3s;
+}
+
+input:focus{
+    outline:none;
+    border-color:#9945FF;
+}
+
+.box{
+    margin:auto;
+    margin-top:30px;
+    max-width:900px;
+    background:#1f2937;
+    padding:20px;
+    border-radius:12px;
+    word-break:break-all;
+    text-align:left;
+}
+
+.title{
+    color:#14F195;
+    margin-top:15px;
+    font-weight:bold;
+}
+
+.value{
+    color:#fff;
+    font-family:monospace;
+    font-size:14px;
+}
+
+.status{
+    color:#fbbf24;
+    margin:10px 0;
+}
+
+.attempts{
+    color:#6b7280;
+    font-size:14px;
+}
+
+.solana-badge{
+    display:inline-block;
+    background:linear-gradient(135deg, #9945FF, #14F195);
+    padding:5px 15px;
+    border-radius:20px;
+    font-weight:bold;
+    font-size:14px;
+}
+
+.warning{
+    color:#fbbf24;
+    font-size:13px;
+    margin:5px 0;
+}
+
+.stats{
+    display:flex;
+    justify-content:space-around;
+    flex-wrap:wrap;
+    gap:10px;
+    margin:15px 0;
+    padding:10px;
+    background:#111827;
+    border-radius:8px;
+}
+
+.stat-item{
+    color:#9ca3af;
+    font-size:14px;
+}
+
+.stat-value{
+    color:#60a5fa;
+    font-weight:bold;
+    font-size:18px;
+}
+
+.copy-btn{
+    background:#374151;
+    padding:5px 15px;
+    font-size:12px;
+    border-radius:5px;
+    margin-left:10px;
+}
+
+.copy-btn:hover{
+    background:#4b5563;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>🚀 Solana Vanity Wallet Generator</h1>
+<div class="solana-badge">⚡ SOLANA NETWORK</div>
+
+<div>
+    <input type="text" id="searchPrefix" placeholder="مثال: 5z3 یا 8x4..." value="5z3">
+    <br>
+    <button onclick="generateWallet()">🎲 تولید تصادفی</button>
+    <button onclick="searchWallet()" id="searchBtn">🔍 جستجو و تولید</button>
+    <button onclick="stopSearch()" id="stopBtn" style="display:none; background:#dc2626;">⏹ متوقف کن</button>
+</div>
+
+<div class="box" id="output">
+    دکمه را بزنید...
+</div>
+
+<script>
+
+let searchInterval = null;
+let isSearching = false;
+let startTime = 0;
+let speedHistory = [];
+
+// تابع تولید کیف پول سولانا با استفاده از Buffer
+function createSolanaWallet(){
+    // روش استاندارد: استفاده از Keypair.generate()
+    const keypair = solana.web3.Keypair.generate();
+    
+    return {
+        publicKey: keypair.publicKey.toString(),
+        // کلید خصوصی کامل 64 بایت به صورت Hex با استفاده از Buffer
+        privateKeyHex: Buffer.from(keypair.secretKey).toString('hex'),
+        // کلید خصوصی کامل 64 بایت به صورت Base58
+        privateKeyBase58: bs58.encode(keypair.secretKey),
+        keypair: keypair
+    };
+}
+
+// تابع تولید با seed (برای اطمینان از تصادفی بودن)
+function createSolanaWalletFromSeed(){
+    const seed = nacl.randomBytes(32);
+    const keypair = solana.web3.Keypair.fromSeed(seed);
+    
+    return {
+        publicKey: keypair.publicKey.toString(),
+        privateKeyHex: Buffer.from(keypair.secretKey).toString('hex'),
+        privateKeyBase58: bs58.encode(keypair.secretKey),
+        keypair: keypair
+    };
+}
+
+function generateWallet(){
+
+    // توقف جستجو اگر در حال اجراست
+    stopSearch();
+
+    const wallet = createSolanaWallet();
+
+    document.getElementById("output").innerHTML = `
+
+<div class="title">📍 آدرس عمومی (Public Key)</div>
+
+<div class="value" style="font-size:16px; color:#4ade80;">
+${wallet.publicKey}
+</div>
+
+<br>
+
+<div class="title">🔑 کلید خصوصی (Hex - 64 bytes)</div>
+
+<div class="value" style="font-size:11px; color:#fcd34d; word-break:break-all;">
+${wallet.privateKeyHex}
+</div>
+
+<br>
+
+<div class="title">🔐 کلید خصوصی (Base58 - برای Import)</div>
+
+<div class="value" style="font-size:13px; color:#93c5fd; word-break:break-all;">
+${wallet.privateKeyBase58}
+</div>
+
+<br>
+
+<div class="title">💡 نکات مهم</div>
+
+<div class="value" style="color:#9ca3af; font-size:14px;">
+✅ کلید خصوصی ۶۴ بایت کامل نمایش داده شده
+<br>
+✅ برای وارد کردن در Phantom/Solflare از فرمت Base58 استفاده کنید
+<br>
+⚠️ آدرس سولانا Case Sensitive است (حروف بزرگ و کوچک مهم است)
+<br>
+✅ از Buffer برای سازگاری با همه مرورگرها استفاده شده
+</div>
+
+`;
+}
+
+function searchWallet(){
+
+    // اگر قبلاً جستجو در حال اجراست، آن را متوقف کن
+    if(isSearching){
+        stopSearch();
+        return;
+    }
+
+    const prefix = document.getElementById("searchPrefix").value.trim();
+
+    // بررسی اعتبار ورودی
+    if(!prefix || prefix.length < 2){
+        document.getElementById("output").innerHTML = `
+<div style="color:#ef4444;">
+❌ لطفاً یک پیشوند معتبر وارد کنید (حداقل ۲ کاراکتر)
+<br>
+مثال: 5z3 یا 8x4
+</div>
+        `;
+        return;
+    }
+
+    const searchPrefix = prefix;
+    let attempts = 0;
+    const maxAttempts = 5000000;
+    
+    isSearching = true;
+    startTime = Date.now();
+    speedHistory = [];
+    
+    document.getElementById("searchBtn").textContent = "⏳ در حال جستجو...";
+    document.getElementById("searchBtn").disabled = true;
+    document.getElementById("stopBtn").style.display = "inline-block";
+    
+    document.getElementById("output").innerHTML = `
+<div class="status">🔍 در حال جستجو برای آدرس با پیشوند: <strong>${searchPrefix}</strong></div>
+
+<div class="stats">
+    <div class="stat-item">
+        <div>تعداد تلاش</div>
+        <div class="stat-value" id="attemptCount">0</div>
+    </div>
+    <div class="stat-item">
+        <div>سرعت</div>
+        <div class="stat-value" id="speedDisplay">0</div>
+        <div style="font-size:12px;">آدرس/ثانیه</div>
+    </div>
+    <div class="stat-item">
+        <div>زمان سپری شده</div>
+        <div class="stat-value" id="timeDisplay">0s</div>
+    </div>
+</div>
+
+<div style="color:#9ca3af; margin-top:20px;">⏳ در حال تولید کیف پول‌ها...</div>
+<div class="warning">
+⚠️ هرچه پیشوند طولانی‌تر باشد، زمان بیشتری نیاز است
+<br>
+پیشنهاد: از پیشوندهای ۲-۳ کاراکتری استفاده کنید
+</div>
+    `;
+
+    // تابع جستجو
+    function findWallet(){
+        if(!isSearching){
+            return;
+        }
+
+        attempts++;
+        
+        // به‌روزرسانی آمار (هر 1000 بار برای کاهش overhead)
+        if(attempts % 1000 === 0){
+            const elapsed = (Date.now() - startTime) / 1000;
+            const speed = attempts / elapsed;
+            
+            // محاسبه سرعت متوسط
+            speedHistory.push(speed);
+            if(speedHistory.length > 10) speedHistory.shift();
+            const avgSpeed = speedHistory.reduce((a,b) => a+b, 0) / speedHistory.length;
+            
+            document.getElementById("attemptCount").textContent = attempts.toLocaleString();
+            document.getElementById("speedDisplay").textContent = Math.round(avgSpeed).toLocaleString();
+            document.getElementById("timeDisplay").textContent = elapsed.toFixed(1) + 's';
+        }
+
+        // ایجاد کیف پول جدید (از روش استاندارد استفاده می‌کنیم)
+        const wallet = createSolanaWallet();
+        const address = wallet.publicKey;
+
+        // بررسی تطابق پیشوند (Case Sensitive)
+        if(address.startsWith(searchPrefix)){
+            // پیدا شد!
+            const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+            
+            document.getElementById("output").innerHTML = `
+
+<div style="color:#4ade80; margin-bottom:15px; font-size:20px;">✅ آدرس مورد نظر پیدا شد!</div>
+
+<div class="stats">
+    <div class="stat-item">
+        <div>تعداد تلاش</div>
+        <div class="stat-value" style="color:#4ade80;">${attempts.toLocaleString()}</div>
+    </div>
+    <div class="stat-item">
+        <div>زمان</div>
+        <div class="stat-value" style="color:#4ade80;">${elapsed}s</div>
+    </div>
+    <div class="stat-item">
+        <div>سرعت متوسط</div>
+        <div class="stat-value" style="color:#4ade80;">${Math.round(attempts / elapsed).toLocaleString()}</div>
+        <div style="font-size:12px;">آدرس/ثانیه</div>
+    </div>
+</div>
+
+<div class="title">📍 آدرس عمومی (Public Key)</div>
+
+<div class="value" style="color:#4ade80; font-size:18px;">
+${address}
+</div>
+
+<br>
+
+<div class="title">🔑 کلید خصوصی (Hex - 64 bytes)</div>
+
+<div class="value" style="font-size:11px; color:#fcd34d; word-break:break-all;">
+${wallet.privateKeyHex}
+</div>
+
+<br>
+
+<div class="title">🔐 کلید خصوصی (Base58 - برای Import)</div>
+
+<div class="value" style="font-size:14px; color:#93c5fd; word-break:break-all;">
+${wallet.privateKeyBase58}
+</div>
+
+<br>
+
+<div class="title">📝 راهنمای Import</div>
+
+<div class="value" style="color:#9ca3af; font-size:14px;">
+✅ از کلید Base58 بالا برای وارد کردن در Phantom/Solflare استفاده کنید
+<br>
+✅ یا از کلید Hex (۶۴ بایت) برای import در برنامه‌های پیشرفته استفاده کنید
+<br>
+⚠️ هرگز کلید خصوصی خود را با کسی به اشتراک نگذارید!
+</div>
+
+`;
+
+            stopSearch();
+            return;
+        }
+
+        // اگر به حداکثر تلاش رسیدیم
+        if(attempts >= maxAttempts){
+            const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+            document.getElementById("output").innerHTML = `
+<div style="color:#ef4444;">
+❌ پس از ${attempts.toLocaleString()} تلاش، آدرس با پیشوند "${searchPrefix}" پیدا نشد
+<br>
+<span style="font-size:14px; color:#9ca3af;">
+💡 هرچه پیشوند طولانی‌تر باشد، پیدا کردن سخت‌تر است
+<br>
+پیشنهاد: از پیشوندهای کوتاه‌تر (۲-۳ کاراکتر) استفاده کنید
+<br>
+⏱️ زمان سپری شده: ${elapsed} ثانیه
+</span>
+</div>
+            `;
+            stopSearch();
+            return;
+        }
+
+        // ادامه جستجو با تاخیر کم
+        searchInterval = setTimeout(findWallet, 0);
+    }
+
+    // شروع جستجو
+    searchInterval = setTimeout(findWallet, 0);
+}
+
+function stopSearch(){
+    if(searchInterval){
+        clearTimeout(searchInterval);
+        searchInterval = null;
+    }
+    isSearching = false;
+    document.getElementById("searchBtn").textContent = "🔍 جستجو و تولید";
+    document.getElementById("searchBtn").disabled = false;
+    document.getElementById("stopBtn").style.display = "none";
+}
+
+// قابلیت تولید با کلید Enter
+document.getElementById("searchPrefix").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+        searchWallet();
+    }
+});
+
+// تولید یک کیف پول نمونه در شروع
+window.onload = function() {
+    generateWallet();
+};
+
+</script>
+
+</body>
+</html>
