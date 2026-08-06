@@ -167,17 +167,44 @@ let isSearching = false;
 let startTime = 0;
 let speedHistory = [];
 
-// ✅ تابع ساده شده بدون وابستگی به Buffer
-function createSolanaWallet(){
+// ✅ تابع ساده برای تولید کیف پول (بدون وابستگی به bs58)
+function generateSimpleWallet(){
     const keypair = solana.web3.Keypair.generate();
+    
+    // تبدیل کلید به Hex با Array
+    const hexKey = Array.from(keypair.secretKey)
+        .map(x => x.toString(16).padStart(2, '0'))
+        .join('');
     
     return {
         publicKey: keypair.publicKey.toString(),
-        // تبدیل با Array به جای Buffer
+        privateKeyHex: hexKey,
+        keypair: keypair
+    };
+}
+
+// ✅ تابع کامل با Base58 (برای جستجو)
+function createSolanaWallet(){
+    const keypair = solana.web3.Keypair.generate();
+    
+    // بررسی وجود bs58
+    let base58Key = '';
+    try {
+        if (typeof bs58 !== 'undefined' && bs58.encode) {
+            base58Key = bs58.encode(keypair.secretKey);
+        } else {
+            base58Key = 'BS58 not available';
+        }
+    } catch(e) {
+        base58Key = 'Error encoding';
+    }
+    
+    return {
+        publicKey: keypair.publicKey.toString(),
         privateKeyHex: Array.from(keypair.secretKey)
             .map(x => x.toString(16).padStart(2, '0'))
             .join(''),
-        privateKeyBase58: bs58.encode(keypair.secretKey),
+        privateKeyBase58: base58Key,
         keypair: keypair
     };
 }
@@ -188,7 +215,8 @@ function generateWallet(){
     stopSearch();
 
     try {
-        const wallet = createSolanaWallet();
+        // استفاده از تابع ساده برای تولید تکی
+        const wallet = generateSimpleWallet();
 
         document.getElementById("output").innerHTML = `
 
@@ -208,24 +236,16 @@ ${wallet.privateKeyHex}
 
 <br>
 
-<div class="title">🔐 کلید خصوصی (Base58 - برای Import)</div>
-
-<div class="value" style="font-size:13px; color:#93c5fd; word-break:break-all;">
-${wallet.privateKeyBase58}
-</div>
-
-<br>
-
 <div class="title">💡 نکات مهم</div>
 
 <div class="value" style="color:#9ca3af; font-size:14px;">
-✅ کلید خصوصی ۶۴ بایت کامل نمایش داده شده
+✅ کلید خصوصی ۶۴ بایت کامل به صورت Hex نمایش داده شده
 <br>
-✅ برای وارد کردن در Phantom/Solflare از فرمت Base58 استفاده کنید
+✅ برای وارد کردن در Phantom/Solflare از کلید Base58 استفاده کنید (از دکمه جستجو)
 <br>
-⚠️ آدرس سولانا Case Sensitive است (حروف بزرگ و کوچک مهم است)
+⚠️ آدرس سولانا Case Sensitive است
 <br>
-✅ بدون وابستگی به Buffer برای سازگاری کامل با همه مرورگرها
+✅ تولید تکی بدون وابستگی به کتابخانه‌های خارجی
 </div>
 
 `;
@@ -260,6 +280,20 @@ function searchWallet(){
 ❌ لطفاً یک پیشوند معتبر وارد کنید (حداقل ۲ کاراکتر)
 <br>
 مثال: 5z3 یا 8x4
+</div>
+        `;
+        return;
+    }
+
+    // بررسی وجود bs58
+    if (typeof bs58 === 'undefined' || !bs58.encode) {
+        document.getElementById("output").innerHTML = `
+<div style="color:#ef4444;">
+❌ کتابخانه bs58 بارگذاری نشده است
+<br>
+<span style="font-size:14px; color:#9ca3af;">
+لطفاً صفحه را رفرش کنید یا اینترنت خود را بررسی کنید
+</span>
 </div>
         `;
         return;
@@ -312,8 +346,8 @@ function searchWallet(){
 
         attempts++;
         
-        // به‌روزرسانی آمار (هر 1000 بار)
-        if(attempts % 1000 === 0){
+        // به‌روزرسانی آمار (هر 500 بار برای بهبود عملکرد)
+        if(attempts % 500 === 0){
             const elapsed = (Date.now() - startTime) / 1000;
             const speed = attempts / elapsed;
             
@@ -327,7 +361,7 @@ function searchWallet(){
         }
 
         try {
-            // ایجاد کیف پول جدید
+            // ایجاد کیف پول جدید با تابع کامل (شامل Base58)
             const wallet = createSolanaWallet();
             const address = wallet.publicKey;
 
@@ -372,7 +406,7 @@ ${wallet.privateKeyHex}
 
 <br>
 
-<div class="title">🔐 کلید خصوصی (Base58 - برای Import)</div>
+<div class="title">🔐 کلید خصوصی (Base58 - برای Import در Phantom/Solflare)</div>
 
 <div class="value" style="font-size:14px; color:#93c5fd; word-break:break-all;">
 ${wallet.privateKeyBase58}
@@ -449,7 +483,7 @@ document.getElementById("searchPrefix").addEventListener("keypress", function(e)
 window.onload = function() {
     setTimeout(() => {
         generateWallet();
-    }, 1000);
+    }, 500);
 };
 
 // بررسی کتابخانه‌ها در کنسول
