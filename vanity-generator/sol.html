@@ -1,13 +1,20 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Solana Wallet Test</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.87.6/lib/index.iife.min.js"></script>
+<title>Solana 12 Words Wallet</title>
+
+
+<script src="https://unpkg.com/@solana/web3.js@1.87.6/lib/index.iife.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bip39@3.1.0/dist/bip39.browser.min.js"></script>
+
 
 <style>
+
 body{
     background:#111827;
     color:white;
@@ -16,138 +23,174 @@ body{
     text-align:center;
 }
 
+
 button{
-    padding:15px 35px;
-    font-size:18px;
-    border:none;
-    border-radius:10px;
     background:#9945FF;
     color:white;
+    border:0;
+    padding:15px 35px;
+    border-radius:10px;
+    font-size:18px;
     cursor:pointer;
-    margin:10px;
-    transition:all 0.3s;
 }
 
-button:hover{
-    background:#7a35cc;
-    transform:scale(1.02);
-}
 
 .box{
-    margin:auto;
-    margin-top:20px;
-    max-width:800px;
     background:#1f2937;
+    margin:30px auto;
     padding:20px;
     border-radius:12px;
-    word-break:break-all;
+    max-width:900px;
     text-align:left;
+    word-break:break-all;
 }
+
 
 .title{
     color:#14F195;
     font-weight:bold;
-    margin-top:10px;
+    margin-top:20px;
 }
+
 
 .value{
-    color:#fff;
     font-family:monospace;
-    font-size:14px;
 }
 
-hr{
-    border-color:#374151;
-    margin:15px 0;
+
+.words{
+    color:#facc15;
+    font-size:18px;
+    line-height:2;
 }
+
+
 </style>
+
 </head>
+
 
 <body>
 
-<h2>🚀 Solana Wallet Generator - Test</h2>
 
-<button onclick="makeWallet()">🎲 ساخت کیف پول</button>
+<h1>🚀 Solana Wallet Generator</h1>
 
-<div class="box" id="out">
-    دکمه را بزنید...
+
+<button onclick="createWallet()">
+🎲 ساخت کیف پول
+</button>
+
+
+<div class="box" id="output">
+دکمه را بزنید...
 </div>
+
+
 
 <script>
 
-function makeWallet(){
 
-    try{
-        console.log('⏳ Starting wallet generation...');
-        
-        // بررسی وجود solana
-        if(typeof solana === 'undefined'){
-            throw new Error('Solana library not loaded!');
-        }
-        
-        if(typeof solana.web3 === 'undefined'){
-            throw new Error('Solana web3 not available!');
-        }
-        
-        // تولید کیف پول
-        const wallet = solana.web3.Keypair.generate();
-        
-        console.log('✅ Wallet generated successfully');
-        console.log('Public Key:', wallet.publicKey.toString());
-        
-        // تبدیل کلید به هگز
-        const hexKey = Array.from(wallet.secretKey)
-            .map(b => b.toString(16).padStart(2, '0'))
-            .join('');
-        
-        document.getElementById("out").innerHTML = `
-            <div class="title">📍 آدرس عمومی (Public Key)</div>
-            <div class="value" style="color:#4ade80; font-size:16px;">
-                ${wallet.publicKey.toString()}
-            </div>
-            
-            <hr>
-            
-            <div class="title">🔑 کلید خصوصی (64 bytes - Hex)</div>
-            <div class="value" style="font-size:11px; color:#fcd34d;">
-                ${hexKey}
-            </div>
-            
-            <hr>
-            
-            <div style="color:#9ca3af; font-size:14px;">
-                ✅ کیف پول با موفقیت ساخته شد
-                <br>
-                ⚠️ این کلید را در جای امن نگهداری کنید
-            </div>
-        `;
-        
-    } catch(e){
-        console.error('❌ Error:', e);
-        document.getElementById("out").innerHTML = `
-            <div style="color:#ef4444;">
-                ❌ خطا: ${e.message}
-                <br>
-                <span style="font-size:14px; color:#9ca3af;">
-                    لطفاً کنسول مرورگر را بررسی کنید (F12)
-                </span>
-            </div>
-        `;
-    }
+async function createWallet(){
+
+try{
+
+
+if(typeof solanaWeb3 === "undefined"){
+    throw new Error("Solana Library Load نشد");
 }
 
-// تست خودکار در شروع
-window.onload = function(){
-    console.log('✅ Page loaded, Solana:', typeof solana !== 'undefined' ? '✅' : '❌');
-    console.log('✅ Solana web3:', typeof solana?.web3 !== 'undefined' ? '✅' : '❌');
-    
-    // ساخت یک کیف پول نمونه
-    setTimeout(() => {
-        makeWallet();
-    }, 500);
-};
+
+if(typeof bip39 === "undefined"){
+    throw new Error("BIP39 Load نشد");
+}
+
+
+// ساخت ۱۲ کلمه
+const mnemonic = bip39.generateMnemonic(128);
+
+
+// تبدیل به Seed
+const seed = await bip39.mnemonicToSeed(mnemonic);
+
+
+// گرفتن ۳۲ بایت اول برای Solana
+const seed32 = seed.slice(0,32);
+
+
+// ساخت کیف پول
+const wallet = solanaWeb3.Keypair.fromSeed(seed32);
+
+
+// کلید خصوصی
+let privateKey = Array.from(wallet.secretKey)
+.map(x=>x.toString(16).padStart(2,"0"))
+.join("");
+
+
+
+document.getElementById("output").innerHTML = `
+
+
+<div class="title">
+📝 عبارت بازیابی ۱۲ کلمه‌ای
+</div>
+
+<div class="words">
+${mnemonic}
+</div>
+
+
+<div class="title">
+📍 آدرس سولانا
+</div>
+
+<div class="value">
+${wallet.publicKey.toString()}
+</div>
+
+
+<div class="title">
+🔑 کلید خصوصی ۶۴ بایت
+</div>
+
+<div class="value" style="color:#facc15;font-size:12px">
+${privateKey}
+</div>
+
+
+<br>
+
+<div style="color:#9ca3af">
+⚠️ این ۱۲ کلمه کل مالکیت کیف پول است.
+<br>
+آن را ذخیره و منتشر نکنید.
+</div>
+
+
+`;
+
+
+
+}catch(e){
+
+console.error(e);
+
+document.getElementById("output").innerHTML=
+`
+<div style="color:red">
+❌ خطا:
+${e.message}
+</div>
+`;
+
+}
+
+
+}
+
 
 </script>
+
 
 </body>
 </html>
