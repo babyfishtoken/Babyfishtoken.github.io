@@ -6,16 +6,16 @@
 
 <title>Solana Vanity Wallet Generator</title>
 
-<!-- کتابخانه‌ها -->
+<!-- کتابخانه‌های اصلی -->
 <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.87.6/lib/index.iife.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tweetnacl-util@0.15.1/nacl-util.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bs58@5.0.0/index.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.min.js"></script>
 
-<!-- تنظیم Buffer برای مرورگر -->
+<!-- Buffer با CDN جایگزین -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/buffer/6.0.3/buffer.min.js"></script>
 <script>
-window.Buffer = buffer.Buffer;
+window.Buffer = window.buffer.Buffer;
 </script>
 
 <style>
@@ -139,18 +139,6 @@ input:focus{
     font-size:18px;
 }
 
-.copy-btn{
-    background:#374151;
-    padding:5px 15px;
-    font-size:12px;
-    border-radius:5px;
-    margin-left:10px;
-}
-
-.copy-btn:hover{
-    background:#4b5563;
-}
-
 </style>
 
 </head>
@@ -169,7 +157,7 @@ input:focus{
 </div>
 
 <div class="box" id="output">
-    دکمه را بزنید...
+    در حال بارگذاری...
 </div>
 
 <script>
@@ -179,29 +167,16 @@ let isSearching = false;
 let startTime = 0;
 let speedHistory = [];
 
-// تابع تولید کیف پول سولانا با استفاده از Buffer
+// ✅ تابع ساده شده بدون وابستگی به Buffer
 function createSolanaWallet(){
-    // روش استاندارد: استفاده از Keypair.generate()
     const keypair = solana.web3.Keypair.generate();
     
     return {
         publicKey: keypair.publicKey.toString(),
-        // کلید خصوصی کامل 64 بایت به صورت Hex با استفاده از Buffer
-        privateKeyHex: Buffer.from(keypair.secretKey).toString('hex'),
-        // کلید خصوصی کامل 64 بایت به صورت Base58
-        privateKeyBase58: bs58.encode(keypair.secretKey),
-        keypair: keypair
-    };
-}
-
-// تابع تولید با seed (برای اطمینان از تصادفی بودن)
-function createSolanaWalletFromSeed(){
-    const seed = nacl.randomBytes(32);
-    const keypair = solana.web3.Keypair.fromSeed(seed);
-    
-    return {
-        publicKey: keypair.publicKey.toString(),
-        privateKeyHex: Buffer.from(keypair.secretKey).toString('hex'),
+        // تبدیل با Array به جای Buffer
+        privateKeyHex: Array.from(keypair.secretKey)
+            .map(x => x.toString(16).padStart(2, '0'))
+            .join(''),
         privateKeyBase58: bs58.encode(keypair.secretKey),
         keypair: keypair
     };
@@ -212,9 +187,10 @@ function generateWallet(){
     // توقف جستجو اگر در حال اجراست
     stopSearch();
 
-    const wallet = createSolanaWallet();
+    try {
+        const wallet = createSolanaWallet();
 
-    document.getElementById("output").innerHTML = `
+        document.getElementById("output").innerHTML = `
 
 <div class="title">📍 آدرس عمومی (Public Key)</div>
 
@@ -249,10 +225,22 @@ ${wallet.privateKeyBase58}
 <br>
 ⚠️ آدرس سولانا Case Sensitive است (حروف بزرگ و کوچک مهم است)
 <br>
-✅ از Buffer برای سازگاری با همه مرورگرها استفاده شده
+✅ بدون وابستگی به Buffer برای سازگاری کامل با همه مرورگرها
 </div>
 
 `;
+    } catch(error) {
+        document.getElementById("output").innerHTML = `
+<div style="color:#ef4444;">
+❌ خطا در تولید کیف پول: ${error.message}
+<br>
+<span style="font-size:14px; color:#9ca3af;">
+لطفاً کنسول مرورگر را بررسی کنید (F12 → Console)
+</span>
+</div>
+`;
+        console.error('Error generating wallet:', error);
+    }
 }
 
 function searchWallet(){
@@ -324,12 +312,11 @@ function searchWallet(){
 
         attempts++;
         
-        // به‌روزرسانی آمار (هر 1000 بار برای کاهش overhead)
+        // به‌روزرسانی آمار (هر 1000 بار)
         if(attempts % 1000 === 0){
             const elapsed = (Date.now() - startTime) / 1000;
             const speed = attempts / elapsed;
             
-            // محاسبه سرعت متوسط
             speedHistory.push(speed);
             if(speedHistory.length > 10) speedHistory.shift();
             const avgSpeed = speedHistory.reduce((a,b) => a+b, 0) / speedHistory.length;
@@ -339,16 +326,17 @@ function searchWallet(){
             document.getElementById("timeDisplay").textContent = elapsed.toFixed(1) + 's';
         }
 
-        // ایجاد کیف پول جدید (از روش استاندارد استفاده می‌کنیم)
-        const wallet = createSolanaWallet();
-        const address = wallet.publicKey;
+        try {
+            // ایجاد کیف پول جدید
+            const wallet = createSolanaWallet();
+            const address = wallet.publicKey;
 
-        // بررسی تطابق پیشوند (Case Sensitive)
-        if(address.startsWith(searchPrefix)){
-            // پیدا شد!
-            const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
-            
-            document.getElementById("output").innerHTML = `
+            // بررسی تطابق پیشوند (Case Sensitive)
+            if(address.startsWith(searchPrefix)){
+                // پیدا شد!
+                const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+                
+                document.getElementById("output").innerHTML = `
 
 <div style="color:#4ade80; margin-bottom:15px; font-size:20px;">✅ آدرس مورد نظر پیدا شد!</div>
 
@@ -404,8 +392,11 @@ ${wallet.privateKeyBase58}
 
 `;
 
-            stopSearch();
-            return;
+                stopSearch();
+                return;
+            }
+        } catch(error) {
+            console.error('Error in search loop:', error);
         }
 
         // اگر به حداکثر تلاش رسیدیم
@@ -428,7 +419,7 @@ ${wallet.privateKeyBase58}
             return;
         }
 
-        // ادامه جستجو با تاخیر کم
+        // ادامه جستجو
         searchInterval = setTimeout(findWallet, 0);
     }
 
@@ -454,12 +445,20 @@ document.getElementById("searchPrefix").addEventListener("keypress", function(e)
     }
 });
 
-// تولید یک کیف پول نمونه در شروع
+// بارگذاری با تاخیر برای اطمینان از لود کامل کتابخانه‌ها
 window.onload = function() {
-    generateWallet();
+    setTimeout(() => {
+        generateWallet();
+    }, 1000);
 };
+
+// بررسی کتابخانه‌ها در کنسول
+console.log('✅ Solana loaded:', typeof solana !== 'undefined');
+console.log('✅ TweetNaCl loaded:', typeof nacl !== 'undefined');
+console.log('✅ BS58 loaded:', typeof bs58 !== 'undefined');
+console.log('✅ Buffer loaded:', typeof Buffer !== 'undefined');
 
 </script>
 
 </body>
-</html>
+    </html>
