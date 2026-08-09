@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>انتخاب تصادفی ۱۲ خط</title>
+    <style>
+        body {
+            font-family: Tahoma, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        textarea {
+            width: 100%;
+            height: 250px;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+            box-sizing: border-box;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            margin-left: 10px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        .info {
+            margin-top: 15px;
+            color: #666;
+            font-size: 14px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 6px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status.loading {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🎲 انتخاب ۱۲ خط تصادفی</h2>
+        <p>خواندن فایل <strong>key.txt</strong> از مسیر سایت...</p>
+        
+        <div id="status" class="status loading">⏳ در حال بارگذاری فایل...</div>
+
+        <button id="selectBtn" onclick="selectRandomLines()" disabled>انتخاب ۱۲ خط تصادفی</button>
+        <button onclick="clearText()" style="background:#f44336;">پاک کردن</button>
+
+        <h3>نتیجه:</h3>
+        <textarea id="resultArea" placeholder="نتیجه در اینجا نمایش داده می‌شود..."></textarea>
+        
+        <div class="info">
+            ✅ ۱۲ خط به صورت تصادفی با امکان تکرار انتخاب می‌شوند.<br>
+            📁 فایل: <strong>key.txt</strong> (کنار فایل index.html)
+        </div>
+    </div>
+
+    <script>
+        let fileLines = [];
+        const statusDiv = document.getElementById('status');
+        const selectBtn = document.getElementById('selectBtn');
+        const resultArea = document.getElementById('resultArea');
+
+        // بارگذاری خودکار فایل key.txt از مسیر سایت
+        async function loadFile() {
+            try {
+                statusDiv.className = 'status loading';
+                statusDiv.textContent = '⏳ در حال خواندن فایل key.txt...';
+                
+                const response = await fetch('key.txt');
+                
+                if (!response.ok) {
+                    throw new Error(`خطا در بارگذاری فایل: ${response.status} ${response.statusText}`);
+                }
+                
+                const content = await response.text();
+                
+                // تقسیم به خطوط و حذف خطوط خالی
+                fileLines = content.split(/\r?\n/).filter(line => line.trim() !== '');
+                
+                if (fileLines.length === 0) {
+                    throw new Error('فایل key.txt خالی است!');
+                }
+                
+                statusDiv.className = 'status success';
+                statusDiv.textContent = `✅ فایل با موفقیت بارگذاری شد! تعداد خطوط: ${fileLines.length}`;
+                selectBtn.disabled = false;
+                
+                // نمایش پیام در textarea
+                resultArea.value = `✅ فایل key.txt بارگذاری شد.\n📊 تعداد کل خطوط: ${fileLines.length}\n\nبرای انتخاب ۱۲ خط تصادفی، دکمه سبز را بزنید.`;
+                
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = `❌ خطا: ${error.message}`;
+                selectBtn.disabled = true;
+                resultArea.value = `❌ خطا در بارگذاری فایل:\n${error.message}\n\nاطمینان حاصل کنید که فایل key.txt در کنار index.html وجود دارد.`;
+                console.error('Error loading file:', error);
+            }
+        }
+
+        // تابع اصلی انتخاب ۱۲ خط تصادفی
+        function selectRandomLines() {
+            if (fileLines.length === 0) {
+                resultArea.value = '❌ فایل بارگذاری نشده است!';
+                return;
+            }
+
+            if (fileLines.length < 12) {
+                resultArea.value = `⚠️ هشدار: فایل فقط ${fileLines.length} خط دارد، اما ۱۲ خط درخواست شده است.\n\n`;
+            }
+
+            // انتخاب ۱۲ خط تصادفی با امکان تکرار
+            let selectedLines = [];
+            for (let i = 0; i < 12; i++) {
+                const randomIndex = Math.floor(Math.random() * fileLines.length);
+                selectedLines.push(fileLines[randomIndex]);
+            }
+
+            // نمایش نتیجه با شماره خط
+            let output = '📋 ۱۲ خط تصادفی:\n';
+            output += '═'.repeat(35) + '\n';
+            selectedLines.forEach((line, index) => {
+                output += `${(index + 1).toString().padStart(2, '0')}. ${line}\n`;
+            });
+            output += '═'.repeat(35) + '\n';
+            output += `📊 تعداد کل خطوط فایل: ${fileLines.length}`;
+
+            resultArea.value = output;
+        }
+
+        // تابع پاک کردن
+        function clearText() {
+            resultArea.value = '';
+        }
+
+        // بارگذاری خودکار هنگام باز شدن صفحه
+        window.addEventListener('DOMContentLoaded', loadFile);
+        
+        // دکمه refresh برای بارگذاری مجدد (اختیاری)
+        console.log('✅ کد آماده است! فایل key.txt از مسیر سایت خوانده می‌شود.');
+    </script>
+</body>
+</html>
