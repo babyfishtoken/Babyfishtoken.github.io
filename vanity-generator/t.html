@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>Wallet Scanner</title>
+
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
+
+<style>
+body{
+background:#111827;
+color:white;
+font-family:Arial;
+padding:20px
+}
+textarea,button{
+width:100%;
+padding:12px;
+margin:10px 0;
+border-radius:10px;
+font-size:16px
+}
+textarea{
+height:90px;
+background:#1f2937;
+color:white
+}
+button{
+background:#2563eb;
+color:white;
+border:0
+}
+.box{
+background:#1f2937;
+padding:15px;
+border-radius:12px;
+margin-top:15px
+}
+</style>
+</head>
+
+<body>
+
+<h2>🔐 Wallet Scanner</h2>
+
+<textarea id="mnemonic"
+placeholder="۱۲ کلمه را وارد کنید"></textarea>
+
+<button onclick="scan()">بررسی کیف پول</button>
+
+<div class="box" id="out"></div>
+
+
+<script>
+
+const API_KEY="YOUR_ALCHEMY_KEY";
+
+
+const CHAINS={
+
+Ethereum:{
+url:`https://eth-mainnet.g.alchemy.com/v2/${API_KEY}`,
+symbol:"ETH"
+},
+
+Polygon:{
+url:`https://polygon-mainnet.g.alchemy.com/v2/${API_KEY}`,
+symbol:"POL"
+},
+
+BNB:{
+url:`https://bnb-mainnet.g.alchemy.com/v2/${API_KEY}`,
+symbol:"BNB"
+}
+
+};
+
+
+
+async function rpc(url,method,params){
+
+let r=await fetch(url,{
+method:"POST",
+headers:{
+"content-type":"application/json"
+},
+body:JSON.stringify({
+jsonrpc:"2.0",
+id:1,
+method,
+params
+})
+});
+
+let j=await r.json();
+
+return j.result;
+
+}
+
+
+
+async function scan(){
+
+let m=document.getElementById("mnemonic").value.trim();
+
+let out=document.getElementById("out");
+
+try{
+
+let wallet=
+ethers.HDNodeWallet.fromPhrase(m);
+
+let address=wallet.address;
+
+
+let html=
+"📍 Address:<br>"+
+address+
+"<hr>";
+
+
+for(let c in CHAINS){
+
+let b=await rpc(
+CHAINS[c].url,
+"eth_getBalance",
+[address,"latest"]
+);
+
+
+html+=
+c+" : "+
+Number(
+ethers.formatEther(b)
+).toFixed(6)
++" "+CHAINS[c].symbol+
+"<br>";
+
+}
+
+
+
+html+="<hr>🪙 Tokens:<br>";
+
+
+for(let c in CHAINS){
+
+let tokens=await rpc(
+CHAINS[c].url,
+"alchemy_getTokenBalances",
+[address,"erc20"]
+);
+
+
+if(tokens && tokens.tokenBalances){
+
+html+=
+c+
+" tokens: "+
+tokens.tokenBalances.length+
+"<br>";
+
+}
+
+}
+
+
+out.innerHTML=html;
+
+
+}catch(e){
+
+out.innerHTML="❌ خطا: عبارت نامعتبر است";
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
