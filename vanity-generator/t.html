@@ -9,193 +9,338 @@
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
 
 <style>
+
 body{
 background:#111827;
 color:white;
 font-family:Arial;
-padding:20px
+padding:20px;
 }
+
 .box{
 max-width:600px;
 margin:auto;
 background:#1f2937;
 padding:20px;
-border-radius:15px
+border-radius:18px;
 }
-textarea,button{
-width:100%;
-padding:15px;
-margin-top:10px;
-border-radius:10px
+
+h1{
+text-align:center;
+color:#60a5fa;
 }
+
 textarea{
-height:100px;
+width:100%;
+height:120px;
 background:#111827;
-color:white
+color:white;
+border:1px solid #374151;
+border-radius:12px;
+padding:15px;
+font-size:16px;
+direction:ltr;
 }
+
 button{
+width:100%;
+margin-top:15px;
+padding:15px;
+border:0;
+border-radius:12px;
 background:#2563eb;
 color:white;
-border:0
+font-size:17px;
 }
+
 .card{
 background:#111827;
 padding:15px;
 border-radius:12px;
-margin-top:10px
+margin-top:15px;
 }
+
 .green{
-color:#34d399
+color:#34d399;
+word-break:break-all;
 }
+
+.name{
+color:#60a5fa;
+font-size:20px;
+font-weight:bold;
+}
+
+.error{
+color:#f87171;
+}
+
 </style>
+
 </head>
 
 <body>
 
 <div class="box">
 
-<h2>🔐 Wallet Scanner</h2>
+<h1>🔐 Wallet Scanner</h1>
 
 <textarea id="mnemonic"
-placeholder="۱۲ کلمه را وارد کنید"></textarea>
+placeholder="۱۲ کلمه بازیابی را وارد کنید"></textarea>
 
 <button onclick="scan()">
 بررسی موجودی
 </button>
 
-<div id="out"></div>
+
+<div id="result"></div>
+
 
 </div>
 
 
 <script>
 
+
 const chains=[
+
 
 {
 name:"Ethereum",
 symbol:"ETH",
-rpc:"https://ethereum.publicnode.com"
+rpc:[
+"https://ethereum.publicnode.com"
+]
 },
+
 
 {
 name:"Polygon",
 symbol:"POL",
-rpc:"https://polygon-rpc.com"
+rpc:[
+"https://polygon-bor-rpc.publicnode.com",
+"https://rpc.ankr.com/polygon",
+"https://1rpc.io/matic"
+]
 },
+
 
 {
 name:"BNB Chain",
 symbol:"BNB",
-rpc:"https://bsc-dataseed.binance.org"
+rpc:[
+"https://bsc-dataseed.binance.org"
+]
 },
+
 
 {
 name:"Arbitrum",
 symbol:"ETH",
-rpc:"https://arb1.arbitrum.io/rpc"
+rpc:[
+"https://arb1.arbitrum.io/rpc"
+]
 },
+
 
 {
 name:"Optimism",
 symbol:"ETH",
-rpc:"https://mainnet.optimism.io"
+rpc:[
+"https://mainnet.optimism.io"
+]
 },
+
 
 {
 name:"Base",
 symbol:"ETH",
-rpc:"https://mainnet.base.org"
+rpc:[
+"https://mainnet.base.org"
+]
 }
+
 
 ];
 
 
+
+async function getBalance(address, rpcList){
+
+
+for(let rpc of rpcList){
+
+
+try{
+
+
+let provider =
+new ethers.JsonRpcProvider(rpc);
+
+
+let balance =
+await Promise.race([
+
+provider.getBalance(address),
+
+new Promise((_,reject)=>
+setTimeout(
+()=>reject("timeout"),
+8000
+))
+
+]);
+
+
+return ethers.formatEther(balance);
+
+
+}catch(e){
+
+continue;
+
+}
+
+
+}
+
+
+return null;
+
+
+}
+
+
+
 async function scan(){
 
-const out=document.getElementById("out");
 
-out.innerHTML="";
+let result =
+document.getElementById("result");
 
 
-let phrase=
+result.innerHTML="";
+
+
+let phrase =
 document.getElementById("mnemonic")
 .value
 .trim()
 .replace(/\s+/g," ");
 
 
+
 try{
 
 
 if(!ethers.Mnemonic.isValidMnemonic(phrase)){
-throw Error("عبارت معتبر نیست");
+
+throw Error("عبارت ۱۲ کلمه‌ای معتبر نیست");
+
 }
 
 
-let wallet=
+
+let wallet =
 ethers.HDNodeWallet.fromPhrase(phrase);
 
 
-out.innerHTML=
-`
+
+result.innerHTML=`
+
 <div class="card">
-آدرس:<br>
+
+آدرس کیف پول:
+
+<br><br>
+
 <span class="green">
+
 ${wallet.address}
+
 </span>
+
 </div>
+
 `;
 
 
-for(let c of chains){
 
-
-try{
-
-
-let provider=
-new ethers.JsonRpcProvider(c.rpc);
-
-
-let balance=
-await provider.getBalance(wallet.address);
-
-
-let amount=
-ethers.formatEther(balance);
+for(let chain of chains){
 
 
 
-out.innerHTML+=`
+result.innerHTML += `
 
-<div class="card">
+<div class="card" id="${chain.name}">
 
-<b>${c.name}</b><br><br>
+<span class="name">
+${chain.name}
+</span>
 
-${c.symbol} :
+<br>
+
+در حال بررسی...
+
+</div>
+
+`;
+
+
+
+let box =
+document.getElementById(chain.name);
+
+
+
+let balance =
+await getBalance(
+wallet.address,
+chain.rpc
+);
+
+
+
+if(balance===null){
+
+
+box.innerHTML=
+
+`
+
+<span class="name">
+${chain.name}
+</span>
+
+<br>
+
+<span class="error">
+❌ خطای اتصال RPC
+</span>
+
+`;
+
+
+
+}else{
+
+
+box.innerHTML=
+
+`
+
+<span class="name">
+${chain.name}
+</span>
+
+<br><br>
+
+${chain.symbol} :
 
 <span class="green">
-${amount}
+${balance}
 </span>
 
-</div>
-
-`;
-
-
-
-}catch(e){
-
-out.innerHTML+=`
-
-<div class="card">
-
-${c.name} :
-خطا
-
-</div>
-
 `;
 
 }
@@ -204,20 +349,32 @@ ${c.name} :
 }
 
 
+
 }catch(e){
 
-out.innerHTML=
+
+result.innerHTML=
+
 `
-<div class="card">
+
+<div class="card error">
+
 ❌ ${e.message}
+
 </div>
+
 `;
 
-}
 
 }
+
+
+
+}
+
 
 </script>
+
 
 </body>
 </html>
