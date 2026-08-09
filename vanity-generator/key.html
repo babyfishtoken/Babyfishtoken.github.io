@@ -95,6 +95,14 @@ textarea{
     background:#6d28d9;
 }
 
+.btn-stop{
+    background:#dc2626;
+}
+
+.btn-stop:hover:not(:disabled){
+    background:#b91c1c;
+}
+
 .result{
     display:none;
     margin-top:20px;
@@ -150,11 +158,24 @@ textarea{
     color:#f87171;
 }
 
+.status.info{
+    display:block;
+    background:#1e3a5f;
+    color:#60a5fa;
+}
+
 .info{
     margin-top:12px;
     color:#9ca3af;
     font-size:13px;
     text-align:center;
+}
+
+.counter{
+    margin-top:10px;
+    text-align:center;
+    color:#60a5fa;
+    font-size:14px;
 }
 </style>
 </head>
@@ -183,7 +204,12 @@ textarea{
         <button class="btn-copy" onclick="copyMnemonic()" id="copyBtn" disabled>
             📋 کپی
         </button>
+        <button class="btn-stop" id="autoBtn" onclick="toggleAutoFind()" disabled>
+            🔄 پیدا کردن خودکار
+        </button>
     </div>
+
+    <div id="counter" class="counter"></div>
 
     <div id="error" class="error"></div>
 
@@ -193,7 +219,7 @@ textarea{
     </div>
 
     <div class="info">
-        💡 دکمه "کلمات تصادفی" ۱۲ کلمه از فایل key.txt انتخاب میکند
+        💡 دکمه "پیدا کردن خودکار" به صورت مداوم کلمات تصادفی را تست میکند تا آدرس معتبر پیدا شود
     </div>
 
 </div>
@@ -201,13 +227,20 @@ textarea{
 <script>
 
 let fileWords = [];
+let isAutoFinding = false;
+let autoInterval = null;
+let attempts = 0;
+let foundAddress = false;
+
 const statusDiv = document.getElementById('status');
 const randomBtn = document.getElementById('randomBtn');
 const copyBtn = document.getElementById('copyBtn');
+const autoBtn = document.getElementById('autoBtn');
 const mnemonicInput = document.getElementById('mnemonic');
 const resultDiv = document.getElementById('result');
 const addressBox = document.getElementById('address');
 const errorBox = document.getElementById('error');
+const counterDiv = document.getElementById('counter');
 
 // بارگذاری فایل key.txt
 async function loadWords() {
@@ -238,6 +271,7 @@ async function loadWords() {
         statusDiv.className = 'status success';
         statusDiv.textContent = `✅ ${fileWords.length} کلمه بارگذاری شد!`;
         randomBtn.disabled = false;
+        autoBtn.disabled = false;
         copyBtn.disabled = true;
 
         // بعد از 3 ثانیه وضعیت را مخفی میکنیم
@@ -250,37 +284,39 @@ async function loadWords() {
         statusDiv.textContent = `❌ خطا: ${error.message}`;
         statusDiv.style.display = 'block';
         randomBtn.disabled = true;
+        autoBtn.disabled = true;
         copyBtn.disabled = true;
         console.error('Error loading file:', error);
     }
 }
 
 // انتخاب ۱۲ کلمه تصادفی
-function setRandomMnemonic() {
+function getRandomWords() {
     if (fileWords.length === 0) {
-        errorBox.textContent = '❌ فایل بارگذاری نشده است!';
-        return;
+        return null;
     }
 
-    if (fileWords.length < 12) {
-        errorBox.textContent = `❌ فقط ${fileWords.length} کلمه موجود است!`;
-        return;
-    }
-
-    // انتخاب ۱۲ کلمه تصادفی با امکان تکرار
     let selectedWords = [];
     for (let i = 0; i < 12; i++) {
         const randomIndex = Math.floor(Math.random() * fileWords.length);
         selectedWords.push(fileWords[randomIndex]);
     }
 
-    // قرار دادن در فیلد متن
-    mnemonicInput.value = selectedWords.join(' ');
+    return selectedWords;
+}
 
-    // فعال کردن دکمه کپی
+// قرار دادن کلمات در فیلد
+function setRandomMnemonic() {
+    if (fileWords.length === 0) {
+        errorBox.textContent = '❌ فایل بارگذاری نشده است!';
+        return;
+    }
+
+    const words = getRandomWords();
+    if (!words) return;
+
+    mnemonicInput.value = words.join(' ');
     copyBtn.disabled = false;
-
-    // پاک کردن خطاها و نتیجه قبلی
     errorBox.textContent = '';
     resultDiv.style.display = 'none';
 
@@ -292,6 +328,147 @@ function setRandomMnemonic() {
     setTimeout(() => {
         statusDiv.style.display = 'none';
     }, 2000);
+}
+
+// بررسی و تولید آدرس
+function tryGenerateAddress(mnemonic) {
+    try {
+        if (typeof ethers === "undefined") {
+            return { success: false, error: "کتابخانه ethers بارگذاری نشده است." };
+        }
+
+        const words = mnemonic.split(" ");
+        if (words.length !== 12) {
+            return { success: false, error: "عبارت باید دقیقاً ۱۲ کلمه داشته باشد." };
+        }
+
+        if (!ethers.Mnemonic.isValidMnemonic(mnemonic)) {
+            return { success: false, error: "عبارت بازیابی معتبر نیست." };
+        }
+
+        const wallet = ethers.HDNodeWallet.fromPhrase(mnemonic);
+        return { success: true, address: wallet.address };
+
+    } catch (error) {
+        console.error(error);
+        return { success: false, error: "خطا در پردازش عبارت بازیابی." };
+    }
+}
+
+// تابع اصلی برای پیدا کردن خودکار
+function findAddressAuto() {
+    if (foundAddress) {
+        stopAutoFind();
+        return;
+    }
+
+    attempts++;
+    
+    // انتخاب ۱۲ کلمه تصادفی
+    const words = getRandomWords();
+    if (!words) {
+        stopAutoFind();
+        return;
+    }
+
+    const mnemonic = words.join(' ');
+    mnemonicInput.value = mnemonic;
+
+    // بررسی آدرس
+    const result = tryGenerateAddress(mnemonic);
+    
+    if (result.success) {
+        // آدرس پیدا شد!
+        foundAddress = true;
+        addressBox.textContent = result.address;
+        resultDiv.style.display = "block";
+        errorBox.textContent = "";
+        copyBtn.disabled = false;
+
+        statusDiv.className = 'status success';
+        statusDiv.textContent = `✅ آدرس پیدا شد! (${attempts} تلاش)`;
+        statusDiv.style.display = 'block';
+        
+        counterDiv.textContent = `✅ پیدا شد! تعداد تلاش: ${attempts}`;
+        
+        stopAutoFind();
+        
+        // نمایش پیام موفقیت
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 5000);
+        
+    } else {
+        // آدرس پیدا نشد، ادامه میدهیم
+        errorBox.textContent = `❌ ${result.error}`;
+        counterDiv.textContent = `🔄 در حال جستجو... (${attempts} تلاش)`;
+        
+        // گاهی خطا را پاک میکنیم تا تمیز بماند
+        if (attempts % 10 === 0) {
+            errorBox.textContent = `🔍 ${attempts} تلاش ناموفق...`;
+        }
+    }
+}
+
+// شروع/توقف پیدا کردن خودکار
+function toggleAutoFind() {
+    if (isAutoFinding) {
+        stopAutoFind();
+    } else {
+        startAutoFind();
+    }
+}
+
+function startAutoFind() {
+    if (fileWords.length === 0) {
+        errorBox.textContent = '❌ فایل بارگذاری نشده است!';
+        return;
+    }
+
+    isAutoFinding = true;
+    foundAddress = false;
+    attempts = 0;
+    
+    autoBtn.textContent = '⏹ توقف';
+    autoBtn.style.background = '#dc2626';
+    randomBtn.disabled = true;
+    
+    counterDiv.textContent = '🔄 شروع جستجو...';
+    errorBox.textContent = '';
+    resultDiv.style.display = 'none';
+    
+    statusDiv.className = 'status info';
+    statusDiv.textContent = '🔍 در حال جستجوی آدرس معتبر...';
+    statusDiv.style.display = 'block';
+
+    // اولین تلاش را فوری انجام میدهیم
+    findAddressAuto();
+    
+    // سپس هر 100 میلی‌ثانیه یکبار
+    autoInterval = setInterval(findAddressAuto, 100);
+}
+
+function stopAutoFind() {
+    isAutoFinding = false;
+    if (autoInterval) {
+        clearInterval(autoInterval);
+        autoInterval = null;
+    }
+    
+    autoBtn.textContent = '🔄 پیدا کردن خودکار';
+    autoBtn.style.background = '#dc2626';
+    randomBtn.disabled = false;
+    
+    if (!foundAddress) {
+        statusDiv.className = 'status info';
+        statusDiv.textContent = '⏹ جستجو متوقف شد.';
+        statusDiv.style.display = 'block';
+        counterDiv.textContent = `⏹ متوقف شد. تعداد تلاش: ${attempts}`;
+        
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 2000);
+    }
 }
 
 // کپی کردن عبارت
@@ -306,7 +483,6 @@ function copyMnemonic() {
             copyBtn.textContent = originalText;
         }, 2000);
     }).catch(() => {
-        // روش جایگزین
         mnemonicInput.select();
         document.execCommand('copy');
         const originalText = copyBtn.textContent;
