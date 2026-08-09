@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>Wallet Scanner</title>
+<title>Multi Chain Wallet Scanner</title>
 
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
 
@@ -15,12 +15,12 @@ body{
 margin:0;
 padding:20px;
 background:#111827;
-color:#fff;
+color:white;
 font-family:Arial
 }
 
 .container{
-max-width:650px;
+max-width:700px;
 margin:auto
 }
 
@@ -45,7 +45,8 @@ border:1px solid #374151;
 border-radius:12px;
 padding:14px;
 font-size:16px;
-direction:ltr
+direction:ltr;
+resize:none
 }
 
 button{
@@ -59,7 +60,12 @@ color:white;
 font-size:17px
 }
 
+button:disabled{
+background:#475569
+}
+
 .address{
+display:none;
 margin-top:15px;
 padding:15px;
 background:#111827;
@@ -67,7 +73,20 @@ border-radius:12px;
 direction:ltr;
 word-break:break-all;
 color:#34d399;
-display:none
+font-family:monospace
+}
+
+.loading{
+display:none;
+text-align:center;
+color:#facc15;
+margin:15px
+}
+
+.error{
+color:#f87171;
+text-align:center;
+margin:12px
 }
 
 .network{
@@ -78,47 +97,40 @@ margin-top:12px
 }
 
 .network h3{
-color:#60a5fa;
-margin:0 0 12px
-}
-
-.balance{
-display:flex;
-justify-content:space-between;
-direction:ltr;
-font-size:18px
-}
-
-.value{
-color:#34d399;
-font-weight:bold
+margin:0 0 12px;
+color:#60a5fa
 }
 
 .token{
 display:flex;
 justify-content:space-between;
+align-items:center;
 direction:ltr;
 background:#1e293b;
-padding:10px;
-border-radius:8px;
+padding:11px;
+border-radius:9px;
 margin-top:7px
 }
 
+.tokenName{
+color:#e5e7eb
+}
+
 .tokenValue{
-color:#34d399
+color:#34d399;
+font-family:monospace;
+text-align:right
 }
 
-.loading{
-text-align:center;
-color:#facc15;
-margin:15px;
-display:none
+.symbol{
+color:#94a3b8;
+font-size:12px
 }
 
-.error{
-color:#f87171;
-text-align:center;
-margin:10px
+.total{
+font-size:13px;
+color:#94a3b8;
+margin-top:10px
 }
 </style>
 </head>
@@ -134,10 +146,11 @@ margin:10px
 <textarea
 id="mnemonic"
 placeholder="12 کلمه را وارد کنید..."
+autocomplete="off"
 spellcheck="false"></textarea>
 
-<button onclick="scan()">
-بررسی کیف پول
+<button id="scanBtn" onclick="scan()">
+بررسی آدرس و تمام موجودی‌ها
 </button>
 
 <div id="error" class="error"></div>
@@ -145,14 +158,18 @@ spellcheck="false"></textarea>
 <div id="address" class="address"></div>
 
 <div id="loading" class="loading">
-⏳ در حال بررسی موجودی...
+⏳ در حال بررسی شبکه‌ها و توکن‌ها...
 </div>
 
 </div>
+
 
 <div id="results" class="card" style="display:none">
-<h2>💰 موجودی</h2>
+
+<h2>💰 موجودی کیف پول</h2>
+
 <div id="networks"></div>
+
 </div>
 
 </div>
@@ -160,178 +177,175 @@ spellcheck="false"></textarea>
 
 <script>
 
-/* ==========================================
-   API KEY خودت را اینجا قرار بده
-========================================== */
+/* =========================================
+   API KEY
+========================================= */
 
-const API_KEY="alch_EFH_WhuW2jJ-hI5YxUJ88";
+const API_KEY="YOUR_ALCHEMY_API_KEY";
 
 
-/* ==========================================
-   شبکه‌ها
-========================================== */
+/* =========================================
+   شبکه‌هایی که بررسی می‌کنیم
+========================================= */
 
 const NETWORKS=[
 
-{
-name:"Ethereum",
-symbol:"ETH",
-rpc:"https://ethereum-rpc.publicnode.com",
-alchemy:`https://eth-mainnet.g.alchemy.com/v2/${API_KEY}`
-},
-
-{
-name:"Polygon",
-symbol:"POL",
-rpc:"https://polygon-bor-rpc.publicnode.com",
-alchemy:`https://polygon-mainnet.g.alchemy.com/v2/${API_KEY}`
-},
-
-{
-name:"BNB Chain",
-symbol:"BNB",
-rpc:"https://bsc-rpc.publicnode.com",
-alchemy:null
-},
-
-{
-name:"Arbitrum",
-symbol:"ETH",
-rpc:"https://arbitrum-one-rpc.publicnode.com",
-alchemy:`https://arb-mainnet.g.alchemy.com/v2/${API_KEY}`
-},
-
-{
-name:"Optimism",
-symbol:"ETH",
-rpc:"https://optimism-rpc.publicnode.com",
-alchemy:`https://opt-mainnet.g.alchemy.com/v2/${API_KEY}`
-},
-
-{
-name:"Base",
-symbol:"ETH",
-rpc:"https://base-rpc.publicnode.com",
-alchemy:`https://base-mainnet.g.alchemy.com/v2/${API_KEY}`
-}
+"eth-mainnet",
+"polygon-mainnet",
+"bnb-mainnet",
+"arb-mainnet",
+"opt-mainnet",
+"base-mainnet",
+"avax-mainnet",
+"linea-mainnet",
+"zksync-mainnet",
+"blast-mainnet",
+"gnosis-mainnet",
+"mantle-mainnet",
+"zeta-mainnet",
+"sonic-mainnet"
 
 ];
 
 
-/* ==========================================
-   RPC عمومی
-========================================== */
+/* نام نمایشی شبکه‌ها */
 
-async function rpc(url,method,params){
+const NAMES={
 
-const r=await fetch(url,{
+"eth-mainnet":"Ethereum",
+
+"polygon-mainnet":"Polygon",
+
+"bnb-mainnet":"BNB Chain",
+
+"arb-mainnet":"Arbitrum",
+
+"opt-mainnet":"Optimism",
+
+"base-mainnet":"Base",
+
+"avax-mainnet":"Avalanche",
+
+"linea-mainnet":"Linea",
+
+"zksync-mainnet":"zkSync",
+
+"blast-mainnet":"Blast",
+
+"gnosis-mainnet":"Gnosis",
+
+"mantle-mainnet":"Mantle",
+
+"zeta-mainnet":"ZetaChain",
+
+"sonic-mainnet":"Sonic"
+
+};
+
+
+/* =========================================
+   درخواست Portfolio API
+========================================= */
+
+async function getPortfolio(address){
+
+let all=[];
+
+let pageKey=null;
+
+do{
+
+let body={
+
+addresses:[{
+
+address:address,
+
+networks:NETWORKS
+
+}],
+
+withMetadata:true,
+
+withPrices:false,
+
+includeNativeTokens:true,
+
+includeErc20Tokens:true
+
+};
+
+if(pageKey)
+body.pageKey=pageKey;
+
+
+const response=await fetch(
+
+`https://api.g.alchemy.com/data/v1/${API_KEY}/assets/tokens/by-address`,
+
+{
+
 method:"POST",
+
 headers:{
 "Content-Type":"application/json"
 },
-body:JSON.stringify({
-jsonrpc:"2.0",
-id:1,
-method:method,
-params:params
-})
+
+body:JSON.stringify(body)
+
 });
 
-const j=await r.json();
 
-if(j.error)
-throw new Error(j.error.message);
-
-return j.result;
-}
+const json=await response.json();
 
 
-/* ==========================================
-   موجودی Native
-========================================== */
+if(!response.ok){
 
-async function nativeBalance(network,address){
-
-const balance=await rpc(
-network.rpc,
-"eth_getBalance",
-[address,"latest"]
+throw new Error(
+json.message ||
+"خطا در ارتباط با Alchemy"
 );
 
-return ethers.formatEther(balance);
 }
 
 
-/* ==========================================
-   ERC20
-========================================== */
+if(json.data && json.data.tokens){
 
-async function getTokens(network,address){
-
-if(!network.alchemy)
-return [];
-
-try{
-
-const data=await rpc(
-network.alchemy,
-"alchemy_getTokenBalances",
-[address,"erc20"]
+all.push(
+...json.data.tokens
 );
 
-return data.tokenBalances || [];
-
-}catch(e){
-
-console.log(
-"Token API:",
-network.name,
-e.message
-);
-
-return [];
-}
-
 }
 
 
-/* ==========================================
-   اطلاعات توکن
-========================================== */
+pageKey=
+json.data?.pageKey || null;
 
-async function tokenInfo(network,address){
 
-try{
+}while(pageKey);
 
-return await rpc(
-network.alchemy,
-"alchemy_getTokenMetadata",
-[address]
-);
 
-}catch(e){
-
-return {
-name:"Unknown",
-symbol:"TOKEN",
-decimals:18
-};
-
-}
+return all;
 
 }
 
 
-/* ==========================================
-   فرمت عدد
-========================================== */
+/* =========================================
+   فرمت مقدار
+========================================= */
 
-function fmt(x){
+function formatAmount(value){
 
-let n=Number(x);
+const n=Number(value);
 
 if(!Number.isFinite(n))
-return x;
+return value;
+
+if(n===0)
+return "0";
+
+if(n<0.000001)
+return n.toExponential(5);
 
 return n.toLocaleString(
 "en-US",
@@ -343,9 +357,9 @@ maximumFractionDigits:8
 }
 
 
-/* ==========================================
+/* =========================================
    اسکن
-========================================== */
+========================================= */
 
 async function scan(){
 
@@ -367,14 +381,20 @@ document.getElementById("results");
 const networksBox=
 document.getElementById("networks");
 
+const button=
+document.getElementById("scanBtn");
+
 
 error.textContent="";
+
 addressBox.style.display="none";
+
 results.style.display="none";
+
 networksBox.innerHTML="";
 
 
-let mnemonic=
+const mnemonic=
 input.value
 .trim()
 .replace(/\s+/g," ");
@@ -383,7 +403,7 @@ input.value
 if(!mnemonic){
 
 error.textContent=
-"❌ عبارت بازیابی را وارد کنید";
+"❌ عبارت بازیابی را وارد کنید.";
 
 return;
 
@@ -393,7 +413,7 @@ return;
 if(typeof ethers==="undefined"){
 
 error.textContent=
-"❌ ethers بارگذاری نشده";
+"❌ کتابخانه ethers بارگذاری نشده.";
 
 return;
 
@@ -403,7 +423,7 @@ return;
 if(mnemonic.split(" ").length!==12){
 
 error.textContent=
-"❌ باید دقیقاً ۱۲ کلمه وارد کنید";
+"❌ عبارت باید دقیقاً ۱۲ کلمه باشد.";
 
 return;
 
@@ -412,10 +432,13 @@ return;
 
 try{
 
+
+/* بررسی Mnemonic */
+
 if(!ethers.Mnemonic.isValidMnemonic(mnemonic)){
 
 error.textContent=
-"❌ عبارت بازیابی معتبر نیست";
+"❌ عبارت بازیابی معتبر نیست.";
 
 return;
 
@@ -425,7 +448,9 @@ return;
 /* ساخت آدرس */
 
 const wallet=
-ethers.HDNodeWallet.fromPhrase(mnemonic);
+ethers.HDNodeWallet.fromPhrase(
+mnemonic
+);
 
 const address=
 wallet.address;
@@ -437,92 +462,127 @@ address;
 
 addressBox.style.display="block";
 
+
 loading.style.display="block";
 
+button.disabled=true;
 
-/* ==========================================
-   بررسی شبکه‌ها
-========================================== */
+
+/* =========================================
+   دریافت تمام موجودی‌ها
+========================================= */
+
+const tokens=
+await getPortfolio(address);
+
+
+/* =========================================
+   فقط موجودی‌های بیشتر از صفر
+========================================= */
+
+const active=tokens.filter(t=>{
+
+try{
+
+if(!t.tokenBalance)
+return false;
+
+return BigInt(t.tokenBalance)!==0n;
+
+}catch{
+
+return false;
+
+}
+
+});
+
+
+/* =========================================
+   گروه‌بندی بر اساس شبکه
+========================================= */
+
+const groups={};
+
+
+for(const token of active){
+
+const network=
+token.network || "unknown";
+
+
+if(!groups[network])
+groups[network]=[];
+
+
+groups[network].push(token);
+
+}
+
+
+/* =========================================
+   نمایش
+========================================= */
+
+if(Object.keys(groups).length===0){
+
+networksBox.innerHTML=
+"<p>موجودی پیدا نشد.</p>";
+
+}else{
+
 
 for(const network of NETWORKS){
+
+if(!groups[network])
+continue;
+
 
 const box=
 document.createElement("div");
 
 box.className="network";
 
-box.innerHTML=`
-<h3>${network.name}</h3>
 
-<div class="balance">
+const title=
+document.createElement("h3");
 
-<span>${network.symbol}</span>
+title.textContent=
+NAMES[network] || network;
 
-<span class="value">
-در حال بررسی...
-</span>
-
-</div>
-`;
-
-networksBox.appendChild(box);
-
-results.style.display="block";
-
-
-try{
-
-const balance=
-await nativeBalance(
-network,
-address
-);
-
-box.querySelector(".value")
-.textContent=fmt(balance);
+box.appendChild(title);
 
 
 /* توکن‌ها */
 
-if(network.alchemy){
+for(const token of groups[network]){
 
-const tokens=
-await getTokens(
-network,
-address
-);
+const meta=
+token.tokenMetadata || {};
 
-
-/* فقط موجودی بیشتر از صفر */
-
-const active=
-tokens.filter(
-t=>
-t.tokenBalance &&
-t.tokenBalance!=="0x0"
-);
+const decimals=
+Number(meta.decimals ?? 18);
 
 
-for(const token of active){
+let amount;
+
 
 try{
 
-const info=
-await tokenInfo(
-network,
-token.contractAddress
-);
-
-const decimals=
-Number(info.decimals??18);
-
-const amount=
+amount=
 ethers.formatUnits(
 token.tokenBalance,
 decimals
 );
 
-if(Number(amount)<=0)
+}catch{
+
+continue;
+
+}
+
+
+if(Number(amount)===0)
 continue;
 
 
@@ -531,50 +591,70 @@ document.createElement("div");
 
 row.className="token";
 
+
+const name=
+meta.name ||
+"Unknown Token";
+
+
+const symbol=
+meta.symbol ||
+"";
+
+
 row.innerHTML=`
 
-<span>
-${info.name||"Unknown"}
+<div class="tokenName">
+
+${name}
+
+<div class="symbol">
+${symbol}
+</div>
+
+</div>
+
+<div class="tokenValue">
+
+${formatAmount(amount)}
+
 <br>
-<small>
-${info.symbol||"TOKEN"}
-</small>
+
+<span class="symbol">
+${symbol}
 </span>
 
-<span class="tokenValue">
-${fmt(amount)}
-</span>
+</div>
 
 `;
 
+
 box.appendChild(row);
 
-}catch(e){
+}
 
-console.log(e);
+
+networksBox.appendChild(box);
 
 }
 
 }
 
-}
 
-}catch(e){
-
-box.querySelector(".value")
-.textContent="⚠️ "+e.message;
-
-}
-
-}
-
+results.style.display="block";
 
 loading.style.display="none";
 
+button.disabled=false;
+
 
 }catch(e){
 
+console.error(e);
+
 loading.style.display="none";
+
+button.disabled=false;
 
 error.textContent=
 "❌ "+e.message;
@@ -586,4 +666,4 @@ error.textContent=
 </script>
 
 </body>
-    </html>
+   </html>
