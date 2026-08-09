@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>انتخاب تصادفی ۱۲ خط</title>
+    <title>انتخاب تصادفی ۱۲ کلمه</title>
     <style>
         body {
             font-family: Tahoma, sans-serif;
@@ -20,14 +20,15 @@
         }
         textarea {
             width: 100%;
-            height: 250px;
+            height: 80px;
             padding: 12px;
-            font-size: 16px;
+            font-size: 18px;
             border: 2px solid #4CAF50;
             border-radius: 8px;
             box-sizing: border-box;
-            resize: vertical;
             font-family: 'Courier New', monospace;
+            direction: ltr;
+            text-align: left;
         }
         button {
             background: #4CAF50;
@@ -73,24 +74,38 @@
             background: #d1ecf1;
             color: #0c5460;
         }
+        .copy-btn {
+            background: #2196F3;
+        }
+        .copy-btn:hover {
+            background: #0b7dda;
+        }
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>🎲 انتخاب ۱۲ خط تصادفی</h2>
-        <p>خواندن فایل <strong>key.txt</strong> از مسیر سایت...</p>
+        <h2>🎲 انتخاب ۱۲ کلمه تصادفی</h2>
         
         <div id="status" class="status loading">⏳ در حال بارگذاری فایل...</div>
 
-        <button id="selectBtn" onclick="selectRandomLines()" disabled>انتخاب ۱۲ خط تصادفی</button>
-        <button onclick="clearText()" style="background:#f44336;">پاک کردن</button>
+        <div class="btn-group">
+            <button id="selectBtn" onclick="selectRandomWords()" disabled>انتخاب ۱۲ کلمه</button>
+            <button onclick="clearText()" style="background:#f44336;">پاک کردن</button>
+            <button onclick="copyText()" class="copy-btn" id="copyBtn" disabled>📋 کپی</button>
+        </div>
 
         <h3>نتیجه:</h3>
-        <textarea id="resultArea" placeholder="نتیجه در اینجا نمایش داده می‌شود..."></textarea>
+        <textarea id="resultArea" placeholder="۱۲ کلمه تصادفی اینجا نمایش داده می‌شود..." readonly></textarea>
         
         <div class="info">
-            ✅ ۱۲ خط به صورت تصادفی با امکان تکرار انتخاب می‌شوند.<br>
-            📁 فایل: <strong>key.txt</strong> (کنار فایل index.html)
+            ✅ ۱۲ کلمه به صورت تصادفی با امکان تکرار انتخاب می‌شوند.<br>
+            📁 فایل: <strong>key.txt</strong> (کنار فایل index.html)<br>
+            📝 کلمات با یک فاصله از هم جدا می‌شوند.
         </div>
     </div>
 
@@ -98,6 +113,7 @@
         let fileLines = [];
         const statusDiv = document.getElementById('status');
         const selectBtn = document.getElementById('selectBtn');
+        const copyBtn = document.getElementById('copyBtn');
         const resultArea = document.getElementById('resultArea');
 
         // بارگذاری خودکار فایل key.txt از مسیر سایت
@@ -122,61 +138,82 @@
                 }
                 
                 statusDiv.className = 'status success';
-                statusDiv.textContent = `✅ فایل با موفقیت بارگذاری شد! تعداد خطوط: ${fileLines.length}`;
+                statusDiv.textContent = `✅ فایل بارگذاری شد! (${fileLines.length} کلمه)`;
                 selectBtn.disabled = false;
+                copyBtn.disabled = true;
                 
-                // نمایش پیام در textarea
-                resultArea.value = `✅ فایل key.txt بارگذاری شد.\n📊 تعداد کل خطوط: ${fileLines.length}\n\nبرای انتخاب ۱۲ خط تصادفی، دکمه سبز را بزنید.`;
+                // پیام خوش‌آمدگویی در textarea
+                resultArea.value = `✅ ${fileLines.length} کلمه بارگذاری شد. دکمه سبز را بزنید.`;
                 
             } catch (error) {
                 statusDiv.className = 'status error';
                 statusDiv.textContent = `❌ خطا: ${error.message}`;
                 selectBtn.disabled = true;
-                resultArea.value = `❌ خطا در بارگذاری فایل:\n${error.message}\n\nاطمینان حاصل کنید که فایل key.txt در کنار index.html وجود دارد.`;
+                copyBtn.disabled = true;
+                resultArea.value = `❌ خطا: ${error.message}`;
                 console.error('Error loading file:', error);
             }
         }
 
-        // تابع اصلی انتخاب ۱۲ خط تصادفی
-        function selectRandomLines() {
+        // تابع اصلی انتخاب ۱۲ کلمه تصادفی
+        function selectRandomWords() {
             if (fileLines.length === 0) {
                 resultArea.value = '❌ فایل بارگذاری نشده است!';
                 return;
             }
 
-            if (fileLines.length < 12) {
-                resultArea.value = `⚠️ هشدار: فایل فقط ${fileLines.length} خط دارد، اما ۱۲ خط درخواست شده است.\n\n`;
-            }
-
-            // انتخاب ۱۲ خط تصادفی با امکان تکرار
-            let selectedLines = [];
+            // انتخاب ۱۲ کلمه تصادفی با امکان تکرار
+            let selectedWords = [];
             for (let i = 0; i < 12; i++) {
                 const randomIndex = Math.floor(Math.random() * fileLines.length);
-                selectedLines.push(fileLines[randomIndex]);
+                selectedWords.push(fileLines[randomIndex]);
             }
 
-            // نمایش نتیجه با شماره خط
-            let output = '📋 ۱۲ خط تصادفی:\n';
-            output += '═'.repeat(35) + '\n';
-            selectedLines.forEach((line, index) => {
-                output += `${(index + 1).toString().padStart(2, '0')}. ${line}\n`;
-            });
-            output += '═'.repeat(35) + '\n';
-            output += `📊 تعداد کل خطوط فایل: ${fileLines.length}`;
-
-            resultArea.value = output;
+            // اتصال کلمات با یک فاصله
+            const result = selectedWords.join(' ');
+            
+            // نمایش در textarea
+            resultArea.value = result;
+            
+            // فعال کردن دکمه کپی
+            copyBtn.disabled = false;
         }
 
         // تابع پاک کردن
         function clearText() {
             resultArea.value = '';
+            copyBtn.disabled = true;
+        }
+
+        // تابع کپی کردن
+        function copyText() {
+            const text = resultArea.value;
+            if (!text || text.includes('❌') || text.includes('✅')) {
+                return;
+            }
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = '✅ کپی شد!';
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                }, 2000);
+            }).catch(err => {
+                // روش جایگزین برای مرورگرهای قدیمی
+                resultArea.select();
+                document.execCommand('copy');
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = '✅ کپی شد!';
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                }, 2000);
+            });
         }
 
         // بارگذاری خودکار هنگام باز شدن صفحه
         window.addEventListener('DOMContentLoaded', loadFile);
         
-        // دکمه refresh برای بارگذاری مجدد (اختیاری)
-        console.log('✅ کد آماده است! فایل key.txt از مسیر سایت خوانده می‌شود.');
+        console.log('✅ کد آماده است! فقط ۱۲ کلمه با یک فاصله نمایش داده می‌شود.');
     </script>
 </body>
 </html>
