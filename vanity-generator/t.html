@@ -9,671 +9,209 @@
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
 
 <style>
-*{box-sizing:border-box}
-
 body{
-margin:0;
-padding:20px;
 background:#111827;
 color:white;
-font-family:Arial
+font-family:Arial;
+padding:20px
 }
-
-.container{
-max-width:700px;
-margin:auto
-}
-
-.card{
+.box{
+max-width:600px;
+margin:auto;
 background:#1f2937;
 padding:20px;
-border-radius:18px;
-margin-bottom:15px
+border-radius:15px
 }
-
-h1{
-text-align:center;
-color:#60a5fa
+textarea,button{
+width:100%;
+padding:15px;
+margin-top:10px;
+border-radius:10px
 }
-
 textarea{
-width:100%;
-height:120px;
+height:100px;
 background:#111827;
-color:white;
-border:1px solid #374151;
-border-radius:12px;
-padding:15px;
-font-size:16px;
-direction:ltr;
-resize:none
+color:white
 }
-
 button{
-width:100%;
-padding:15px;
-margin-top:12px;
-border:0;
-border-radius:12px;
 background:#2563eb;
 color:white;
-font-size:17px
+border:0
 }
-
-button:disabled{
-background:#475569
-}
-
-.address{
-display:none;
-margin-top:15px;
+.card{
+background:#111827;
 padding:15px;
-background:#111827;
 border-radius:12px;
-direction:ltr;
-word-break:break-all;
-color:#34d399;
-font-family:monospace
+margin-top:10px
 }
-
-.loading{
-display:none;
-text-align:center;
-color:#facc15;
-margin:15px
-}
-
-.error{
-color:#f87171;
-text-align:center;
-margin:12px
-}
-
-.network{
-background:#111827;
-padding:16px;
-border-radius:14px;
-margin-top:12px
-}
-
-.network h3{
-margin:0 0 12px;
-color:#60a5fa
-}
-
-.balance{
-display:flex;
-justify-content:space-between;
-direction:ltr;
-font-size:18px
-}
-
-.value{
-color:#34d399;
-font-weight:bold
-}
-
-.token{
-display:flex;
-justify-content:space-between;
-align-items:center;
-direction:ltr;
-background:#1e293b;
-padding:11px;
-border-radius:9px;
-margin-top:8px
-}
-
-.tokenValue{
-color:#34d399;
-font-family:monospace
-}
-
-.symbol{
-font-size:12px;
-color:#94a3b8
-}
-
-.networkError{
-color:#f87171;
-font-size:13px;
-margin-top:8px
+.green{
+color:#34d399
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="box">
 
-<div class="card">
+<h2>🔐 Wallet Scanner</h2>
 
-<h1>🔐 Wallet Scanner 🔑</h1>
+<textarea id="mnemonic"
+placeholder="۱۲ کلمه را وارد کنید"></textarea>
 
-<textarea
-id="mnemonic"
-placeholder="12 کلمه را وارد کنید..."
-autocomplete="off"
-spellcheck="false"></textarea>
-
-<button id="scanBtn" onclick="scan()">
-بررسی آدرس و تمام موجودی‌ها
+<button onclick="scan()">
+بررسی موجودی
 </button>
 
-<div id="error" class="error"></div>
-
-<div id="address" class="address"></div>
-
-<div id="loading" class="loading">
-⏳ در حال بررسی موجودی کیف...
-</div>
-
-</div>
-
-
-<div id="results" class="card" style="display:none">
-
-<h2>💰 موجودی</h2>
-
-<div id="networks"></div>
-
-</div>
+<div id="out"></div>
 
 </div>
 
 
 <script>
 
-/* ==========================================
-   API KEY
-========================================== */
+const chains=[
 
-const API_KEY="alch_EFH_WhuW2jJ-hI5YxUJ88";
+{
+name:"Ethereum",
+symbol:"ETH",
+rpc:"https://ethereum.publicnode.com"
+},
 
+{
+name:"Polygon",
+symbol:"POL",
+rpc:"https://polygon-rpc.com"
+},
 
-/* ==========================================
-   شبکه‌های معتبر Portfolio API
-========================================== */
+{
+name:"BNB Chain",
+symbol:"BNB",
+rpc:"https://bsc-dataseed.binance.org"
+},
 
-const NETWORKS=[
+{
+name:"Arbitrum",
+symbol:"ETH",
+rpc:"https://arb1.arbitrum.io/rpc"
+},
 
-"eth-mainnet",
+{
+name:"Optimism",
+symbol:"ETH",
+rpc:"https://mainnet.optimism.io"
+},
 
-"polygon-mainnet",
-
-"arb-mainnet",
-
-"opt-mainnet",
-
-"base-mainnet",
-
-"avax-mainnet",
-
-"linea-mainnet",
-
-"zksync-mainnet",
-
-"blast-mainnet",
-
-"gnosis-mainnet",
-
-"mantle-mainnet",
-
-"sonic-mainnet",
-
-"zora-mainnet",
-
-"worldchain-mainnet",
-
-"unichain-mainnet",
-
-"berachain-mainnet",
-
-"ink-mainnet",
-
-"scroll-mainnet",
-
-"celo-mainnet",
-
-"frax-mainnet"
+{
+name:"Base",
+symbol:"ETH",
+rpc:"https://mainnet.base.org"
+}
 
 ];
 
 
-const NAMES={
-
-"eth-mainnet":"Ethereum",
-
-"polygon-mainnet":"Polygon",
-
-"arb-mainnet":"Arbitrum",
-
-"opt-mainnet":"Optimism",
-
-"base-mainnet":"Base",
-
-"avax-mainnet":"Avalanche",
-
-"linea-mainnet":"Linea",
-
-"zksync-mainnet":"zkSync",
-
-"blast-mainnet":"Blast",
-
-"gnosis-mainnet":"Gnosis",
-
-"mantle-mainnet":"Mantle",
-
-"sonic-mainnet":"Sonic",
-
-"zora-mainnet":"Zora",
-
-"worldchain-mainnet":"World Chain",
-
-"unichain-mainnet":"Unichain",
-
-"berachain-mainnet":"Berachain",
-
-"ink-mainnet":"Ink",
-
-"scroll-mainnet":"Scroll",
-
-"celo-mainnet":"Celo",
-
-"frax-mainnet":"Frax"
-
-};
-
-
-/* ==========================================
-   Alchemy Portfolio API
-========================================== */
-
-async function getTokens(address){
-
-const url=
-`https://api.g.alchemy.com/data/v1/${API_KEY}/assets/tokens/by-address`;
-
-const body={
-
-addresses:[{
-
-address:address,
-
-networks:NETWORKS
-
-}],
-
-withMetadata:true,
-
-withPrices:false,
-
-includeNativeTokens:true,
-
-includeErc20Tokens:true
-
-};
-
-
-const response=
-await fetch(url,{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify(body)
-
-});
-
-
-const data=
-await response.json();
-
-
-if(!response.ok){
-
-throw new Error(
-data.message ||
-data.error?.message ||
-"درخواست Alchemy رد شد"
-);
-
-}
-
-
-return data.data?.tokens || [];
-
-}
-
-
-/* ==========================================
-   فرمت عدد
-========================================== */
-
-function formatNumber(value){
-
-const n=Number(value);
-
-if(!Number.isFinite(n))
-return value;
-
-if(n===0)
-return "0";
-
-if(n<0.000001)
-return n.toExponential(5);
-
-return n.toLocaleString(
-"en-US",
-{
-maximumFractionDigits:8
-}
-);
-
-}
-
-
-/* ==========================================
-   اسکن
-========================================== */
-
 async function scan(){
 
-const input=
-document.getElementById("mnemonic");
+const out=document.getElementById("out");
 
-const error=
-document.getElementById("error");
-
-const addressBox=
-document.getElementById("address");
-
-const loading=
-document.getElementById("loading");
-
-const results=
-document.getElementById("results");
-
-const networksBox=
-document.getElementById("networks");
-
-const button=
-document.getElementById("scanBtn");
+out.innerHTML="";
 
 
-error.textContent="";
-
-addressBox.style.display="none";
-
-results.style.display="none";
-
-networksBox.innerHTML="";
-
-
-const mnemonic=
-input.value
+let phrase=
+document.getElementById("mnemonic")
+.value
 .trim()
 .replace(/\s+/g," ");
 
 
-if(!mnemonic){
-
-error.textContent=
-"❌ عبارت بازیابی را وارد کنید.";
-
-return;
-
-}
-
-
-if(typeof ethers==="undefined"){
-
-error.textContent=
-"❌ ethers بارگذاری نشده است.";
-
-return;
-
-}
-
-
-if(mnemonic.split(" ").length!==12){
-
-error.textContent=
-"❌ باید دقیقاً ۱۲ کلمه وارد کنید.";
-
-return;
-
-}
-
-
 try{
 
-if(!ethers.Mnemonic.isValidMnemonic(mnemonic)){
 
-error.textContent=
-"❌ عبارت بازیابی معتبر نیست.";
-
-return;
-
+if(!ethers.Mnemonic.isValidMnemonic(phrase)){
+throw Error("عبارت معتبر نیست");
 }
 
 
-/* ساخت آدرس */
+let wallet=
+ethers.HDNodeWallet.fromPhrase(phrase);
 
-const wallet=
-ethers.HDNodeWallet.fromPhrase(
-mnemonic
-);
 
-const address=
-wallet.address;
-
-
-addressBox.innerHTML=
-"آدرس کیف پول:<br><br>"+
-address;
-
-addressBox.style.display="block";
-
-
-loading.style.display="block";
-
-button.disabled=true;
-
-
-/* ==========================================
-   دریافت موجودی
-========================================== */
-
-const tokens=
-await getTokens(address);
-
-
-/* ==========================================
-   فقط موجودی غیر صفر
-========================================== */
-
-const active=
-tokens.filter(t=>{
-
-try{
-
-return t.tokenBalance &&
-BigInt(t.tokenBalance)!==0n;
-
-}catch{
-
-return false;
-
-}
-
-});
-
-
-/* ==========================================
-   گروه‌بندی
-========================================== */
-
-const groups={};
-
-
-for(const token of active){
-
-const network=
-token.network;
-
-if(!groups[network])
-groups[network]=[];
-
-groups[network].push(token);
-
-}
-
-
-/* ==========================================
-   نمایش
-========================================== */
-
-if(active.length===0){
-
-networksBox.innerHTML=
-"<p style='color:#94a3b8'>هیچ موجودی غیر صفر پیدا نشد.</p>";
-
-}else{
-
-
-for(const network of NETWORKS){
-
-const list=
-groups[network];
-
-if(!list)
-continue;
-
-
-const box=
-document.createElement("div");
-
-box.className="network";
-
-
-const title=
-document.createElement("h3");
-
-title.textContent=
-NAMES[network] || network;
-
-box.appendChild(title);
-
-
-/* ==============================
-   توکن‌ها
-============================== */
-
-for(const token of list){
-
-const metadata=
-token.tokenMetadata || {};
-
-const decimals=
-Number(metadata.decimals ?? 18);
-
-
-let amount;
-
-try{
-
-amount=
-ethers.formatUnits(
-token.tokenBalance,
-decimals
-);
-
-}catch{
-
-continue;
-
-}
-
-
-if(Number(amount)===0)
-continue;
-
-
-const row=
-document.createElement("div");
-
-row.className="token";
-
-
-const left=
-document.createElement("div");
-
-left.innerHTML=
+out.innerHTML=
 `
-${metadata.name || "Unknown Token"}
-<br>
-<span class="symbol">
-${metadata.symbol || ""}
+<div class="card">
+آدرس:<br>
+<span class="green">
+${wallet.address}
 </span>
+</div>
 `;
 
 
-const right=
-document.createElement("div");
+for(let c of chains){
 
-right.className="tokenValue";
 
-right.innerHTML=
-`
-${formatNumber(amount)}
-<br>
-<span class="symbol">
-${metadata.symbol || ""}
+try{
+
+
+let provider=
+new ethers.JsonRpcProvider(c.rpc);
+
+
+let balance=
+await provider.getBalance(wallet.address);
+
+
+let amount=
+ethers.formatEther(balance);
+
+
+
+out.innerHTML+=`
+
+<div class="card">
+
+<b>${c.name}</b><br><br>
+
+${c.symbol} :
+
+<span class="green">
+${amount}
 </span>
+
+</div>
+
 `;
 
-
-row.appendChild(left);
-
-row.appendChild(right);
-
-box.appendChild(row);
-
-}
-
-
-networksBox.appendChild(box);
-
-}
-
-}
-
-
-results.style.display="block";
-
-loading.style.display="none";
-
-button.disabled=false;
 
 
 }catch(e){
 
-console.error(e);
+out.innerHTML+=`
 
-loading.style.display="none";
+<div class="card">
 
-button.disabled=false;
+${c.name} :
+خطا
+
+</div>
+
+`;
+
+}
 
 
-/* خطای واقعی */
+}
 
-error.textContent=
-"❌ خطا در ارتباط با Alchemy: "+
-e.message;
+
+}catch(e){
+
+out.innerHTML=
+`
+<div class="card">
+❌ ${e.message}
+</div>
+`;
 
 }
 
@@ -682,4 +220,4 @@ e.message;
 </script>
 
 </body>
-   </html>
+</html>
