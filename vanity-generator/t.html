@@ -2,182 +2,673 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>Wallet Scanner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Wallet Balance Scanner</title>
 
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
 
 <style>
+*{box-sizing:border-box}
+
 body{
-background:#111827;
-color:white;
-font-family:Arial;
-padding:20px
+    margin:0;
+    padding:25px 15px;
+    background:#111827;
+    color:#fff;
+    font-family:Arial,sans-serif;
 }
-textarea,button{
-width:100%;
-padding:12px;
-margin:10px 0;
-border-radius:10px;
-font-size:16px
+
+.container{
+    max-width:650px;
+    margin:auto;
+    background:#1f2937;
+    padding:22px;
+    border-radius:18px;
 }
+
+h1{
+    text-align:center;
+    color:#60a5fa;
+    font-size:24px;
+}
+
 textarea{
-height:90px;
-background:#1f2937;
-color:white
+    width:100%;
+    height:120px;
+    padding:15px;
+    border:1px solid #374151;
+    border-radius:12px;
+    background:#111827;
+    color:#fff;
+    font-size:16px;
+    resize:none;
+    direction:ltr;
+    text-align:left;
 }
+
 button{
-background:#2563eb;
-color:white;
-border:0
+    width:100%;
+    margin-top:15px;
+    padding:14px;
+    border:0;
+    border-radius:12px;
+    background:#2563eb;
+    color:white;
+    font-size:17px;
+    cursor:pointer;
 }
-.box{
-background:#1f2937;
-padding:15px;
-border-radius:12px;
-margin-top:15px
+
+button:disabled{
+    background:#475569;
+}
+
+.error{
+    margin-top:15px;
+    color:#f87171;
+    text-align:center;
+}
+
+.address{
+    display:none;
+    margin-top:18px;
+    padding:15px;
+    background:#111827;
+    border-radius:12px;
+    direction:ltr;
+    text-align:left;
+    word-break:break-all;
+    color:#34d399;
+    font-family:monospace;
+}
+
+#balances{
+    display:none;
+    margin-top:18px;
+}
+
+.network{
+    background:#111827;
+    padding:15px;
+    border-radius:12px;
+    margin-top:12px;
+}
+
+.network h3{
+    margin:0 0 12px;
+    color:#60a5fa;
+}
+
+.native{
+    display:flex;
+    justify-content:space-between;
+    direction:ltr;
+    font-size:18px;
+}
+
+.value{
+    color:#34d399;
+    font-weight:bold;
+}
+
+.token{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:#1e293b;
+    padding:10px;
+    margin-top:8px;
+    border-radius:9px;
+    direction:ltr;
+}
+
+.tokenName{
+    color:#cbd5e1;
+}
+
+.tokenValue{
+    color:#34d399;
+    font-family:monospace;
+}
+
+.loading{
+    display:none;
+    text-align:center;
+    color:#facc15;
+    margin-top:18px;
+}
+
+.small{
+    color:#94a3b8;
+    font-size:12px;
+    margin-top:8px;
 }
 </style>
 </head>
 
 <body>
 
-<h2>🔐 Wallet Scanner</h2>
+<div class="container">
 
-<textarea id="mnemonic"
-placeholder="۱۲ کلمه را وارد کنید"></textarea>
+<h1>🔐 Wallet Balance Scanner</h1>
 
-<button onclick="scan()">بررسی کیف پول</button>
+<textarea
+id="mnemonic"
+placeholder="12 کلمه را با فاصله وارد کنید..."
+autocomplete="off"
+spellcheck="false"></textarea>
 
-<div class="box" id="out"></div>
+<button id="scanBtn" onclick="generateAddress()">
+نمایش آدرس و موجودی
+</button>
+
+<div id="error" class="error"></div>
+
+<div id="addressBox" class="address">
+    <div style="color:#9ca3af;margin-bottom:8px">
+        آدرس کیف پول:
+    </div>
+    <div id="address"></div>
+</div>
+
+<div id="loading" class="loading">
+    ⏳ در حال بررسی موجودی شبکه‌ها...
+</div>
+
+<div id="balances"></div>
+
+</div>
 
 
 <script>
 
-const API_KEY="alch_EFH_WhuW2jJ-hI5YxUJ88";
+/* =====================================================
+   فقط API KEY خودت را اینجا قرار بده
+===================================================== */
+
+const API_KEY = "alch_EFH_WhuW2jJ-hI5YxUJ88";
 
 
-const CHAINS={
+/* =====================================================
+   شبکه‌ها
+===================================================== */
 
-Ethereum:{
-url:`https://eth-mainnet.g.alchemy.com/v2/${API_KEY}`,
-symbol:"ETH"
+const NETWORKS = [
+
+{
+    name:"Ethereum",
+    symbol:"ETH",
+    url:`https://eth-mainnet.g.alchemy.com/v2/${API_KEY}`
 },
 
-Polygon:{
-url:`https://polygon-mainnet.g.alchemy.com/v2/${API_KEY}`,
-symbol:"POL"
+{
+    name:"Polygon",
+    symbol:"POL",
+    url:`https://polygon-mainnet.g.alchemy.com/v2/${API_KEY}`
 },
 
-BNB:{
-url:`https://bnb-mainnet.g.alchemy.com/v2/${API_KEY}`,
-symbol:"BNB"
+{
+    name:"Arbitrum",
+    symbol:"ETH",
+    url:`https://arb-mainnet.g.alchemy.com/v2/${API_KEY}`
+},
+
+{
+    name:"Optimism",
+    symbol:"ETH",
+    url:`https://opt-mainnet.g.alchemy.com/v2/${API_KEY}`
+},
+
+{
+    name:"Base",
+    symbol:"ETH",
+    url:`https://base-mainnet.g.alchemy.com/v2/${API_KEY}`
+},
+
+{
+    name:"BNB Chain",
+    symbol:"BNB",
+    url:"https://bsc-dataseed.binance.org"
 }
 
-};
+];
 
 
+/* =====================================================
+   RPC
+===================================================== */
 
 async function rpc(url,method,params){
 
-let r=await fetch(url,{
-method:"POST",
-headers:{
-"content-type":"application/json"
-},
-body:JSON.stringify({
-jsonrpc:"2.0",
-id:1,
-method,
-params
-})
-});
+    const response = await fetch(url,{
+        method:"POST",
 
-let j=await r.json();
+        headers:{
+            "Content-Type":"application/json"
+        },
 
-return j.result;
+        body:JSON.stringify({
+            jsonrpc:"2.0",
+            id:1,
+            method:method,
+            params:params
+        })
+    });
 
+    const data = await response.json();
+
+    if(data.error){
+        throw new Error(data.error.message);
+    }
+
+    return data.result;
 }
 
 
+/* =====================================================
+   موجودی Native
+===================================================== */
 
-async function scan(){
+async function getNative(network,address){
 
-let m=document.getElementById("mnemonic").value.trim();
+    const balance = await rpc(
+        network.url,
+        "eth_getBalance",
+        [address,"latest"]
+    );
 
-let out=document.getElementById("out");
-
-try{
-
-let wallet=
-ethers.HDNodeWallet.fromPhrase(m);
-
-let address=wallet.address;
-
-
-let html=
-"📍 Address:<br>"+
-address+
-"<hr>";
-
-
-for(let c in CHAINS){
-
-let b=await rpc(
-CHAINS[c].url,
-"eth_getBalance",
-[address,"latest"]
-);
-
-
-html+=
-c+" : "+
-Number(
-ethers.formatEther(b)
-).toFixed(6)
-+" "+CHAINS[c].symbol+
-"<br>";
-
+    return ethers.formatEther(balance);
 }
 
 
+/* =====================================================
+   توکن‌های ERC20
+===================================================== */
 
-html+="<hr>🪙 Tokens:<br>";
+async function getTokens(network,address){
 
+    if(network.name === "BNB Chain"){
+        return [];
+    }
 
-for(let c in CHAINS){
+    try{
 
-let tokens=await rpc(
-CHAINS[c].url,
-"alchemy_getTokenBalances",
-[address,"erc20"]
-);
+        const result = await rpc(
+            network.url,
+            "alchemy_getTokenBalances",
+            [address,"erc20"]
+        );
 
+        if(!result || !result.tokenBalances){
+            return [];
+        }
 
-if(tokens && tokens.tokenBalances){
+        const tokens =
+            result.tokenBalances.filter(
+                t =>
+                t.tokenBalance &&
+                t.tokenBalance !== "0x0"
+            );
 
-html+=
-c+
-" tokens: "+
-tokens.tokenBalances.length+
-"<br>";
+        return tokens;
 
+    }catch(e){
+
+        console.log(
+            "Token error:",
+            network.name,
+            e
+        );
+
+        return [];
+    }
 }
 
+
+/* =====================================================
+   اطلاعات توکن
+===================================================== */
+
+async function getTokenInfo(network,address){
+
+    try{
+
+        const data = await rpc(
+            network.url,
+            "alchemy_getTokenMetadata",
+            [address]
+        );
+
+        return data;
+
+    }catch(e){
+
+        return {
+            name:"Unknown",
+            symbol:"TOKEN",
+            decimals:18
+        };
+    }
 }
 
 
-out.innerHTML=html;
+/* =====================================================
+   نمایش عدد
+===================================================== */
 
+function formatNumber(value){
 
-}catch(e){
+    const n = Number(value);
 
-out.innerHTML="❌ خطا: عبارت نامعتبر است";
+    if(!Number.isFinite(n)){
+        return value;
+    }
 
+    if(n === 0){
+        return "0";
+    }
+
+    if(n < 0.000001){
+        return n.toExponential(4);
+    }
+
+    return n.toLocaleString(
+        "en-US",
+        {
+            maximumFractionDigits:8
+        }
+    );
 }
+
+
+/* =====================================================
+   ساخت آدرس + موجودی
+===================================================== */
+
+async function generateAddress(){
+
+    const input =
+        document.getElementById("mnemonic");
+
+    const errorBox =
+        document.getElementById("error");
+
+    const addressBox =
+        document.getElementById("addressBox");
+
+    const addressElement =
+        document.getElementById("address");
+
+    const balancesBox =
+        document.getElementById("balances");
+
+    const loading =
+        document.getElementById("loading");
+
+    const button =
+        document.getElementById("scanBtn");
+
+
+    errorBox.textContent = "";
+
+    addressBox.style.display = "none";
+
+    balancesBox.style.display = "none";
+
+    balancesBox.innerHTML = "";
+
+    const mnemonic =
+        input.value
+        .trim()
+        .replace(/\s+/g," ");
+
+
+    if(!mnemonic){
+
+        errorBox.textContent =
+            "❌ عبارت بازیابی را وارد کنید.";
+
+        return;
+    }
+
+
+    if(typeof ethers === "undefined"){
+
+        errorBox.textContent =
+            "❌ کتابخانه ethers بارگذاری نشده است.";
+
+        return;
+    }
+
+
+    const words =
+        mnemonic.split(" ");
+
+
+    if(words.length !== 12){
+
+        errorBox.textContent =
+            "❌ عبارت باید دقیقاً ۱۲ کلمه داشته باشد.";
+
+        return;
+    }
+
+
+    try{
+
+        if(!ethers.Mnemonic.isValidMnemonic(mnemonic)){
+
+            errorBox.textContent =
+                "❌ عبارت بازیابی معتبر نیست.";
+
+            return;
+        }
+
+
+        /* ساخت کیف پول */
+
+        const wallet =
+            ethers.HDNodeWallet.fromPhrase(
+                mnemonic
+            );
+
+
+        const address =
+            wallet.address;
+
+
+        addressElement.textContent =
+            address;
+
+        addressBox.style.display =
+            "block";
+
+
+        /* شروع اسکن */
+
+        loading.style.display =
+            "block";
+
+        button.disabled = true;
+
+
+        for(const network of NETWORKS){
+
+            const box =
+                document.createElement("div");
+
+            box.className =
+                "network";
+
+
+            box.innerHTML = `
+                <h3>
+                    ${network.name}
+                </h3>
+
+                <div class="native">
+                    <span>
+                        ${network.symbol}
+                    </span>
+
+                    <span class="value">
+                        در حال بررسی...
+                    </span>
+                </div>
+            `;
+
+
+            balancesBox.appendChild(box);
+
+            balancesBox.style.display =
+                "block";
+
+
+            /* Native Balance */
+
+            try{
+
+                const balance =
+                    await getNative(
+                        network,
+                        address
+                    );
+
+
+                box.querySelector(".value")
+                    .textContent =
+                    formatNumber(balance);
+
+
+            }catch(e){
+
+                box.querySelector(".value")
+                    .textContent =
+                    "خطا";
+            }
+
+
+            /* ERC20 */
+
+            if(network.name !== "BNB Chain"){
+
+                const tokens =
+                    await getTokens(
+                        network,
+                        address
+                    );
+
+
+                if(tokens.length > 0){
+
+                    const title =
+                        document.createElement("div");
+
+                    title.className =
+                        "small";
+
+                    title.textContent =
+                        "🪙 توکن‌ها:";
+
+                    box.appendChild(title);
+
+
+                    for(const token of tokens){
+
+                        try{
+
+                            const info =
+                                await getTokenInfo(
+                                    network,
+                                    token.contractAddress
+                                );
+
+
+                            const decimals =
+                                Number(
+                                    info.decimals ?? 18
+                                );
+
+
+                            const amount =
+                                ethers.formatUnits(
+                                    token.tokenBalance,
+                                    decimals
+                                );
+
+
+                            if(Number(amount) === 0){
+                                continue;
+                            }
+
+
+                            const row =
+                                document.createElement("div");
+
+                            row.className =
+                                "token";
+
+
+                            row.innerHTML = `
+
+                                <span class="tokenName">
+                                    ${info.name || "Unknown"}
+                                    (${info.symbol || "TOKEN"})
+                                </span>
+
+                                <span class="tokenValue">
+                                    ${formatNumber(amount)}
+                                </span>
+
+                            `;
+
+
+                            box.appendChild(row);
+
+
+                        }catch(e){
+
+                            console.log(
+                                "Token metadata error",
+                                e
+                            );
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        }
+
+
+        loading.style.display =
+            "none";
+
+        button.disabled =
+            false;
+
+
+    }catch(error){
+
+        console.error(error);
+
+        loading.style.display =
+            "none";
+
+        button.disabled =
+            false;
+
+        errorBox.textContent =
+            "❌ خطا: " + error.message;
+
+    }
 
 }
 
 </script>
 
 </body>
-</html>
+  </html>
