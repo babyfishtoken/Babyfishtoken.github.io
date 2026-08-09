@@ -2,9 +2,9 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>Wallet Balance Scanner</title>
+<title>Wallet Scanner</title>
 
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
 
@@ -12,136 +12,113 @@
 *{box-sizing:border-box}
 
 body{
-    margin:0;
-    padding:25px 15px;
-    background:#111827;
-    color:#fff;
-    font-family:Arial,sans-serif;
+margin:0;
+padding:20px;
+background:#111827;
+color:#fff;
+font-family:Arial
 }
 
 .container{
-    max-width:650px;
-    margin:auto;
-    background:#1f2937;
-    padding:22px;
-    border-radius:18px;
+max-width:650px;
+margin:auto
+}
+
+.card{
+background:#1f2937;
+padding:20px;
+border-radius:18px;
+margin-bottom:15px
 }
 
 h1{
-    text-align:center;
-    color:#60a5fa;
-    font-size:24px;
+text-align:center;
+color:#60a5fa
 }
 
 textarea{
-    width:100%;
-    height:120px;
-    padding:15px;
-    border:1px solid #374151;
-    border-radius:12px;
-    background:#111827;
-    color:#fff;
-    font-size:16px;
-    resize:none;
-    direction:ltr;
-    text-align:left;
+width:100%;
+height:110px;
+background:#111827;
+color:white;
+border:1px solid #374151;
+border-radius:12px;
+padding:14px;
+font-size:16px;
+direction:ltr
 }
 
 button{
-    width:100%;
-    margin-top:15px;
-    padding:14px;
-    border:0;
-    border-radius:12px;
-    background:#2563eb;
-    color:white;
-    font-size:17px;
-    cursor:pointer;
-}
-
-button:disabled{
-    background:#475569;
-}
-
-.error{
-    margin-top:15px;
-    color:#f87171;
-    text-align:center;
+width:100%;
+padding:14px;
+margin-top:12px;
+border:0;
+border-radius:12px;
+background:#2563eb;
+color:white;
+font-size:17px
 }
 
 .address{
-    display:none;
-    margin-top:18px;
-    padding:15px;
-    background:#111827;
-    border-radius:12px;
-    direction:ltr;
-    text-align:left;
-    word-break:break-all;
-    color:#34d399;
-    font-family:monospace;
-}
-
-#balances{
-    display:none;
-    margin-top:18px;
+margin-top:15px;
+padding:15px;
+background:#111827;
+border-radius:12px;
+direction:ltr;
+word-break:break-all;
+color:#34d399;
+display:none
 }
 
 .network{
-    background:#111827;
-    padding:15px;
-    border-radius:12px;
-    margin-top:12px;
+background:#111827;
+padding:16px;
+border-radius:14px;
+margin-top:12px
 }
 
 .network h3{
-    margin:0 0 12px;
-    color:#60a5fa;
+color:#60a5fa;
+margin:0 0 12px
 }
 
-.native{
-    display:flex;
-    justify-content:space-between;
-    direction:ltr;
-    font-size:18px;
+.balance{
+display:flex;
+justify-content:space-between;
+direction:ltr;
+font-size:18px
 }
 
 .value{
-    color:#34d399;
-    font-weight:bold;
+color:#34d399;
+font-weight:bold
 }
 
 .token{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    background:#1e293b;
-    padding:10px;
-    margin-top:8px;
-    border-radius:9px;
-    direction:ltr;
-}
-
-.tokenName{
-    color:#cbd5e1;
+display:flex;
+justify-content:space-between;
+direction:ltr;
+background:#1e293b;
+padding:10px;
+border-radius:8px;
+margin-top:7px
 }
 
 .tokenValue{
-    color:#34d399;
-    font-family:monospace;
+color:#34d399
 }
 
 .loading{
-    display:none;
-    text-align:center;
-    color:#facc15;
-    margin-top:18px;
+text-align:center;
+color:#facc15;
+margin:15px;
+display:none
 }
 
-.small{
-    color:#94a3b8;
-    font-size:12px;
-    margin-top:8px;
+.error{
+color:#f87171;
+text-align:center;
+margin:10px
 }
 </style>
 </head>
@@ -150,525 +127,463 @@ button:disabled{
 
 <div class="container">
 
-<h1>🔐 Wallet Balance Scanner</h1>
+<div class="card">
+
+<h1>🔐 Wallet Scanner</h1>
 
 <textarea
 id="mnemonic"
-placeholder="12 کلمه را با فاصله وارد کنید..."
-autocomplete="off"
+placeholder="12 کلمه را وارد کنید..."
 spellcheck="false"></textarea>
 
-<button id="scanBtn" onclick="generateAddress()">
-نمایش آدرس و موجودی
+<button onclick="scan()">
+بررسی کیف پول
 </button>
 
 <div id="error" class="error"></div>
 
-<div id="addressBox" class="address">
-    <div style="color:#9ca3af;margin-bottom:8px">
-        آدرس کیف پول:
-    </div>
-    <div id="address"></div>
-</div>
+<div id="address" class="address"></div>
 
 <div id="loading" class="loading">
-    ⏳ در حال بررسی موجودی شبکه‌ها...
+⏳ در حال بررسی موجودی...
 </div>
 
-<div id="balances"></div>
+</div>
+
+<div id="results" class="card" style="display:none">
+<h2>💰 موجودی</h2>
+<div id="networks"></div>
+</div>
 
 </div>
 
 
 <script>
 
-/* =====================================================
-   فقط API KEY خودت را اینجا قرار بده
-===================================================== */
+/* ==========================================
+   API KEY خودت را اینجا قرار بده
+========================================== */
 
-const API_KEY = "alch_EFH_WhuW2jJ-hI5YxUJ88";
+const API_KEY="alch_EFH_WhuW2jJ-hI5YxUJ88";
 
 
-/* =====================================================
+/* ==========================================
    شبکه‌ها
-===================================================== */
+========================================== */
 
-const NETWORKS = [
+const NETWORKS=[
 
 {
-    name:"Ethereum",
-    symbol:"ETH",
-    url:`https://eth-mainnet.g.alchemy.com/v2/${API_KEY}`
+name:"Ethereum",
+symbol:"ETH",
+rpc:"https://ethereum-rpc.publicnode.com",
+alchemy:`https://eth-mainnet.g.alchemy.com/v2/${API_KEY}`
 },
 
 {
-    name:"Polygon",
-    symbol:"POL",
-    url:`https://polygon-mainnet.g.alchemy.com/v2/${API_KEY}`
+name:"Polygon",
+symbol:"POL",
+rpc:"https://polygon-bor-rpc.publicnode.com",
+alchemy:`https://polygon-mainnet.g.alchemy.com/v2/${API_KEY}`
 },
 
 {
-    name:"Arbitrum",
-    symbol:"ETH",
-    url:`https://arb-mainnet.g.alchemy.com/v2/${API_KEY}`
+name:"BNB Chain",
+symbol:"BNB",
+rpc:"https://bsc-rpc.publicnode.com",
+alchemy:null
 },
 
 {
-    name:"Optimism",
-    symbol:"ETH",
-    url:`https://opt-mainnet.g.alchemy.com/v2/${API_KEY}`
+name:"Arbitrum",
+symbol:"ETH",
+rpc:"https://arbitrum-one-rpc.publicnode.com",
+alchemy:`https://arb-mainnet.g.alchemy.com/v2/${API_KEY}`
 },
 
 {
-    name:"Base",
-    symbol:"ETH",
-    url:`https://base-mainnet.g.alchemy.com/v2/${API_KEY}`
+name:"Optimism",
+symbol:"ETH",
+rpc:"https://optimism-rpc.publicnode.com",
+alchemy:`https://opt-mainnet.g.alchemy.com/v2/${API_KEY}`
 },
 
 {
-    name:"BNB Chain",
-    symbol:"BNB",
-    url:"https://bsc-dataseed.binance.org"
+name:"Base",
+symbol:"ETH",
+rpc:"https://base-rpc.publicnode.com",
+alchemy:`https://base-mainnet.g.alchemy.com/v2/${API_KEY}`
 }
 
 ];
 
 
-/* =====================================================
-   RPC
-===================================================== */
+/* ==========================================
+   RPC عمومی
+========================================== */
 
 async function rpc(url,method,params){
 
-    const response = await fetch(url,{
-        method:"POST",
+const r=await fetch(url,{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+jsonrpc:"2.0",
+id:1,
+method:method,
+params:params
+})
+});
 
-        headers:{
-            "Content-Type":"application/json"
-        },
+const j=await r.json();
 
-        body:JSON.stringify({
-            jsonrpc:"2.0",
-            id:1,
-            method:method,
-            params:params
-        })
-    });
+if(j.error)
+throw new Error(j.error.message);
 
-    const data = await response.json();
-
-    if(data.error){
-        throw new Error(data.error.message);
-    }
-
-    return data.result;
+return j.result;
 }
 
 
-/* =====================================================
+/* ==========================================
    موجودی Native
-===================================================== */
+========================================== */
 
-async function getNative(network,address){
+async function nativeBalance(network,address){
 
-    const balance = await rpc(
-        network.url,
-        "eth_getBalance",
-        [address,"latest"]
-    );
+const balance=await rpc(
+network.rpc,
+"eth_getBalance",
+[address,"latest"]
+);
 
-    return ethers.formatEther(balance);
+return ethers.formatEther(balance);
 }
 
 
-/* =====================================================
-   توکن‌های ERC20
-===================================================== */
+/* ==========================================
+   ERC20
+========================================== */
 
 async function getTokens(network,address){
 
-    if(network.name === "BNB Chain"){
-        return [];
-    }
+if(!network.alchemy)
+return [];
 
-    try{
+try{
 
-        const result = await rpc(
-            network.url,
-            "alchemy_getTokenBalances",
-            [address,"erc20"]
-        );
+const data=await rpc(
+network.alchemy,
+"alchemy_getTokenBalances",
+[address,"erc20"]
+);
 
-        if(!result || !result.tokenBalances){
-            return [];
-        }
+return data.tokenBalances || [];
 
-        const tokens =
-            result.tokenBalances.filter(
-                t =>
-                t.tokenBalance &&
-                t.tokenBalance !== "0x0"
-            );
+}catch(e){
 
-        return tokens;
+console.log(
+"Token API:",
+network.name,
+e.message
+);
 
-    }catch(e){
+return [];
+}
 
-        console.log(
-            "Token error:",
-            network.name,
-            e
-        );
-
-        return [];
-    }
 }
 
 
-/* =====================================================
+/* ==========================================
    اطلاعات توکن
-===================================================== */
+========================================== */
 
-async function getTokenInfo(network,address){
+async function tokenInfo(network,address){
 
-    try{
+try{
 
-        const data = await rpc(
-            network.url,
-            "alchemy_getTokenMetadata",
-            [address]
-        );
+return await rpc(
+network.alchemy,
+"alchemy_getTokenMetadata",
+[address]
+);
 
-        return data;
+}catch(e){
 
-    }catch(e){
+return {
+name:"Unknown",
+symbol:"TOKEN",
+decimals:18
+};
 
-        return {
-            name:"Unknown",
-            symbol:"TOKEN",
-            decimals:18
-        };
-    }
+}
+
 }
 
 
-/* =====================================================
-   نمایش عدد
-===================================================== */
+/* ==========================================
+   فرمت عدد
+========================================== */
 
-function formatNumber(value){
+function fmt(x){
 
-    const n = Number(value);
+let n=Number(x);
 
-    if(!Number.isFinite(n)){
-        return value;
-    }
+if(!Number.isFinite(n))
+return x;
 
-    if(n === 0){
-        return "0";
-    }
+return n.toLocaleString(
+"en-US",
+{
+maximumFractionDigits:8
+}
+);
 
-    if(n < 0.000001){
-        return n.toExponential(4);
-    }
-
-    return n.toLocaleString(
-        "en-US",
-        {
-            maximumFractionDigits:8
-        }
-    );
 }
 
 
-/* =====================================================
-   ساخت آدرس + موجودی
-===================================================== */
+/* ==========================================
+   اسکن
+========================================== */
 
-async function generateAddress(){
+async function scan(){
 
-    const input =
-        document.getElementById("mnemonic");
+const input=
+document.getElementById("mnemonic");
 
-    const errorBox =
-        document.getElementById("error");
+const error=
+document.getElementById("error");
 
-    const addressBox =
-        document.getElementById("addressBox");
+const addressBox=
+document.getElementById("address");
 
-    const addressElement =
-        document.getElementById("address");
+const loading=
+document.getElementById("loading");
 
-    const balancesBox =
-        document.getElementById("balances");
+const results=
+document.getElementById("results");
 
-    const loading =
-        document.getElementById("loading");
+const networksBox=
+document.getElementById("networks");
 
-    const button =
-        document.getElementById("scanBtn");
 
+error.textContent="";
+addressBox.style.display="none";
+results.style.display="none";
+networksBox.innerHTML="";
 
-    errorBox.textContent = "";
 
-    addressBox.style.display = "none";
+let mnemonic=
+input.value
+.trim()
+.replace(/\s+/g," ");
 
-    balancesBox.style.display = "none";
 
-    balancesBox.innerHTML = "";
+if(!mnemonic){
 
-    const mnemonic =
-        input.value
-        .trim()
-        .replace(/\s+/g," ");
+error.textContent=
+"❌ عبارت بازیابی را وارد کنید";
 
+return;
 
-    if(!mnemonic){
+}
 
-        errorBox.textContent =
-            "❌ عبارت بازیابی را وارد کنید.";
 
-        return;
-    }
+if(typeof ethers==="undefined"){
 
+error.textContent=
+"❌ ethers بارگذاری نشده";
 
-    if(typeof ethers === "undefined"){
+return;
 
-        errorBox.textContent =
-            "❌ کتابخانه ethers بارگذاری نشده است.";
+}
 
-        return;
-    }
 
+if(mnemonic.split(" ").length!==12){
 
-    const words =
-        mnemonic.split(" ");
+error.textContent=
+"❌ باید دقیقاً ۱۲ کلمه وارد کنید";
 
+return;
 
-    if(words.length !== 12){
+}
 
-        errorBox.textContent =
-            "❌ عبارت باید دقیقاً ۱۲ کلمه داشته باشد.";
 
-        return;
-    }
+try{
 
+if(!ethers.Mnemonic.isValidMnemonic(mnemonic)){
 
-    try{
+error.textContent=
+"❌ عبارت بازیابی معتبر نیست";
 
-        if(!ethers.Mnemonic.isValidMnemonic(mnemonic)){
+return;
 
-            errorBox.textContent =
-                "❌ عبارت بازیابی معتبر نیست.";
+}
 
-            return;
-        }
 
+/* ساخت آدرس */
 
-        /* ساخت کیف پول */
+const wallet=
+ethers.HDNodeWallet.fromPhrase(mnemonic);
 
-        const wallet =
-            ethers.HDNodeWallet.fromPhrase(
-                mnemonic
-            );
+const address=
+wallet.address;
 
 
-        const address =
-            wallet.address;
+addressBox.innerHTML=
+"آدرس کیف پول:<br><br>"+
+address;
 
+addressBox.style.display="block";
 
-        addressElement.textContent =
-            address;
+loading.style.display="block";
 
-        addressBox.style.display =
-            "block";
 
+/* ==========================================
+   بررسی شبکه‌ها
+========================================== */
 
-        /* شروع اسکن */
+for(const network of NETWORKS){
 
-        loading.style.display =
-            "block";
+const box=
+document.createElement("div");
 
-        button.disabled = true;
+box.className="network";
 
+box.innerHTML=`
+<h3>${network.name}</h3>
 
-        for(const network of NETWORKS){
+<div class="balance">
 
-            const box =
-                document.createElement("div");
+<span>${network.symbol}</span>
 
-            box.className =
-                "network";
+<span class="value">
+در حال بررسی...
+</span>
 
+</div>
+`;
 
-            box.innerHTML = `
-                <h3>
-                    ${network.name}
-                </h3>
+networksBox.appendChild(box);
 
-                <div class="native">
-                    <span>
-                        ${network.symbol}
-                    </span>
+results.style.display="block";
 
-                    <span class="value">
-                        در حال بررسی...
-                    </span>
-                </div>
-            `;
 
+try{
 
-            balancesBox.appendChild(box);
+const balance=
+await nativeBalance(
+network,
+address
+);
 
-            balancesBox.style.display =
-                "block";
+box.querySelector(".value")
+.textContent=fmt(balance);
 
 
-            /* Native Balance */
+/* توکن‌ها */
 
-            try{
+if(network.alchemy){
 
-                const balance =
-                    await getNative(
-                        network,
-                        address
-                    );
+const tokens=
+await getTokens(
+network,
+address
+);
 
 
-                box.querySelector(".value")
-                    .textContent =
-                    formatNumber(balance);
+/* فقط موجودی بیشتر از صفر */
 
+const active=
+tokens.filter(
+t=>
+t.tokenBalance &&
+t.tokenBalance!=="0x0"
+);
 
-            }catch(e){
 
-                box.querySelector(".value")
-                    .textContent =
-                    "خطا";
-            }
+for(const token of active){
 
+try{
 
-            /* ERC20 */
+const info=
+await tokenInfo(
+network,
+token.contractAddress
+);
 
-            if(network.name !== "BNB Chain"){
+const decimals=
+Number(info.decimals??18);
 
-                const tokens =
-                    await getTokens(
-                        network,
-                        address
-                    );
+const amount=
+ethers.formatUnits(
+token.tokenBalance,
+decimals
+);
 
+if(Number(amount)<=0)
+continue;
 
-                if(tokens.length > 0){
 
-                    const title =
-                        document.createElement("div");
+const row=
+document.createElement("div");
 
-                    title.className =
-                        "small";
+row.className="token";
 
-                    title.textContent =
-                        "🪙 توکن‌ها:";
+row.innerHTML=`
 
-                    box.appendChild(title);
+<span>
+${info.name||"Unknown"}
+<br>
+<small>
+${info.symbol||"TOKEN"}
+</small>
+</span>
 
+<span class="tokenValue">
+${fmt(amount)}
+</span>
 
-                    for(const token of tokens){
+`;
 
-                        try{
+box.appendChild(row);
 
-                            const info =
-                                await getTokenInfo(
-                                    network,
-                                    token.contractAddress
-                                );
+}catch(e){
 
+console.log(e);
 
-                            const decimals =
-                                Number(
-                                    info.decimals ?? 18
-                                );
+}
 
+}
 
-                            const amount =
-                                ethers.formatUnits(
-                                    token.tokenBalance,
-                                    decimals
-                                );
+}
 
+}catch(e){
 
-                            if(Number(amount) === 0){
-                                continue;
-                            }
+box.querySelector(".value")
+.textContent="⚠️ "+e.message;
 
+}
 
-                            const row =
-                                document.createElement("div");
+}
 
-                            row.className =
-                                "token";
 
+loading.style.display="none";
 
-                            row.innerHTML = `
 
-                                <span class="tokenName">
-                                    ${info.name || "Unknown"}
-                                    (${info.symbol || "TOKEN"})
-                                </span>
+}catch(e){
 
-                                <span class="tokenValue">
-                                    ${formatNumber(amount)}
-                                </span>
+loading.style.display="none";
 
-                            `;
+error.textContent=
+"❌ "+e.message;
 
-
-                            box.appendChild(row);
-
-
-                        }catch(e){
-
-                            console.log(
-                                "Token metadata error",
-                                e
-                            );
-
-                        }
-
-                    }
-
-                }
-
-            }
-
-        }
-
-
-        loading.style.display =
-            "none";
-
-        button.disabled =
-            false;
-
-
-    }catch(error){
-
-        console.error(error);
-
-        loading.style.display =
-            "none";
-
-        button.disabled =
-            false;
-
-        errorBox.textContent =
-            "❌ خطا: " + error.message;
-
-    }
+}
 
 }
 
 </script>
 
 </body>
-  </html>
+    </html>
