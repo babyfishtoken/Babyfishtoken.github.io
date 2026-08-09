@@ -1,219 +1,384 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>انتخاب تصادفی ۱۲ کلمه</title>
-    <style>
-        body {
-            font-family: Tahoma, sans-serif;
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-        .container {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        textarea {
-            width: 100%;
-            height: 80px;
-            padding: 12px;
-            font-size: 18px;
-            border: 2px solid #4CAF50;
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-family: 'Courier New', monospace;
-            direction: ltr;
-            text-align: left;
-        }
-        button {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            font-size: 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 15px;
-            margin-left: 10px;
-        }
-        button:hover {
-            background: #45a049;
-        }
-        button:disabled {
-            background: #cccccc;
-            cursor: not-allowed;
-        }
-        .info {
-            margin-top: 15px;
-            color: #666;
-            font-size: 14px;
-            padding: 10px;
-            background: #f9f9f9;
-            border-radius: 6px;
-        }
-        .status {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 6px;
-            font-weight: bold;
-        }
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-        }
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        .status.loading {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-        .copy-btn {
-            background: #2196F3;
-        }
-        .copy-btn:hover {
-            background: #0b7dda;
-        }
-        .btn-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Mnemonic → Wallet Address</title>
+
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    padding:30px 15px;
+    background:#111827;
+    color:#fff;
+    font-family:Arial,sans-serif;
+}
+
+.container{
+    max-width:600px;
+    margin:auto;
+    background:#1f2937;
+    padding:25px;
+    border-radius:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,.3);
+}
+
+h1{
+    text-align:center;
+    margin-top:0;
+    color:#60a5fa;
+}
+
+textarea{
+    width:100%;
+    height:120px;
+    padding:15px;
+    border:1px solid #374151;
+    border-radius:12px;
+    background:#111827;
+    color:#fff;
+    font-size:16px;
+    resize:none;
+    direction:ltr;
+    text-align:left;
+}
+
+.btn-group{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+}
+
+.btn-group button{
+    flex:1;
+    padding:14px;
+    border:0;
+    border-radius:12px;
+    color:white;
+    font-size:17px;
+    cursor:pointer;
+}
+
+.btn-group button:disabled{
+    opacity:0.5;
+    cursor:not-allowed;
+}
+
+.btn-primary{
+    background:#2563eb;
+}
+
+.btn-primary:hover:not(:disabled){
+    background:#1d4ed8;
+}
+
+.btn-random{
+    background:#059669;
+}
+
+.btn-random:hover:not(:disabled){
+    background:#047857;
+}
+
+.btn-copy{
+    background:#7c3aed;
+}
+
+.btn-copy:hover:not(:disabled){
+    background:#6d28d9;
+}
+
+.result{
+    display:none;
+    margin-top:20px;
+    padding:15px;
+    background:#111827;
+    border-radius:12px;
+}
+
+.label{
+    color:#9ca3af;
+    margin-bottom:8px;
+}
+
+.address{
+    direction:ltr;
+    text-align:left;
+    word-break:break-all;
+    color:#34d399;
+    font-family:monospace;
+    font-size:15px;
+}
+
+.error{
+    margin-top:15px;
+    color:#f87171;
+    text-align:center;
+}
+
+.status{
+    margin-top:10px;
+    padding:10px;
+    border-radius:8px;
+    text-align:center;
+    font-size:14px;
+    display:none;
+}
+
+.status.loading{
+    display:block;
+    background:#1e3a5f;
+    color:#60a5fa;
+}
+
+.status.success{
+    display:block;
+    background:#064e3b;
+    color:#34d399;
+}
+
+.status.error{
+    display:block;
+    background:#7f1d1d;
+    color:#f87171;
+}
+
+.info{
+    margin-top:12px;
+    color:#9ca3af;
+    font-size:13px;
+    text-align:center;
+}
+</style>
 </head>
+
 <body>
-    <div class="container">
-        <h2>🎲 انتخاب ۱۲ کلمه تصادفی</h2>
-        
-        <div id="status" class="status loading">⏳ در حال بارگذاری فایل...</div>
 
-        <div class="btn-group">
-            <button id="selectBtn" onclick="selectRandomWords()" disabled>انتخاب ۱۲ کلمه</button>
-            <button onclick="clearText()" style="background:#f44336;">پاک کردن</button>
-            <button onclick="copyText()" class="copy-btn" id="copyBtn" disabled>📋 کپی</button>
-        </div>
+<div class="container">
 
-        <h3>نتیجه:</h3>
-        <textarea id="resultArea" placeholder="۱۲ کلمه تصادفی اینجا نمایش داده می‌شود..." readonly></textarea>
-        
-        <div class="info">
-            ✅ ۱۲ کلمه به صورت تصادفی با امکان تکرار انتخاب می‌شوند.<br>
-            📁 فایل: <strong>key.txt</strong> (کنار فایل index.html)<br>
-            📝 کلمات با یک فاصله از هم جدا می‌شوند.
-        </div>
+    <h1>Mnemonic → Wallet Address</h1>
+
+    <div id="status" class="status loading">⏳ در حال بارگذاری کلمات از فایل key.txt...</div>
+
+    <textarea
+        id="mnemonic"
+        placeholder="12 کلمه را با فاصله وارد کنید..."
+        autocomplete="off"
+        spellcheck="false"></textarea>
+
+    <div class="btn-group">
+        <button class="btn-random" id="randomBtn" onclick="setRandomMnemonic()" disabled>
+            🎲 کلمات تصادفی
+        </button>
+        <button class="btn-primary" onclick="generateAddress()">
+            نمایش آدرس کیف پول
+        </button>
+        <button class="btn-copy" onclick="copyMnemonic()" id="copyBtn" disabled>
+            📋 کپی
+        </button>
     </div>
 
-    <script>
-        let fileLines = [];
-        const statusDiv = document.getElementById('status');
-        const selectBtn = document.getElementById('selectBtn');
-        const copyBtn = document.getElementById('copyBtn');
-        const resultArea = document.getElementById('resultArea');
+    <div id="error" class="error"></div>
 
-        // بارگذاری خودکار فایل key.txt از مسیر سایت
-        async function loadFile() {
-            try {
-                statusDiv.className = 'status loading';
-                statusDiv.textContent = '⏳ در حال خواندن فایل key.txt...';
-                
-                const response = await fetch('key.txt');
-                
-                if (!response.ok) {
-                    throw new Error(`خطا در بارگذاری فایل: ${response.status} ${response.statusText}`);
-                }
-                
-                const content = await response.text();
-                
-                // تقسیم به خطوط و حذف خطوط خالی
-                fileLines = content.split(/\r?\n/).filter(line => line.trim() !== '');
-                
-                if (fileLines.length === 0) {
-                    throw new Error('فایل key.txt خالی است!');
-                }
-                
-                statusDiv.className = 'status success';
-                statusDiv.textContent = `✅ فایل بارگذاری شد! (${fileLines.length} کلمه)`;
-                selectBtn.disabled = false;
-                copyBtn.disabled = true;
-                
-                // پیام خوش‌آمدگویی در textarea
-                resultArea.value = `✅ ${fileLines.length} کلمه بارگذاری شد. دکمه سبز را بزنید.`;
-                
-            } catch (error) {
-                statusDiv.className = 'status error';
-                statusDiv.textContent = `❌ خطا: ${error.message}`;
-                selectBtn.disabled = true;
-                copyBtn.disabled = true;
-                resultArea.value = `❌ خطا: ${error.message}`;
-                console.error('Error loading file:', error);
-            }
+    <div id="result" class="result">
+        <div class="label">آدرس کیف پول:</div>
+        <div id="address" class="address"></div>
+    </div>
+
+    <div class="info">
+        💡 دکمه "کلمات تصادفی" ۱۲ کلمه از فایل key.txt انتخاب میکند
+    </div>
+
+</div>
+
+<script>
+
+let fileWords = [];
+const statusDiv = document.getElementById('status');
+const randomBtn = document.getElementById('randomBtn');
+const copyBtn = document.getElementById('copyBtn');
+const mnemonicInput = document.getElementById('mnemonic');
+const resultDiv = document.getElementById('result');
+const addressBox = document.getElementById('address');
+const errorBox = document.getElementById('error');
+
+// بارگذاری فایل key.txt
+async function loadWords() {
+    try {
+        statusDiv.className = 'status loading';
+        statusDiv.textContent = '⏳ در حال خواندن فایل key.txt...';
+        statusDiv.style.display = 'block';
+
+        const response = await fetch('key.txt');
+
+        if (!response.ok) {
+            throw new Error(`خطا: ${response.status}`);
         }
 
-        // تابع اصلی انتخاب ۱۲ کلمه تصادفی
-        function selectRandomWords() {
-            if (fileLines.length === 0) {
-                resultArea.value = '❌ فایل بارگذاری نشده است!';
-                return;
-            }
+        const content = await response.text();
 
-            // انتخاب ۱۲ کلمه تصادفی با امکان تکرار
-            let selectedWords = [];
-            for (let i = 0; i < 12; i++) {
-                const randomIndex = Math.floor(Math.random() * fileLines.length);
-                selectedWords.push(fileLines[randomIndex]);
-            }
+        // تقسیم به خطوط و حذف خطوط خالی
+        fileWords = content.split(/\r?\n/).filter(line => line.trim() !== '');
 
-            // اتصال کلمات با یک فاصله
-            const result = selectedWords.join(' ');
-            
-            // نمایش در textarea
-            resultArea.value = result;
-            
-            // فعال کردن دکمه کپی
-            copyBtn.disabled = false;
+        if (fileWords.length === 0) {
+            throw new Error('فایل خالی است!');
         }
 
-        // تابع پاک کردن
-        function clearText() {
-            resultArea.value = '';
-            copyBtn.disabled = true;
+        if (fileWords.length < 12) {
+            throw new Error(`فایل فقط ${fileWords.length} کلمه دارد! حداقل ۱۲ کلمه نیاز است.`);
         }
 
-        // تابع کپی کردن
-        function copyText() {
-            const text = resultArea.value;
-            if (!text || text.includes('❌') || text.includes('✅')) {
-                return;
-            }
-            
-            navigator.clipboard.writeText(text).then(() => {
-                const originalText = copyBtn.textContent;
-                copyBtn.textContent = '✅ کپی شد!';
-                setTimeout(() => {
-                    copyBtn.textContent = originalText;
-                }, 2000);
-            }).catch(err => {
-                // روش جایگزین برای مرورگرهای قدیمی
-                resultArea.select();
-                document.execCommand('copy');
-                const originalText = copyBtn.textContent;
-                copyBtn.textContent = '✅ کپی شد!';
-                setTimeout(() => {
-                    copyBtn.textContent = originalText;
-                }, 2000);
-            });
+        statusDiv.className = 'status success';
+        statusDiv.textContent = `✅ ${fileWords.length} کلمه بارگذاری شد!`;
+        randomBtn.disabled = false;
+        copyBtn.disabled = true;
+
+        // بعد از 3 ثانیه وضعیت را مخفی میکنیم
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 3000);
+
+    } catch (error) {
+        statusDiv.className = 'status error';
+        statusDiv.textContent = `❌ خطا: ${error.message}`;
+        statusDiv.style.display = 'block';
+        randomBtn.disabled = true;
+        copyBtn.disabled = true;
+        console.error('Error loading file:', error);
+    }
+}
+
+// انتخاب ۱۲ کلمه تصادفی
+function setRandomMnemonic() {
+    if (fileWords.length === 0) {
+        errorBox.textContent = '❌ فایل بارگذاری نشده است!';
+        return;
+    }
+
+    if (fileWords.length < 12) {
+        errorBox.textContent = `❌ فقط ${fileWords.length} کلمه موجود است!`;
+        return;
+    }
+
+    // انتخاب ۱۲ کلمه تصادفی با امکان تکرار
+    let selectedWords = [];
+    for (let i = 0; i < 12; i++) {
+        const randomIndex = Math.floor(Math.random() * fileWords.length);
+        selectedWords.push(fileWords[randomIndex]);
+    }
+
+    // قرار دادن در فیلد متن
+    mnemonicInput.value = selectedWords.join(' ');
+
+    // فعال کردن دکمه کپی
+    copyBtn.disabled = false;
+
+    // پاک کردن خطاها و نتیجه قبلی
+    errorBox.textContent = '';
+    resultDiv.style.display = 'none';
+
+    // نمایش پیام موفقیت
+    statusDiv.className = 'status success';
+    statusDiv.textContent = '✅ ۱۲ کلمه تصادفی انتخاب شد!';
+    statusDiv.style.display = 'block';
+
+    setTimeout(() => {
+        statusDiv.style.display = 'none';
+    }, 2000);
+}
+
+// کپی کردن عبارت
+function copyMnemonic() {
+    const text = mnemonicInput.value;
+    if (!text) return;
+
+    navigator.clipboard.writeText(text).then(() => {
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = '✅ کپی شد!';
+        setTimeout(() => {
+            copyBtn.textContent = originalText;
+        }, 2000);
+    }).catch(() => {
+        // روش جایگزین
+        mnemonicInput.select();
+        document.execCommand('copy');
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = '✅ کپی شد!';
+        setTimeout(() => {
+            copyBtn.textContent = originalText;
+        }, 2000);
+    });
+}
+
+// تابع اصلی generateAddress (بدون تغییر)
+function generateAddress(){
+
+    const input = mnemonicInput;
+    const result = resultDiv;
+    const addressBox = document.getElementById("address");
+    const errorBox = document.getElementById("error");
+
+    result.style.display = "none";
+    errorBox.textContent = "";
+
+    const mnemonic = input.value.trim().replace(/\s+/g, " ");
+
+    if(!mnemonic){
+        errorBox.textContent = "❌ عبارت بازیابی را وارد کنید.";
+        return;
+    }
+
+    if(typeof ethers === "undefined"){
+        errorBox.textContent = "❌ کتابخانه ethers بارگذاری نشده است.";
+        return;
+    }
+
+    const words = mnemonic.split(" ");
+
+    if(words.length !== 12){
+        errorBox.textContent =
+            "❌ عبارت باید دقیقاً ۱۲ کلمه داشته باشد.";
+        return;
+    }
+
+    try{
+
+        if(!ethers.Mnemonic.isValidMnemonic(mnemonic)){
+            errorBox.textContent =
+                "❌ عبارت بازیابی معتبر نیست.";
+            return;
         }
 
-        // بارگذاری خودکار هنگام باز شدن صفحه
-        window.addEventListener('DOMContentLoaded', loadFile);
-        
-        console.log('✅ کد آماده است! فقط ۱۲ کلمه با یک فاصله نمایش داده می‌شود.');
-    </script>
+        const wallet =
+            ethers.HDNodeWallet.fromPhrase(mnemonic);
+
+        addressBox.textContent =
+            wallet.address;
+
+        result.style.display = "block";
+
+    }catch(error){
+
+        console.error(error);
+
+        errorBox.textContent =
+            "❌ خطا در پردازش عبارت بازیابی.";
+
+    }
+}
+
+// بارگذاری خودکار هنگام باز شدن صفحه
+window.addEventListener('DOMContentLoaded', loadWords);
+
+console.log('✅ کد آماده است! فایل key.txt بارگذاری میشود.');
+</script>
+
 </body>
-</html>
+    </html>
