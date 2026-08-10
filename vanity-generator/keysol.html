@@ -5,28 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>جستجوی خودکار کیف پول سولانا</title>
 
-<!-- کتابخانه‌های مورد نیاز -->
+<!-- کتابخانه‌های اصلاح‌شده با نسخه‌های Browser-ready -->
 <script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/dist/buffer.min.js"></script>
 <script>
     window.Buffer = window.Buffer || Buffer;
     window.global = window;
 </script>
 
-<!-- سولانا Web3 -->
+<script src="https://cdn.jsdelivr.net/npm/bip39@2.6.0/dist/bip39.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.95.8/lib/index.iife.min.js"></script>
-
-<!-- کتابخانه BIP39 - نسخه پایدار -->
-<script src="https://cdn.jsdelivr.net/npm/bip39@3.1.0/dist/bip39.min.js"></script>
-
-<!-- کتابخانه برای derivation مسیر سولانا -->
-<script src="https://cdn.jsdelivr.net/npm/ed25519-hd-key@1.3.0/dist/ed25519-hd-key.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ed25519-hd-key@1.2.0/dist/ed25519-hd-key.min.js"></script>
 
 <style>
-/* ==================== استایل‌ها ==================== */
+/* ==================== استایل‌ها (همان) ==================== */
 *{
     box-sizing:border-box;
 }
-
 body{
     margin:0;
     padding:30px 15px;
@@ -34,7 +28,6 @@ body{
     color:#fff;
     font-family:Arial,sans-serif;
 }
-
 .container{
     max-width:750px;
     margin:auto;
@@ -43,24 +36,20 @@ body{
     border-radius:18px;
     box-shadow:0 10px 30px rgba(0,0,0,.3);
 }
-
 h1{
     text-align:center;
     margin-top:0;
     color:#60a5fa;
 }
-
 h1 .solana{
     color:#9945FF;
 }
-
 h1 span{
     color:#f59e0b;
     font-size:14px;
     display:block;
     margin-top:5px;
 }
-
 textarea{
     width:100%;
     height:120px;
@@ -75,24 +64,20 @@ textarea{
     text-align:left;
     transition:0.3s;
 }
-
 textarea.found{
     border:3px solid #34d399;
     box-shadow:0 0 30px rgba(52,211,153,0.4);
 }
-
 textarea.checking{
     border:2px solid #f59e0b;
     box-shadow:0 0 20px rgba(245,158,11,0.2);
 }
-
 .btn-group{
     display:flex;
     gap:10px;
     margin-top:15px;
     flex-wrap:wrap;
 }
-
 .btn-group button{
     flex:1;
     padding:12px 10px;
@@ -104,54 +89,46 @@ textarea.checking{
     min-width:70px;
     transition:0.2s;
 }
-
 .btn-group button:disabled{
     opacity:0.4;
     cursor:not-allowed;
 }
-
 .btn-primary{
     background:#2563eb;
 }
 .btn-primary:hover:not(:disabled){
     background:#1d4ed8;
 }
-
 .btn-random{
     background:#059669;
 }
 .btn-random:hover:not(:disabled){
     background:#047857;
 }
-
 .btn-copy{
     background:#7c3aed;
 }
 .btn-copy:hover:not(:disabled){
     background:#6d28d9;
 }
-
 .btn-start{
     background:#9945FF;
 }
 .btn-start:hover:not(:disabled){
     background:#7a2dd6;
 }
-
 .btn-stop{
     background:#dc2626;
 }
 .btn-stop:hover:not(:disabled){
     background:#b91c1c;
 }
-
 .btn-balance{
     background:#f59e0b;
 }
 .btn-balance:hover:not(:disabled){
     background:#d97706;
 }
-
 .result{
     display:none;
     margin-top:20px;
@@ -159,12 +136,10 @@ textarea.checking{
     background:#111827;
     border-radius:12px;
 }
-
 .label{
     color:#9ca3af;
     margin-bottom:8px;
 }
-
 .address{
     direction:ltr;
     text-align:left;
@@ -173,13 +148,11 @@ textarea.checking{
     font-family:monospace;
     font-size:15px;
 }
-
 .error{
     margin-top:15px;
     color:#f87171;
     text-align:center;
 }
-
 .status{
     margin-top:10px;
     padding:10px;
@@ -188,31 +161,26 @@ textarea.checking{
     font-size:14px;
     display:none;
 }
-
 .status.loading{
     display:block;
     background:#1e3a5f;
     color:#60a5fa;
 }
-
 .status.success{
     display:block;
     background:#064e3b;
     color:#34d399;
 }
-
 .status.error{
     display:block;
     background:#7f1d1d;
     color:#f87171;
 }
-
 .status.info{
     display:block;
     background:#1e3a5f;
     color:#60a5fa;
 }
-
 .status.found{
     display:block;
     background:#064e3b;
@@ -220,48 +188,40 @@ textarea.checking{
     border:2px solid #34d399;
     animation: pulse 1.5s ease-in-out infinite;
 }
-
 .status.checking{
     display:block;
     background:#1e3a5f;
     color:#f59e0b;
     border:2px solid #f59e0b;
 }
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
+@keyframes pulse{
+    0%,100%{opacity:1}
+    50%{opacity:.7}
 }
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+@keyframes spin{
+    0%{transform:rotate(0deg)}
+    100%{transform:rotate(360deg)}
 }
-
 .info{
     margin-top:12px;
     color:#9ca3af;
     font-size:13px;
     text-align:center;
 }
-
 .counter{
     margin-top:10px;
     text-align:center;
     color:#60a5fa;
     font-size:14px;
 }
-
 .counter.found{
     color:#34d399;
     font-weight:bold;
     font-size:18px;
 }
-
 .counter.checking{
     color:#f59e0b;
 }
-
 .balance-result{
     margin-top:15px;
     padding:15px;
@@ -269,14 +229,12 @@ textarea.checking{
     border-radius:12px;
     display:none;
 }
-
 .balance-title{
     color:#9945FF;
     font-weight:bold;
     margin-bottom:10px;
     text-align:center;
 }
-
 .balance-item{
     display:flex;
     justify-content:space-between;
@@ -286,35 +244,28 @@ textarea.checking{
     border-radius:8px;
     color:#fff;
 }
-
 .balance-item .network{
     color:#9945FF;
     font-weight:bold;
 }
-
 .balance-item .amount{
     color:#ffd93d;
 }
-
 .balance-item .empty{
     color:#888;
 }
-
 .balance-item .symbol{
     color:#6fcf97;
     margin-right:8px;
 }
-
 .balance-found{
     border-right:4px solid #34d399;
     background:#0a3d2a;
 }
-
 .balance-empty{
     border-right:4px solid #ef4444;
     opacity:0.6;
 }
-
 .balance-success-box{
     background:linear-gradient(135deg,#064e3b,#0a3d2a);
     padding:15px;
@@ -323,18 +274,15 @@ textarea.checking{
     margin-top:10px;
     border:2px solid #34d399;
 }
-
 .balance-success-box .big{
     font-size:22px;
     color:#34d399;
     font-weight:bold;
 }
-
 .balance-success-box .small{
     color:#6fcf97;
     font-size:14px;
 }
-
 .stats{
     display:flex;
     justify-content:space-around;
@@ -344,31 +292,25 @@ textarea.checking{
     border-radius:8px;
     flex-wrap:wrap;
 }
-
 .stats div{
     text-align:center;
     padding:5px 10px;
 }
-
 .stats .number{
     color:#f59e0b;
     font-size:20px;
     font-weight:bold;
 }
-
 .stats .number.green{
     color:#34d399;
 }
-
 .stats .number.purple{
     color:#9945FF;
 }
-
 .stats .label{
     color:#9ca3af;
     font-size:12px;
 }
-
 .found-words-box{
     margin-top:15px;
     padding:15px;
@@ -377,14 +319,12 @@ textarea.checking{
     border:2px solid #34d399;
     display:none;
 }
-
 .found-words-box .title{
     color:#34d399;
     font-weight:bold;
     text-align:center;
     margin-bottom:10px;
 }
-
 .found-words-box .words{
     color:#fff;
     direction:ltr;
@@ -396,25 +336,22 @@ textarea.checking{
     border-radius:8px;
     word-break:break-all;
 }
-
-.spinner {
+.spinner{
     display:inline-block;
     width:16px;
     height:16px;
     border:3px solid #f59e0b;
     border-top:3px solid transparent;
     border-radius:50%;
-    animation: spin 0.8s linear infinite;
+    animation:spin .8s linear infinite;
     margin-right:8px;
     vertical-align:middle;
 }
-
-.spinner-white {
+.spinner-white{
     border:3px solid #fff;
     border-top:3px solid transparent;
 }
-
-.spinner-purple {
+.spinner-purple{
     border:3px solid #9945FF;
     border-top:3px solid transparent;
 }
@@ -441,21 +378,11 @@ textarea.checking{
         spellcheck="false"></textarea>
 
     <div class="btn-group">
-        <button class="btn-random" id="randomBtn" onclick="setRandomMnemonic()">
-            🎲 تصادفی معتبر
-        </button>
-        <button class="btn-primary" onclick="generateAddress()">
-            🔍 نمایش آدرس
-        </button>
-        <button class="btn-balance" onclick="checkBalance()" id="balanceBtn" disabled>
-            💰 بررسی موجودی
-        </button>
-        <button class="btn-copy" onclick="copyMnemonic()" id="copyBtn" disabled>
-            📋 کپی
-        </button>
-        <button class="btn-start" id="autoBtn" onclick="toggleAutoFind()">
-            🚀 شروع جستجو
-        </button>
+        <button class="btn-random" id="randomBtn" onclick="setRandomMnemonic()">🎲 تصادفی معتبر</button>
+        <button class="btn-primary" onclick="generateAddress()">🔍 نمایش آدرس</button>
+        <button class="btn-balance" onclick="checkBalance()" id="balanceBtn" disabled>💰 بررسی موجودی</button>
+        <button class="btn-copy" onclick="copyMnemonic()" id="copyBtn" disabled>📋 کپی</button>
+        <button class="btn-start" id="autoBtn" onclick="toggleAutoFind()">🚀 شروع جستجو</button>
     </div>
 
     <div id="counter" class="counter"></div>
@@ -477,26 +404,11 @@ textarea.checking{
     </div>
 
     <div id="stats" class="stats" style="display:none;">
-        <div>
-            <div class="number" id="statAttempts">0</div>
-            <div class="label">تعداد تلاش</div>
-        </div>
-        <div>
-            <div class="number green" id="statFound">0</div>
-            <div class="label">با موجودی</div>
-        </div>
-        <div>
-            <div class="number" id="statEmpty">0</div>
-            <div class="label">بدون موجودی</div>
-        </div>
-        <div>
-            <div class="number purple" id="statSpeed">0</div>
-            <div class="label">سرعت (تلاش/ثانیه)</div>
-        </div>
-        <div>
-            <div class="number" id="statAvgTime">0</div>
-            <div class="label">میانگین زمان بررسی (ms)</div>
-        </div>
+        <div><div class="number" id="statAttempts">0</div><div class="label">تعداد تلاش</div></div>
+        <div><div class="number green" id="statFound">0</div><div class="label">با موجودی</div></div>
+        <div><div class="number" id="statEmpty">0</div><div class="label">بدون موجودی</div></div>
+        <div><div class="number purple" id="statSpeed">0</div><div class="label">سرعت (تلاش/ثانیه)</div></div>
+        <div><div class="number" id="statAvgTime">0</div><div class="label">میانگین زمان بررسی (ms)</div></div>
     </div>
 
     <div class="info">
@@ -524,7 +436,6 @@ let pendingCheck = false;
 
 // ==================== تنظیمات سولانا ====================
 const SOLANA_RPC = 'https://api.mainnet-beta.solana.com';
-
 let solanaConnection = null;
 
 function getSolanaConnection() {
@@ -559,21 +470,31 @@ const foundWords = document.getElementById('foundWords');
 // ==================== تولید عبارت معتبر ====================
 function generateValidMnemonic() {
     try {
-        // بررسی اینکه کتابخانه bip39 وجود دارد
+        // بررسی کتابخانه‌ها
         if (typeof bip39 === 'undefined') {
             console.error('bip39 library not loaded!');
             return null;
         }
-        
-        // تولید عبارت ۱۲ کلمه‌ای (128 bits)
-        const mnemonic = bip39.generateMnemonic(128);
-        
-        // بررسی اعتبار
-        if (!bip39.validateMnemonic(mnemonic)) {
-            console.error('Generated mnemonic is invalid!');
+        if (typeof bip39.generateMnemonic !== 'function') {
+            console.error('bip39.generateMnemonic is not a function!');
             return null;
         }
-        
+
+        // تولید عبارت ۱۲ کلمه‌ای (128 bits)
+        const mnemonic = bip39.generateMnemonic(128);
+        if (!mnemonic) {
+            console.error('Generated mnemonic is empty!');
+            return null;
+        }
+
+        // بررسی اعتبار
+        if (typeof bip39.validateMnemonic === 'function') {
+            if (!bip39.validateMnemonic(mnemonic)) {
+                console.error('Generated mnemonic is invalid!');
+                return null;
+            }
+        }
+
         return mnemonic;
     } catch (error) {
         console.error('Error generating mnemonic:', error);
@@ -623,6 +544,7 @@ function getSolanaAddressFromMnemonic(mnemonic) {
 function isValidMnemonic(mnemonic) {
     try {
         if (typeof bip39 === 'undefined') return false;
+        if (typeof bip39.validateMnemonic !== 'function') return false;
         return bip39.validateMnemonic(mnemonic);
     } catch {
         return false;
@@ -998,17 +920,19 @@ function copyMnemonic() {
 }
 
 // ==================== بررسی بارگذاری کتابخانه‌ها ====================
-console.log('✅ کتابخانه‌ها:');
+console.log('✅ بررسی کتابخانه‌ها:');
 console.log('- bip39:', typeof bip39 !== 'undefined' ? '✅' : '❌');
 console.log('- ed25519HdKey:', typeof ed25519HdKey !== 'undefined' ? '✅' : '❌');
 console.log('- solanaWeb3:', typeof solanaWeb3 !== 'undefined' ? '✅' : '❌');
 
 // تست تولید عبارت
 try {
-    if (typeof bip39 !== 'undefined') {
+    if (typeof bip39 !== 'undefined' && typeof bip39.generateMnemonic === 'function') {
         const testMnemonic = bip39.generateMnemonic(128);
         console.log('✅ تست تولید عبارت:', testMnemonic);
-        console.log('✅ اعتبار عبارت:', bip39.validateMnemonic(testMnemonic));
+        if (typeof bip39.validateMnemonic === 'function') {
+            console.log('✅ اعتبار عبارت:', bip39.validateMnemonic(testMnemonic));
+        }
     }
 } catch(e) {
     console.error('❌ خطا در تست:', e);
