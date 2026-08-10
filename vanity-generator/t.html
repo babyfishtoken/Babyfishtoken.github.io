@@ -2,379 +2,706 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Wallet Scanner</title>
+<title>Mnemonic → Wallet Address & Balance</title>
 
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
 
 <style>
-
-body{
-background:#111827;
-color:white;
-font-family:Arial;
-padding:20px;
+*{
+    box-sizing:border-box;
 }
 
-.box{
-max-width:600px;
-margin:auto;
-background:#1f2937;
-padding:20px;
-border-radius:18px;
+body{
+    margin:0;
+    padding:30px 15px;
+    background:#111827;
+    color:#fff;
+    font-family:Arial,sans-serif;
+}
+
+.container{
+    max-width:700px;
+    margin:auto;
+    background:#1f2937;
+    padding:25px;
+    border-radius:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,.3);
 }
 
 h1{
-text-align:center;
-color:#60a5fa;
+    text-align:center;
+    margin-top:0;
+    color:#60a5fa;
 }
 
 textarea{
-width:100%;
-height:120px;
-background:#111827;
-color:white;
-border:1px solid #374151;
-border-radius:12px;
-padding:15px;
-font-size:16px;
-direction:ltr;
+    width:100%;
+    height:120px;
+    padding:15px;
+    border:1px solid #374151;
+    border-radius:12px;
+    background:#111827;
+    color:#fff;
+    font-size:16px;
+    resize:none;
+    direction:ltr;
+    text-align:left;
 }
 
-button{
-width:100%;
-margin-top:15px;
-padding:15px;
-border:0;
-border-radius:12px;
-background:#2563eb;
-color:white;
-font-size:17px;
+.btn-group{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+    flex-wrap:wrap;
 }
 
-.card{
-background:#111827;
-padding:15px;
-border-radius:12px;
-margin-top:15px;
+.btn-group button{
+    flex:1;
+    padding:14px;
+    border:0;
+    border-radius:12px;
+    color:white;
+    font-size:17px;
+    cursor:pointer;
+    min-width:120px;
 }
 
-.green{
-color:#34d399;
-word-break:break-all;
+.btn-group button:disabled{
+    opacity:0.5;
+    cursor:not-allowed;
 }
 
-.name{
-color:#60a5fa;
-font-size:20px;
-font-weight:bold;
+.btn-primary{
+    background:#2563eb;
+}
+
+.btn-primary:hover:not(:disabled){
+    background:#1d4ed8;
+}
+
+.btn-random{
+    background:#059669;
+}
+
+.btn-random:hover:not(:disabled){
+    background:#047857;
+}
+
+.btn-copy{
+    background:#7c3aed;
+}
+
+.btn-copy:hover:not(:disabled){
+    background:#6d28d9;
+}
+
+.btn-stop{
+    background:#dc2626;
+}
+
+.btn-stop:hover:not(:disabled){
+    background:#b91c1c;
+}
+
+.btn-balance{
+    background:#d97706;
+}
+
+.btn-balance:hover:not(:disabled){
+    background:#b45309;
+}
+
+.result{
+    display:none;
+    margin-top:20px;
+    padding:15px;
+    background:#111827;
+    border-radius:12px;
+}
+
+.label{
+    color:#9ca3af;
+    margin-bottom:8px;
+}
+
+.address{
+    direction:ltr;
+    text-align:left;
+    word-break:break-all;
+    color:#34d399;
+    font-family:monospace;
+    font-size:15px;
+    margin-bottom:10px;
+}
+
+.balance-info{
+    margin-top:10px;
+    padding:10px;
+    background:#1f2937;
+    border-radius:8px;
+}
+
+.balance-item{
+    display:flex;
+    justify-content:space-between;
+    padding:8px 0;
+    border-bottom:1px solid #374151;
+    font-family:monospace;
+    font-size:14px;
+}
+
+.balance-item:last-child{
+    border-bottom:none;
+}
+
+.balance-symbol{
+    color:#60a5fa;
+}
+
+.balance-amount{
+    color:#34d399;
+}
+
+.balance-usd{
+    color:#9ca3af;
+    font-size:12px;
 }
 
 .error{
-color:#f87171;
+    margin-top:15px;
+    color:#f87171;
+    text-align:center;
 }
 
-</style>
+.status{
+    margin-top:10px;
+    padding:10px;
+    border-radius:8px;
+    text-align:center;
+    font-size:14px;
+    display:none;
+}
 
+.status.loading{
+    display:block;
+    background:#1e3a5f;
+    color:#60a5fa;
+}
+
+.status.success{
+    display:block;
+    background:#064e3b;
+    color:#34d399;
+}
+
+.status.error{
+    display:block;
+    background:#7f1d1d;
+    color:#f87171;
+}
+
+.status.info{
+    display:block;
+    background:#1e3a5f;
+    color:#60a5fa;
+}
+
+.info{
+    margin-top:12px;
+    color:#9ca3af;
+    font-size:13px;
+    text-align:center;
+}
+
+.counter{
+    margin-top:10px;
+    text-align:center;
+    color:#60a5fa;
+    font-size:14px;
+}
+
+.loading-spinner{
+    display:inline-block;
+    animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+    0%{transform:rotate(0deg);}
+    100%{transform:rotate(360deg);}
+}
+</style>
 </head>
 
 <body>
 
-<div class="box">
+<div class="container">
 
-<h1>🔐 Wallet Scanner</h1>
+    <h1>Mnemonic → Wallet Address & Balance</h1>
 
-<textarea id="mnemonic"
-placeholder="۱۲ کلمه بازیابی را وارد کنید"></textarea>
+    <div id="status" class="status loading">⏳ در حال بارگذاری کلمات از فایل key.txt...</div>
 
-<button onclick="scan()">
-بررسی موجودی
-</button>
+    <textarea
+        id="mnemonic"
+        placeholder="12 کلمه را با فاصله وارد کنید..."
+        autocomplete="off"
+        spellcheck="false"></textarea>
 
+    <div class="btn-group">
+        <button class="btn-random" id="randomBtn" onclick="setRandomMnemonic()" disabled>
+            🎲 کلمات تصادفی
+        </button>
+        <button class="btn-primary" onclick="generateAddress()">
+            نمایش آدرس
+        </button>
+        <button class="btn-balance" onclick="checkBalance()" id="balanceBtn" disabled>
+            💰 موجودی
+        </button>
+        <button class="btn-copy" onclick="copyMnemonic()" id="copyBtn" disabled>
+            📋 کپی
+        </button>
+        <button class="btn-stop" id="autoBtn" onclick="toggleAutoFind()" disabled>
+            🔄 پیدا کردن خودکار
+        </button>
+    </div>
 
-<div id="result"></div>
+    <div id="counter" class="counter"></div>
 
+    <div id="error" class="error"></div>
+
+    <div id="result" class="result">
+        <div class="label">آدرس کیف پول:</div>
+        <div id="address" class="address"></div>
+        
+        <div id="balanceContainer" style="display:none;">
+            <div class="label">💰 موجودی:</div>
+            <div id="balanceInfo" class="balance-info"></div>
+        </div>
+    </div>
+
+    <div class="info">
+        💡 دکمه "پیدا کردن خودکار" به صورت مداوم کلمات تصادفی را تست میکند تا آدرس معتبر پیدا شود
+    </div>
 
 </div>
-
 
 <script>
 
+const API_KEY = 'cqt_rQQTFKHTdRJTxpVW88HyWT8WcKTc';
+const API_URL = 'https://hypercore.goldrushdata.com/info';
 
-const chains=[
+let fileWords = [];
+let isAutoFinding = false;
+let autoInterval = null;
+let attempts = 0;
+let foundAddress = false;
+let currentAddress = '';
 
+const statusDiv = document.getElementById('status');
+const randomBtn = document.getElementById('randomBtn');
+const copyBtn = document.getElementById('copyBtn');
+const autoBtn = document.getElementById('autoBtn');
+const balanceBtn = document.getElementById('balanceBtn');
+const mnemonicInput = document.getElementById('mnemonic');
+const resultDiv = document.getElementById('result');
+const addressBox = document.getElementById('address');
+const errorBox = document.getElementById('error');
+const counterDiv = document.getElementById('counter');
+const balanceContainer = document.getElementById('balanceContainer');
+const balanceInfo = document.getElementById('balanceInfo');
 
-{
-name:"Ethereum",
-symbol:"ETH",
-rpc:[
-"https://ethereum.publicnode.com"
-]
-},
+// بارگذاری فایل key.txt
+async function loadWords() {
+    try {
+        statusDiv.className = 'status loading';
+        statusDiv.textContent = '⏳ در حال خواندن فایل key.txt...';
+        statusDiv.style.display = 'block';
 
+        const response = await fetch('key.txt');
 
-{
-name:"Polygon",
-symbol:"POL",
-rpc:[
-"https://polygon-bor-rpc.publicnode.com",
-"https://rpc.ankr.com/polygon",
-"https://1rpc.io/matic"
-]
-},
+        if (!response.ok) {
+            throw new Error(`خطا: ${response.status}`);
+        }
 
+        const content = await response.text();
 
-{
-name:"BNB Chain",
-symbol:"BNB",
-rpc:[
-"https://bsc-dataseed.binance.org"
-]
-},
+        fileWords = content.split(/\r?\n/).filter(line => line.trim() !== '');
 
+        if (fileWords.length === 0) {
+            throw new Error('فایل خالی است!');
+        }
 
-{
-name:"Arbitrum",
-symbol:"ETH",
-rpc:[
-"https://arb1.arbitrum.io/rpc"
-]
-},
+        if (fileWords.length < 12) {
+            throw new Error(`فایل فقط ${fileWords.length} کلمه دارد! حداقل ۱۲ کلمه نیاز است.`);
+        }
 
+        statusDiv.className = 'status success';
+        statusDiv.textContent = `✅ ${fileWords.length} کلمه بارگذاری شد!`;
+        randomBtn.disabled = false;
+        autoBtn.disabled = false;
+        copyBtn.disabled = true;
+        balanceBtn.disabled = true;
 
-{
-name:"Optimism",
-symbol:"ETH",
-rpc:[
-"https://mainnet.optimism.io"
-]
-},
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 3000);
 
-
-{
-name:"Base",
-symbol:"ETH",
-rpc:[
-"https://mainnet.base.org"
-]
+    } catch (error) {
+        statusDiv.className = 'status error';
+        statusDiv.textContent = `❌ خطا: ${error.message}`;
+        statusDiv.style.display = 'block';
+        randomBtn.disabled = true;
+        autoBtn.disabled = true;
+        copyBtn.disabled = true;
+        balanceBtn.disabled = true;
+        console.error('Error loading file:', error);
+    }
 }
 
+// انتخاب ۱۲ کلمه تصادفی
+function getRandomWords() {
+    if (fileWords.length === 0) {
+        return null;
+    }
 
-];
+    let selectedWords = [];
+    for (let i = 0; i < 12; i++) {
+        const randomIndex = Math.floor(Math.random() * fileWords.length);
+        selectedWords.push(fileWords[randomIndex]);
+    }
 
-
-
-async function getBalance(address, rpcList){
-
-
-for(let rpc of rpcList){
-
-
-try{
-
-
-let provider =
-new ethers.JsonRpcProvider(rpc);
-
-
-let balance =
-await Promise.race([
-
-provider.getBalance(address),
-
-new Promise((_,reject)=>
-setTimeout(
-()=>reject("timeout"),
-8000
-))
-
-]);
-
-
-return ethers.formatEther(balance);
-
-
-}catch(e){
-
-continue;
-
+    return selectedWords;
 }
 
+// قرار دادن کلمات در فیلد
+function setRandomMnemonic() {
+    if (fileWords.length === 0) {
+        errorBox.textContent = '❌ فایل بارگذاری نشده است!';
+        return;
+    }
 
+    const words = getRandomWords();
+    if (!words) return;
+
+    mnemonicInput.value = words.join(' ');
+    copyBtn.disabled = false;
+    errorBox.textContent = '';
+    resultDiv.style.display = 'none';
+    balanceContainer.style.display = 'none';
+    balanceBtn.disabled = true;
+
+    statusDiv.className = 'status success';
+    statusDiv.textContent = '✅ ۱۲ کلمه تصادفی انتخاب شد!';
+    statusDiv.style.display = 'block';
+
+    setTimeout(() => {
+        statusDiv.style.display = 'none';
+    }, 2000);
 }
 
+// بررسی و تولید آدرس
+function tryGenerateAddress(mnemonic) {
+    try {
+        if (typeof ethers === "undefined") {
+            return { success: false, error: "کتابخانه ethers بارگذاری نشده است." };
+        }
 
-return null;
+        const words = mnemonic.split(" ");
+        if (words.length !== 12) {
+            return { success: false, error: "عبارت باید دقیقاً ۱۲ کلمه داشته باشد." };
+        }
 
+        if (!ethers.Mnemonic.isValidMnemonic(mnemonic)) {
+            return { success: false, error: "عبارت بازیابی معتبر نیست." };
+        }
 
+        const wallet = ethers.HDNodeWallet.fromPhrase(mnemonic);
+        return { success: true, address: wallet.address };
+
+    } catch (error) {
+        console.error(error);
+        return { success: false, error: "خطا در پردازش عبارت بازیابی." };
+    }
 }
 
+// گرفتن موجودی از API
+async function fetchBalance(address) {
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${API_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                type: 'metaAndAssetCtxs'
+            })
+        });
 
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.status}`);
+        }
 
-async function scan(){
+        const data = await response.json();
+        
+        // پردازش داده‌های موجودی
+        let balanceHTML = '';
+        
+        if (data.data && data.data.assets) {
+            const assets = data.data.assets;
+            
+            // فیلتر کردن دارایی‌های با ارزش
+            const validAssets = assets.filter(asset => 
+                asset.balance && 
+                parseFloat(asset.balance) > 0 &&
+                asset.symbol
+            );
 
+            if (validAssets.length === 0) {
+                balanceHTML = '<div class="balance-item">💰 موجودی صفر است</div>';
+            } else {
+                validAssets.forEach(asset => {
+                    const balance = parseFloat(asset.balance).toFixed(4);
+                    const usdValue = asset.valueUSD ? `$${parseFloat(asset.valueUSD).toFixed(2)}` : '';
+                    
+                    balanceHTML += `
+                        <div class="balance-item">
+                            <span class="balance-symbol">${asset.symbol}</span>
+                            <span>
+                                <span class="balance-amount">${balance}</span>
+                                ${usdValue ? `<span class="balance-usd"> (${usdValue})</span>` : ''}
+                            </span>
+                        </div>
+                    `;
+                });
+            }
+        } else {
+            balanceHTML = '<div class="balance-item">⚠️ اطلاعات موجودی در دسترس نیست</div>';
+        }
 
-let result =
-document.getElementById("result");
+        return { success: true, html: balanceHTML };
 
-
-result.innerHTML="";
-
-
-let phrase =
-document.getElementById("mnemonic")
-.value
-.trim()
-.replace(/\s+/g," ");
-
-
-
-try{
-
-
-if(!ethers.Mnemonic.isValidMnemonic(phrase)){
-
-throw Error("عبارت ۱۲ کلمه‌ای معتبر نیست");
-
+    } catch (error) {
+        console.error('Balance fetch error:', error);
+        return { 
+            success: false, 
+            error: `خطا در دریافت موجودی: ${error.message}` 
+        };
+    }
 }
 
+// تابع بررسی موجودی
+async function checkBalance() {
+    if (!currentAddress) {
+        errorBox.textContent = '❌ ابتدا آدرس کیف پول را تولید کنید!';
+        return;
+    }
 
+    balanceContainer.style.display = 'block';
+    balanceInfo.innerHTML = '<div class="balance-item">⏳ در حال دریافت موجودی...</div>';
+    balanceBtn.disabled = true;
 
-let wallet =
-ethers.HDNodeWallet.fromPhrase(phrase);
+    const result = await fetchBalance(currentAddress);
 
+    if (result.success) {
+        balanceInfo.innerHTML = result.html;
+        balanceContainer.style.display = 'block';
+        
+        statusDiv.className = 'status success';
+        statusDiv.textContent = '✅ موجودی با موفقیت دریافت شد!';
+        statusDiv.style.display = 'block';
+        
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 2000);
+    } else {
+        balanceInfo.innerHTML = `<div class="balance-item" style="color:#f87171;">❌ ${result.error}</div>`;
+        balanceContainer.style.display = 'block';
+        
+        statusDiv.className = 'status error';
+        statusDiv.textContent = '❌ خطا در دریافت موجودی';
+        statusDiv.style.display = 'block';
+    }
 
-
-result.innerHTML=`
-
-<div class="card">
-
-آدرس کیف پول:
-
-<br><br>
-
-<span class="green">
-
-${wallet.address}
-
-</span>
-
-</div>
-
-`;
-
-
-
-for(let chain of chains){
-
-
-
-result.innerHTML += `
-
-<div class="card" id="${chain.name}">
-
-<span class="name">
-${chain.name}
-</span>
-
-<br>
-
-در حال بررسی...
-
-</div>
-
-`;
-
-
-
-let box =
-document.getElementById(chain.name);
-
-
-
-let balance =
-await getBalance(
-wallet.address,
-chain.rpc
-);
-
-
-
-if(balance===null){
-
-
-box.innerHTML=
-
-`
-
-<span class="name">
-${chain.name}
-</span>
-
-<br>
-
-<span class="error">
-❌ خطای اتصال RPC
-</span>
-
-`;
-
-
-
-}else{
-
-
-box.innerHTML=
-
-`
-
-<span class="name">
-${chain.name}
-</span>
-
-<br><br>
-
-${chain.symbol} :
-
-<span class="green">
-${balance}
-</span>
-
-`;
-
+    balanceBtn.disabled = false;
 }
 
+// پیدا کردن خودکار
+function findAddressAuto() {
+    if (foundAddress) {
+        stopAutoFind();
+        return;
+    }
 
+    attempts++;
+    
+    const words = getRandomWords();
+    if (!words) {
+        stopAutoFind();
+        return;
+    }
+
+    const mnemonic = words.join(' ');
+    mnemonicInput.value = mnemonic;
+
+    const result = tryGenerateAddress(mnemonic);
+    
+    if (result.success) {
+        foundAddress = true;
+        currentAddress = result.address;
+        addressBox.textContent = result.address;
+        resultDiv.style.display = "block";
+        balanceContainer.style.display = 'none';
+        errorBox.textContent = "";
+        copyBtn.disabled = false;
+        balanceBtn.disabled = false;
+
+        statusDiv.className = 'status success';
+        statusDiv.textContent = `✅ آدرس پیدا شد! (${attempts} تلاش)`;
+        statusDiv.style.display = 'block';
+        
+        counterDiv.textContent = `✅ پیدا شد! تعداد تلاش: ${attempts}`;
+        
+        stopAutoFind();
+        
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 5000);
+        
+    } else {
+        errorBox.textContent = `❌ ${result.error}`;
+        counterDiv.textContent = `🔄 در حال جستجو... (${attempts} تلاش)`;
+        
+        if (attempts % 10 === 0) {
+            errorBox.textContent = `🔍 ${attempts} تلاش ناموفق...`;
+        }
+    }
 }
 
-
-
-}catch(e){
-
-
-result.innerHTML=
-
-`
-
-<div class="card error">
-
-❌ ${e.message}
-
-</div>
-
-`;
-
-
+// شروع/توقف پیدا کردن خودکار
+function toggleAutoFind() {
+    if (isAutoFinding) {
+        stopAutoFind();
+    } else {
+        startAutoFind();
+    }
 }
 
+function startAutoFind() {
+    if (fileWords.length === 0) {
+        errorBox.textContent = '❌ فایل بارگذاری نشده است!';
+        return;
+    }
 
+    isAutoFinding = true;
+    foundAddress = false;
+    attempts = 0;
+    currentAddress = '';
+    balanceContainer.style.display = 'none';
+    balanceBtn.disabled = true;
+    
+    autoBtn.textContent = '⏹ توقف';
+    autoBtn.style.background = '#dc2626';
+    randomBtn.disabled = true;
+    
+    counterDiv.textContent = '🔄 شروع جستجو...';
+    errorBox.textContent = '';
+    resultDiv.style.display = 'none';
+    
+    statusDiv.className = 'status info';
+    statusDiv.textContent = '🔍 در حال جستجوی آدرس معتبر...';
+    statusDiv.style.display = 'block';
 
+    findAddressAuto();
+    autoInterval = setInterval(findAddressAuto, 100);
 }
 
+function stopAutoFind() {
+    isAutoFinding = false;
+    if (autoInterval) {
+        clearInterval(autoInterval);
+        autoInterval = null;
+    }
+    
+    autoBtn.textContent = '🔄 پیدا کردن خودکار';
+    autoBtn.style.background = '#dc2626';
+    randomBtn.disabled = false;
+    
+    if (!foundAddress) {
+        statusDiv.className = 'status info';
+        statusDiv.textContent = '⏹ جستجو متوقف شد.';
+        statusDiv.style.display = 'block';
+        counterDiv.textContent = `⏹ متوقف شد. تعداد تلاش: ${attempts}`;
+        
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 2000);
+    }
+}
 
+// کپی کردن عبارت
+function copyMnemonic() {
+    const text = mnemonicInput.value;
+    if (!text) return;
+
+    navigator.clipboard.writeText(text).then(() => {
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = '✅ کپی شد!';
+        setTimeout(() => {
+            copyBtn.textContent = originalText;
+        }, 2000);
+    }).catch(() => {
+        mnemonicInput.select();
+        document.execCommand('copy');
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = '✅ کپی شد!';
+        setTimeout(() => {
+            copyBtn.textContent = originalText;
+        }, 2000);
+    });
+}
+
+// تابع اصلی generateAddress
+function generateAddress(){
+    const mnemonic = mnemonicInput.value.trim().replace(/\s+/g, " ");
+
+    if(!mnemonic){
+        errorBox.textContent = "❌ عبارت بازیابی را وارد کنید.";
+        return;
+    }
+
+    const result = tryGenerateAddress(mnemonic);
+    
+    if (result.success) {
+        currentAddress = result.address;
+        addressBox.textContent = result.address;
+        resultDiv.style.display = "block";
+        balanceContainer.style.display = 'none';
+        errorBox.textContent = "";
+        copyBtn.disabled = false;
+        balanceBtn.disabled = false;
+
+        statusDiv.className = 'status success';
+        statusDiv.textContent = '✅ آدرس با موفقیت تولید شد!';
+        statusDiv.style.display = 'block';
+        
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 2000);
+    } else {
+        errorBox.textContent = `❌ ${result.error}`;
+        resultDiv.style.display = "none";
+        balanceContainer.style.display = 'none';
+        balanceBtn.disabled = true;
+    }
+}
+
+// بارگذاری خودکار هنگام باز شدن صفحه
+window.addEventListener('DOMContentLoaded', loadWords);
+
+console.log('✅ کد آماده است!');
 </script>
 
-
 </body>
-</html>
+  </html>
