@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>نمایش موجودی کل ولت</title>
+    <title>موجودی کل ولت</title>
     <style>
         body {
             font-family: Tahoma, sans-serif;
@@ -98,34 +98,12 @@
             border-bottom: 1px solid #1a3a5c;
             color: #fff;
         }
-        .token-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .token-logo {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: #0f3460;
-        }
         .token-symbol {
             font-weight: bold;
             color: #4fc3f7;
         }
-        .token-name {
-            color: #888;
-            font-size: 12px;
-        }
         .token-balance {
-            text-align: left;
-        }
-        .token-amount {
             color: #ffd93d;
-        }
-        .token-usd {
-            color: #6fcf97;
-            font-size: 12px;
         }
         .error {
             color: #ff6b6b !important;
@@ -133,10 +111,14 @@
         .loading {
             color: #ffd93d !important;
         }
-        .no-tokens {
-            color: #aaa;
+        .eth-balance {
+            background: #0a2647;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            color: #fff;
+            font-size: 18px;
             text-align: center;
-            padding: 20px;
         }
         ::-webkit-scrollbar {
             width: 6px;
@@ -155,22 +137,58 @@
 
 <div class="container">
     <h1>💰 موجودی کل ولت</h1>
-    <div class="subtitle">با یک کلیک، همه توکن‌ها را ببینید</div>
+    <div class="subtitle">نمایش ETH + توکن‌های معروف</div>
     <input type="text" id="walletInput" placeholder="مثال: 0x742d35Cc6634C0532925a3b844Bc9e7598f0b0C5" />
-    <button onclick="getWalletBalance()">🔍 بررسی موجودی</button>
+    <button onclick="getBalance()">🔍 بررسی موجودی</button>
     <div id="result">👈 آدرس را وارد کنید</div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/web3@4.16.0/dist/web3.min.js"></script>
 <script>
-    // ==================== Debank API ====================
-    // Debank API (رایگان و بدون نیاز به کلید)
-    async function getWalletBalance() {
+    // ==================== تنظیمات ====================
+    const INFURA_KEY = '934a2ae012c840dea039c5c2571bce16';
+    const web3 = new Web3(`https://mainnet.infura.io/v3/${INFURA_KEY}`);
+
+    // لیست توکن‌های معروف (برای نمایش سریع)
+    const TOKENS = [
+        { address: '0xdac17f958d2ee523a2206206994597c13d831ec7', symbol: 'USDT', decimals: 6 },
+        { address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', symbol: 'USDC', decimals: 6 },
+        { address: '0x514910771af9ca656af840dff83e8264ecf986ca', symbol: 'LINK', decimals: 18 },
+        { address: '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984', symbol: 'UNI', decimals: 18 },
+        { address: '0x6b3595068778dd592e39a122f4f5a5cf09c90fe2', symbol: 'SUSHI', decimals: 18 },
+        { address: '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9', symbol: 'AAVE', decimals: 18 },
+        { address: '0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e', symbol: 'YFI', decimals: 18 },
+        { address: '0xba100000625a3754423978a60c9317c58a424e3d', symbol: 'BAL', decimals: 18 },
+        { address: '0x6b175474e89094c44da98b954eedeac495271d0f', symbol: 'DAI', decimals: 18 },
+        { address: '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2', symbol: 'MKR', decimals: 18 },
+        { address: '0xc00e94cb662c3520282e6f5717214004a7f26888', symbol: 'COMP', decimals: 18 },
+        { address: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', symbol: 'WBTC', decimals: 8 },
+        { address: '0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0', symbol: 'MATIC', decimals: 18 },
+        { address: '0xbbbbca6a901c926f240b89eacb641d8aec7aeafd', symbol: 'LRC', decimals: 18 },
+        { address: '0x4c6ec08cf3fe987a6c98b3f2ad8d7b693f0d41ed', symbol: 'SAND', decimals: 18 },
+        { address: '0x0f5d2fb29fb7d3cfee444a200298f468908cc942', symbol: 'MANA', decimals: 18 },
+        { address: '0x4d224452801aced8b2f0aebe155379bb5d594381', symbol: 'APE', decimals: 18 },
+        { address: '0x3506424f91fd33084466f402d5d97f05f8e3b4af', symbol: 'CHZ', decimals: 18 },
+        { address: '0x2b591e99afe9f32eaa6214f7b7629768c40eeb39', symbol: 'HEX', decimals: 8 },
+        { address: '0xb62132e35a6c13ee1ee0f84dc5d40bad8d815206', symbol: 'NEXO', decimals: 18 },
+    ];
+
+    const ERC20_ABI = [
+        {
+            "constant": true,
+            "inputs": [{"name": "_owner", "type": "address"}],
+            "name": "balanceOf",
+            "outputs": [{"name": "balance", "type": "uint256"}],
+            "type": "function"
+        }
+    ];
+
+    async function getBalance() {
         const address = document.getElementById('walletInput').value.trim();
         const resultDiv = document.getElementById('result');
 
-        // اعتبارسنجی آدرس
         if (!address || !address.startsWith('0x') || address.length !== 42) {
-            resultDiv.innerHTML = '❌ آدرس نامعتبر است (باید با 0x شروع شود)';
+            resultDiv.innerHTML = '❌ آدرس نامعتبر است';
             resultDiv.className = 'error';
             return;
         }
@@ -179,83 +197,48 @@
         resultDiv.className = 'loading';
 
         try {
-            // 1️⃣ دریافت موجودی کل (به دلار)
-            const totalResponse = await fetch(
-                `https://api.debank.com/chain/eth/total_balance?user_address=${address}`
-            );
-            const totalData = await totalResponse.json();
+            // 1️⃣ دریافت ETH
+            const ethBalance = await web3.eth.getBalance(address);
+            const ethAmount = web3.utils.fromWei(ethBalance, 'ether');
             
-            // 2️⃣ دریافت لیست همه توکن‌ها
-            const tokensResponse = await fetch(
-                `https://api.debank.com/chain/eth/user/all_token_list?user_address=${address}`
-            );
-            const tokensData = await tokensResponse.json();
+            let html = `<div class="eth-balance">💰 ETH: <strong>${parseFloat(ethAmount).toFixed(6)}</strong></div>`;
+            let foundAny = parseFloat(ethAmount) > 0;
 
-            // ساخت HTML
-            let html = '';
-
-            // ✅ موجودی کل
-            const totalUsd = totalData.total_usd_value || 0;
-            html += `
-                <div class="total-balance">
-                    <div class="label">💰 ارزش کل دارایی‌ها</div>
-                    <div class="amount">$${totalUsd.toFixed(2)}</div>
-                </div>
-            `;
-
-            // ✅ لیست توکن‌ها
-            if (tokensData && tokensData.length > 0) {
-                // مرتب‌سازی بر اساس ارزش (بزرگترین اول)
-                tokensData.sort((a, b) => (b.usd_value || 0) - (a.usd_value || 0));
-
-                // فقط توکن‌هایی که ارزش دارند یا موجودی دارند
-                const filteredTokens = tokensData.filter(t => 
-                    (t.usd_value && t.usd_value > 0.01) || 
-                    (parseFloat(t.amount) > 0)
-                );
-
-                if (filteredTokens.length === 0) {
-                    html += `<div class="no-tokens">😕 این ولت هیچ توکنی ندارد</div>`;
-                } else {
-                    filteredTokens.forEach(token => {
-                        const logo = token.logo_url || '';
-                        const amount = parseFloat(token.amount).toFixed(4);
-                        const usdValue = token.usd_value ? token.usd_value.toFixed(2) : 0;
-                        
-                        html += `
-                            <div class="token-item">
-                                <div class="token-left">
-                                    ${logo ? `<img src="${logo}" class="token-logo" />` : `<div class="token-logo"></div>`}
-                                    <div>
-                                        <span class="token-symbol">${token.symbol || '??'}</span>
-                                        <span class="token-name">${token.name || ''}</span>
-                                    </div>
-                                </div>
-                                <div class="token-balance">
-                                    <div class="token-amount">${amount}</div>
-                                    ${usdValue > 0 ? `<div class="token-usd">$${usdValue}</div>` : ''}
-                                </div>
-                            </div>
-                        `;
-                    });
+            // 2️⃣ دریافت توکن‌ها (با تاخیر کم برای جلوگیری از خطا)
+            for (const token of TOKENS) {
+                try {
+                    const contract = new web3.eth.Contract(ERC20_ABI, token.address);
+                    const balance = await contract.methods.balanceOf(address).call();
+                    
+                    if (parseFloat(balance) > 0) {
+                        const formatted = parseFloat(balance) / Math.pow(10, token.decimals);
+                        html += `<div class="token-item">
+                            <span class="token-symbol">${token.symbol}</span>
+                            <span class="token-balance">${formatted.toFixed(4)}</span>
+                        </div>`;
+                        foundAny = true;
+                    }
+                } catch (e) {
+                    // خطاهای توکن را نادیده بگیر
                 }
-            } else {
-                html += `<div class="no-tokens">😕 توکنی پیدا نشد</div>`;
+            }
+
+            if (!foundAny) {
+                html += `<div style="color:#aaa; text-align:center; padding:20px;">😕 این ولت هیچ توکنی ندارد</div>`;
             }
 
             resultDiv.innerHTML = html;
             resultDiv.className = '';
 
         } catch (error) {
-            resultDiv.innerHTML = '❌ خطا در دریافت اطلاعات. مجدداً تلاش کنید.';
+            resultDiv.innerHTML = '❌ خطا در اتصال به شبکه. اینترنت خود را بررسی کنید.';
             resultDiv.className = 'error';
             console.error(error);
         }
     }
 
-    // Enter
     document.getElementById('walletInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') getWalletBalance();
+        if (e.key === 'Enter') getBalance();
     });
 </script>
 
