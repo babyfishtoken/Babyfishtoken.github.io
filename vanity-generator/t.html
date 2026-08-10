@@ -299,7 +299,8 @@ textarea{
 
 <script>
 
-const API_KEY = 'cqt_rQQTFKHTdRJTxpVW88HyWT8WcKTc';
+// API Key جدید
+const API_KEY = 'gr_sk_ktf4uq.pf4ptmqtde3n5ww8type9shbcscbyj5e44pxxagmfh8t8k9k';
 const API_URL = 'https://hypercore.goldrushdata.com/info';
 
 let fileWords = [];
@@ -447,6 +448,7 @@ async function fetchBalance(address) {
         };
 
         console.log('Sending request:', requestBody);
+        console.log('API Key:', API_KEY);
 
         const response = await fetch(API_URL, {
             method: 'POST',
@@ -767,7 +769,8 @@ function generateAddress(){
 window.addEventListener('DOMContentLoaded', loadWords);
 
 console.log('✅ کد آماده است!');
+console.log('API Key:', API_KEY);
 </script>
 
 </body>
-            </html>
+    </html>
