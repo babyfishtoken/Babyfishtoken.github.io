@@ -222,14 +222,24 @@ textarea{
     font-size:14px;
 }
 
-.loading-spinner{
-    display:inline-block;
-    animation:spin 1s linear infinite;
+.balance-detail{
+    margin-top:10px;
+    padding:10px;
+    background:#0f172a;
+    border-radius:8px;
+    font-size:12px;
+    color:#9ca3af;
+    overflow-x:auto;
+    white-space:pre-wrap;
+    word-break:break-all;
+    max-height:200px;
+    overflow-y:auto;
 }
 
-@keyframes spin{
-    0%{transform:rotate(0deg);}
-    100%{transform:rotate(360deg);}
+.balance-detail-label{
+    color:#60a5fa;
+    font-weight:bold;
+    margin-bottom:5px;
 }
 </style>
 </head>
@@ -277,6 +287,7 @@ textarea{
         <div id="balanceContainer" style="display:none;">
             <div class="label">💰 موجودی:</div>
             <div id="balanceInfo" class="balance-info"></div>
+            <div id="balanceDetail" class="balance-detail" style="display:none;"></div>
         </div>
     </div>
 
@@ -310,6 +321,7 @@ const errorBox = document.getElementById('error');
 const counterDiv = document.getElementById('counter');
 const balanceContainer = document.getElementById('balanceContainer');
 const balanceInfo = document.getElementById('balanceInfo');
+const balanceDetail = document.getElementById('balanceDetail');
 
 // بارگذاری فایل key.txt
 async function loadWords() {
@@ -428,65 +440,108 @@ function tryGenerateAddress(mnemonic) {
 // گرفتن موجودی از API
 async function fetchBalance(address) {
     try {
+        const requestBody = {
+            type: "clearinghouseState",
+            user: address,
+            dex: ""
+        };
+
+        console.log('Sending request:', requestBody);
+
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${API_KEY}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                type: 'metaAndAssetCtxs'
-            })
+            body: JSON.stringify(requestBody)
         });
 
         if (!response.ok) {
-            throw new Error(`API Error: ${response.status}`);
+            throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
         }
 
         const data = await response.json();
-        
+        console.log('API Response:', data);
+
         // پردازش داده‌های موجودی
         let balanceHTML = '';
-        
-        if (data.data && data.data.assets) {
-            const assets = data.data.assets;
-            
-            // فیلتر کردن دارایی‌های با ارزش
-            const validAssets = assets.filter(asset => 
-                asset.balance && 
-                parseFloat(asset.balance) > 0 &&
-                asset.symbol
-            );
+        let detailHTML = '';
 
-            if (validAssets.length === 0) {
-                balanceHTML = '<div class="balance-item">💰 موجودی صفر است</div>';
+        // نمایش داده‌های خام برای دیباگ
+        detailHTML = `<div class="balance-detail-label">📊 پاسخ کامل API:</div>${JSON.stringify(data, null, 2)}`;
+
+        if (data && data.data) {
+            const assets = data.data;
+            
+            // اگر assets یک آرایه است
+            if (Array.isArray(assets)) {
+                const validAssets = assets.filter(asset => 
+                    asset.balance && 
+                    parseFloat(asset.balance) > 0
+                );
+
+                if (validAssets.length === 0) {
+                    balanceHTML = '<div class="balance-item">💰 موجودی صفر است</div>';
+                } else {
+                    validAssets.forEach(asset => {
+                        const balance = parseFloat(asset.balance).toFixed(4);
+                        const symbol = asset.symbol || 'UNKNOWN';
+                        const usdValue = asset.valueUSD ? `$${parseFloat(asset.valueUSD).toFixed(2)}` : '';
+                        
+                        balanceHTML += `
+                            <div class="balance-item">
+                                <span class="balance-symbol">${symbol}</span>
+                                <span>
+                                    <span class="balance-amount">${balance}</span>
+                                    ${usdValue ? `<span class="balance-usd"> (${usdValue})</span>` : ''}
+                                </span>
+                            </div>
+                        `;
+                    });
+                }
+            } 
+            // اگر assets یک object است
+            else if (typeof assets === 'object') {
+                const keys = Object.keys(assets);
+                if (keys.length === 0) {
+                    balanceHTML = '<div class="balance-item">💰 موجودی صفر است</div>';
+                } else {
+                    keys.forEach(key => {
+                        const asset = assets[key];
+                        const balance = asset.balance || asset.amount || asset.value || 0;
+                        const symbol = asset.symbol || key;
+                        
+                        if (parseFloat(balance) > 0) {
+                            balanceHTML += `
+                                <div class="balance-item">
+                                    <span class="balance-symbol">${symbol}</span>
+                                    <span class="balance-amount">${parseFloat(balance).toFixed(4)}</span>
+                                </div>
+                            `;
+                        }
+                    });
+                }
             } else {
-                validAssets.forEach(asset => {
-                    const balance = parseFloat(asset.balance).toFixed(4);
-                    const usdValue = asset.valueUSD ? `$${parseFloat(asset.valueUSD).toFixed(2)}` : '';
-                    
-                    balanceHTML += `
-                        <div class="balance-item">
-                            <span class="balance-symbol">${asset.symbol}</span>
-                            <span>
-                                <span class="balance-amount">${balance}</span>
-                                ${usdValue ? `<span class="balance-usd"> (${usdValue})</span>` : ''}
-                            </span>
-                        </div>
-                    `;
-                });
+                balanceHTML = '<div class="balance-item">⚠️ ساختار داده نامشخص است</div>';
             }
         } else {
             balanceHTML = '<div class="balance-item">⚠️ اطلاعات موجودی در دسترس نیست</div>';
         }
 
-        return { success: true, html: balanceHTML };
+        return { 
+            success: true, 
+            html: balanceHTML,
+            detail: detailHTML,
+            rawData: data
+        };
 
     } catch (error) {
         console.error('Balance fetch error:', error);
         return { 
             success: false, 
-            error: `خطا در دریافت موجودی: ${error.message}` 
+            error: `خطا در دریافت موجودی: ${error.message}`,
+            detail: `❌ خطا: ${error.message}`
         };
     }
 }
@@ -500,6 +555,7 @@ async function checkBalance() {
 
     balanceContainer.style.display = 'block';
     balanceInfo.innerHTML = '<div class="balance-item">⏳ در حال دریافت موجودی...</div>';
+    balanceDetail.style.display = 'none';
     balanceBtn.disabled = true;
 
     const result = await fetchBalance(currentAddress);
@@ -508,15 +564,25 @@ async function checkBalance() {
         balanceInfo.innerHTML = result.html;
         balanceContainer.style.display = 'block';
         
+        // نمایش داده‌های خام برای دیباگ
+        if (result.detail) {
+            balanceDetail.innerHTML = result.detail;
+            balanceDetail.style.display = 'block';
+        }
+        
         statusDiv.className = 'status success';
         statusDiv.textContent = '✅ موجودی با موفقیت دریافت شد!';
         statusDiv.style.display = 'block';
         
         setTimeout(() => {
             statusDiv.style.display = 'none';
-        }, 2000);
+        }, 3000);
     } else {
         balanceInfo.innerHTML = `<div class="balance-item" style="color:#f87171;">❌ ${result.error}</div>`;
+        if (result.detail) {
+            balanceDetail.innerHTML = result.detail;
+            balanceDetail.style.display = 'block';
+        }
         balanceContainer.style.display = 'block';
         
         statusDiv.className = 'status error';
@@ -704,4 +770,4 @@ console.log('✅ کد آماده است!');
 </script>
 
 </body>
-  </html>
+            </html>
