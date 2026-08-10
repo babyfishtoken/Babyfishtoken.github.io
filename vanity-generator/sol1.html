@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Mnemonic → Solana Address</title>
+
+<script src="https://cdn.jsdelivr.net/npm/bip39@3.1.0/dist/index.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.95.8/lib/index.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ed25519-hd-key@1.3.0/dist/index.js"></script>
+
+<style>
+body{
+    margin:0;
+    padding:25px 15px;
+    background:#111827;
+    color:white;
+    font-family:Arial,sans-serif;
+}
+
+.box{
+    max-width:600px;
+    margin:auto;
+    background:#1f2937;
+    padding:22px;
+    border-radius:18px;
+}
+
+h1{
+    text-align:center;
+    color:#60a5fa;
+}
+
+textarea{
+    width:100%;
+    height:120px;
+    padding:15px;
+    background:#111827;
+    color:white;
+    border:1px solid #374151;
+    border-radius:12px;
+    font-size:16px;
+    direction:ltr;
+    text-align:left;
+    resize:none;
+}
+
+button{
+    width:100%;
+    margin-top:15px;
+    padding:14px;
+    border:0;
+    border-radius:12px;
+    background:#2563eb;
+    color:white;
+    font-size:17px;
+}
+
+.result{
+    display:none;
+    margin-top:20px;
+    padding:15px;
+    background:#111827;
+    border-radius:12px;
+}
+
+.address{
+    direction:ltr;
+    text-align:left;
+    word-break:break-all;
+    color:#34d399;
+    font-family:monospace;
+}
+
+.error{
+    margin-top:15px;
+    text-align:center;
+    color:#f87171;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<h1>◎ Solana Wallet</h1>
+
+<textarea
+    id="mnemonic"
+    placeholder="12 کلمه را وارد کنید..."
+    autocomplete="off"
+    spellcheck="false"></textarea>
+
+<button onclick="generate()">
+    نمایش آدرس Solana
+</button>
+
+<div id="error" class="error"></div>
+
+<div id="result" class="result">
+
+    <div style="color:#9ca3af;margin-bottom:8px">
+        آدرس Solana:
+    </div>
+
+    <div id="address" class="address"></div>
+
+</div>
+
+</div>
+
+<script>
+
+function generate(){
+
+    const input =
+        document.getElementById("mnemonic");
+
+    const result =
+        document.getElementById("result");
+
+    const addressBox =
+        document.getElementById("address");
+
+    const error =
+        document.getElementById("error");
+
+    result.style.display = "none";
+    error.textContent = "";
+
+    const phrase =
+        input.value
+        .trim()
+        .replace(/\s+/g," ");
+
+    if(!phrase){
+
+        error.textContent =
+            "❌ عبارت بازیابی را وارد کنید.";
+
+        return;
+    }
+
+    const words = phrase.split(" ");
+
+    if(words.length !== 12){
+
+        error.textContent =
+            "❌ عبارت باید دقیقاً ۱۲ کلمه باشد.";
+
+        return;
+    }
+
+    try{
+
+        if(!bip39.validateMnemonic(phrase)){
+
+            error.textContent =
+                "❌ عبارت بازیابی معتبر نیست.";
+
+            return;
+        }
+
+        /*
+         * BIP39
+         */
+        const seed =
+            bip39.mnemonicToSeedSync(phrase);
+
+        /*
+         * Solana استاندارد:
+         * m/44'/501'/0'/0'
+         */
+        const path =
+            "m/44'/501'/0'/0'";
+
+        const derived =
+            ed25519HdKey.derivePath(
+                path,
+                seed.toString("hex")
+            );
+
+        const keypair =
+            solanaWeb3.Keypair.fromSeed(
+                derived.key
+            );
+
+        const address =
+            keypair.publicKey.toBase58();
+
+        addressBox.textContent =
+            address;
+
+        result.style.display =
+            "block";
+
+    }catch(e){
+
+        console.error(e);
+
+        error.textContent =
+            "❌ خطا در ساخت آدرس: " +
+            e.message;
+    }
+
+}
+
+</script>
+
+</body>
+  </html>
