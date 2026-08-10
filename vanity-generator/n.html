@@ -1,453 +1,130 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html dir="rtl" lang="fa">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>بررسی موجودی کیف پول | Zerion</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap');
-
-    :root {
-      --bg: #0b0d12;
-      --card: #151922;
-      --border: #2a3040;
-      --primary: #6366f1;
-      --success: #22c55e;
-      --text: #e2e8f0;
-      --muted: #94a3b8;
-      --danger: #ef4444;
-      --warning: #f59e0b;
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: 'Vazirmatn', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      padding: 20px;
-      background-image: 
-        radial-gradient(ellipse at 20% 0%, #1e1b4b55 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 100%, #0f172a88 0%, transparent 50%);
-    }
-
-    .container { max-width: 900px; margin: 0 auto; }
-
-    header {
-      text-align: center;
-      margin-bottom: 32px;
-      padding-top: 10px;
-    }
-
-    header h1 {
-      font-size: 1.8rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #818cf8, #c084fc, #f472b6);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 6px;
-    }
-
-    header p { color: var(--muted); font-size: 0.9rem; }
-
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 24px;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
-    }
-
-    .input-group {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    input[type="text"] {
-      flex: 1;
-      background: #0f1219;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px 16px;
-      color: var(--text);
-      font-size: 0.95rem;
-      font-family: inherit;
-      outline: none;
-    }
-
-    input[type="text"]:focus { border-color: var(--primary); }
-    input[type="text"]::placeholder { color: #64748b; }
-
-    button {
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      padding: 0 26px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      font-family: inherit;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
-    button:hover { opacity: 0.9; }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    .status {
-      text-align: center;
-      margin: 10px 0;
-      font-size: 0.88rem;
-      color: var(--muted);
-      min-height: 22px;
-    }
-    .status.loading { color: var(--primary); }
-    .status.error { color: var(--danger); }
-
-    .results { display: none; margin-top: 20px; }
-    .results.show { display: block; }
-
-    .summary {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-
-    .summary-card {
-      background: #0f1219;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px;
-      text-align: center;
-    }
-
-    .summary-card .label {
-      font-size: 0.75rem;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-
-    .summary-card .value {
-      font-size: 1.3rem;
-      font-weight: 700;
-    }
-
-    .summary-card .value.positive { color: var(--success); }
-    .summary-card .value.negative { color: var(--danger); }
-
-    .section-title {
-      font-size: 0.95rem;
-      font-weight: 600;
-      margin: 24px 0 12px;
-      color: #cbd5e1;
-    }
-
-    .chain-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-      gap: 10px;
-    }
-
-    .chain-item, .token-item {
-      background: #0f1219;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px 14px;
-    }
-
-    .chain-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .chain-name { font-size: 0.88rem; }
-    .chain-value { font-size: 0.92rem; font-weight: 600; color: #a5b4fc; }
-
-    .token-item {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .token-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-    }
-
-    .token-name { font-size: 0.9rem; font-weight: 500; }
-    .token-value { font-size: 0.92rem; font-weight: 600; color: #a5b4fc; }
-    .token-meta { font-size: 0.76rem; color: var(--muted); }
-
-    .address-box {
-      background: #0f1219;
-      border-radius: 10px;
-      padding: 12px;
-      font-size: 0.8rem;
-      word-break: break-all;
-      color: var(--muted);
-      margin-bottom: 18px;
-    }
-
-    .address-box strong { color: var(--text); }
-
-    .links {
-      margin-top: 24px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-    }
-
-    .links a {
-      background: #0f1219;
-      border: 1px solid var(--border);
-      color: var(--text);
-      text-decoration: none;
-      padding: 10px 16px;
-      border-radius: 10px;
-      font-size: 0.85rem;
-    }
-
-    .links a:hover { border-color: var(--primary); }
-
-    .warning {
-      margin-top: 20px;
-      padding: 12px;
-      background: rgba(245, 158, 11, 0.08);
-      border: 1px solid rgba(245, 158, 11, 0.25);
-      border-radius: 10px;
-      font-size: 0.78rem;
-      color: #fbbf24;
-      line-height: 1.5;
-    }
-
-    footer {
-      text-align: center;
-      margin-top: 32px;
-      color: #64748b;
-      font-size: 0.75rem;
-    }
-
-    @media (max-width: 540px) {
-      .input-group { flex-direction: column; }
-      button { padding: 14px; }
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>مشاهده موجودی ولت</title>
+    <style>
+        body {
+            font-family: Tahoma, sans-serif;
+            background: #1a1a2e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: #16213e;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            width: 500px;
+            text-align: center;
+        }
+        h1 {
+            color: #fff;
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            background: #0f3460;
+            color: #fff;
+            box-sizing: border-box;
+            direction: ltr;
+        }
+        input::placeholder {
+            color: #aaa;
+        }
+        button {
+            margin-top: 16px;
+            width: 100%;
+            padding: 14px;
+            background: #e94560;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #c73652;
+        }
+        #result {
+            margin-top: 20px;
+            background: #0f3460;
+            padding: 16px;
+            border-radius: 8px;
+            color: #4fc3f7;
+            font-size: 18px;
+            min-height: 50px;
+            word-break: break-all;
+        }
+        .error {
+            color: #ff6b6b !important;
+        }
+        .loading {
+            color: #ffd93d !important;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>بررسی موجودی کیف پول</h1>
-      <p>قدرت گرفته از Zerion API</p>
-    </header>
 
-    <div class="card">
-      <div class="input-group">
-        <input type="text" id="addressInput" placeholder="آدرس کیف پول (0x... یا Solana)" autocomplete="off" spellcheck="false" />
-        <button id="checkBtn" onclick="checkBalance()">بررسی</button>
-      </div>
+<div class="container">
+    <h1>🔍 مشاهده موجودی ولت</h1>
+    <input type="text" id="walletInput" placeholder="مثال: 0x742d35Cc6634C0532925a3b844Bc9e7598f0b0C5" />
+    <button onclick="getBalance()">بررسی موجودی</button>
+    <div id="result">👈 آدرس را وارد کنید</div>
+</div>
 
-      <div class="status" id="status"></div>
+<script src="https://cdn.jsdelivr.net/npm/web3@4.16.0/dist/web3.min.js"></script>
+<script>
+    // کلید اینفوورا و شبکه اصلی اتریوم
+    const INFURA_KEY = '934a2ae012c840dea039c5c2571bce16';
+    const web3 = new Web3(`https://mainnet.infura.io/v3/${INFURA_KEY}`);
 
-      <div class="results" id="results">
-        <div class="address-box" id="addressBox"></div>
-        <div class="summary" id="summary"></div>
+    async function getBalance() {
+        const address = document.getElementById('walletInput').value.trim();
+        const resultDiv = document.getElementById('result');
 
-        <div class="section-title">توزیع بر اساس شبکه</div>
-        <div class="chain-grid" id="chainGrid"></div>
-
-        <div class="section-title">توکن‌ها و دارایی‌ها (تا ۳۰ مورد برتر)</div>
-        <div id="tokenList"></div>
-
-        <div class="links" id="links"></div>
-
-        <div class="warning">
-          ⚠️ کلید API در سمت کلاینت قرار دارد. فقط برای استفاده شخصی مناسب است.
-        </div>
-      </div>
-    </div>
-
-    <footer>Zerion API · داده‌ها لحظه‌ای هستند</footer>
-  </div>
-
-  <script>
-    const ZERION_API_KEY = 'zk_c86fef6e085c4cd2a52ec015b83eec8c';
-
-    const statusEl = document.getElementById('status');
-    const resultsEl = document.getElementById('results');
-    const summaryEl = document.getElementById('summary');
-    const chainGrid = document.getElementById('chainGrid');
-    const tokenList = document.getElementById('tokenList');
-    const addressBox = document.getElementById('addressBox');
-    const linksEl = document.getElementById('links');
-    const checkBtn = document.getElementById('checkBtn');
-    const input = document.getElementById('addressInput');
-
-    input.addEventListener('keypress', e => { if (e.key === 'Enter') checkBalance(); });
-
-    function authHeader() {
-      return 'Basic ' + btoa(ZERION_API_KEY + ':');
-    }
-
-    function formatUsd(n) {
-      if (n == null || isNaN(n)) return '—';
-      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(n);
-    }
-
-    function formatNum(n, d = 4) {
-      if (n == null || isNaN(n)) return '—';
-      if (Math.abs(n) < 0.0001 && n !== 0) return n.toExponential(2);
-      return Number(n).toLocaleString('en-US', { maximumFractionDigits: d });
-    }
-
-    async function zerionFetch(path) {
-      const res = await fetch('https://api.zerion.io/v1' + path, {
-        headers: {
-          'Authorization': authHeader(),
-          'accept': 'application/json'
+        // اعتبارسنجی ساده آدرس
+        if (!address || !address.startsWith('0x') || address.length !== 42) {
+            resultDiv.innerHTML = '❌ آدرس نامعتبر است (باید ۰x + ۴۰ کاراکتر باشد)';
+            resultDiv.className = 'error';
+            return;
         }
-      });
 
-      if (!res.ok) {
-        let msg = `خطای ${res.status}`;
+        resultDiv.innerHTML = '⏳ در حال دریافت موجودی...';
+        resultDiv.className = 'loading';
+
         try {
-          const err = await res.json();
-          msg += ': ' + (err.errors?.[0]?.title || err.message || JSON.stringify(err).slice(0, 100));
-        } catch {}
-        throw new Error(msg);
-      }
-      return res.json();
+            // دریافت موجودی به Wei
+            const balanceWei = await web3.eth.getBalance(address);
+            // تبدیل به اتر
+            const balanceEth = web3.utils.fromWei(balanceWei, 'ether');
+
+            // نمایش با ۴ رقم اعشار
+            resultDiv.innerHTML = `💰 موجودی: <strong>${parseFloat(balanceEth).toFixed(4)} ETH</strong>`;
+            resultDiv.className = '';
+        } catch (error) {
+            resultDiv.innerHTML = '❌ خطا در اتصال به شبکه. مجدداً تلاش کنید.';
+            resultDiv.className = 'error';
+            console.error(error);
+        }
     }
 
-    async function checkBalance() {
-      const address = input.value.trim();
-      if (!address) {
-        statusEl.textContent = 'آدرس را وارد کنید';
-        statusEl.className = 'status error';
-        return;
-      }
+    // با فشار Enter هم کار کند
+    document.getElementById('walletInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') getBalance();
+    });
+</script>
 
-      const isEvm = /^0x[a-fA-F0-9]{40}$/i.test(address);
-      const isSol = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address);
-      if (!isEvm && !isSol) {
-        statusEl.textContent = 'فرمت آدرس معتبر نیست';
-        statusEl.className = 'status error';
-        return;
-      }
-
-      checkBtn.disabled = true;
-      statusEl.textContent = 'در حال دریافت از Zerion...';
-      statusEl.className = 'status loading';
-      resultsEl.classList.remove('show');
-      summaryEl.innerHTML = '';
-      chainGrid.innerHTML = '';
-      tokenList.innerHTML = '';
-
-      try {
-        // Portfolio
-        const portfolioData = await zerionFetch(`/wallets/${address}/portfolio?currency=usd`);
-        const attr = portfolioData.data?.attributes || {};
-        const byType = attr.positions_distribution_by_type || {};
-        const byChain = attr.positions_distribution_by_chain || {};
-        const changes = attr.changes || {};
-
-        let totalUsd = 0;
-        Object.values(byType).forEach(v => totalUsd += Number(v) || 0);
-        if (totalUsd < 0.01) {
-          Object.values(byChain).forEach(v => totalUsd += Number(v) || 0);
-        }
-
-        // Positions - use proper encoding for brackets
-        const positionsUrl = `/wallets/${address}/positions/?currency=usd&filter%5Bpositions%5D=only_simple&page%5Bsize%5D=40&sort=-value`;
-        const positionsData = await zerionFetch(positionsUrl);
-        const positions = positionsData.data || [];
-
-        // Summary cards
-        summaryEl.innerHTML = `
-          <div class="summary-card">
-            <div class="label">ارزش کل</div>
-            <div class="value">${formatUsd(totalUsd)}</div>
-          </div>
-          <div class="summary-card">
-            <div class="label">تغییر ۲۴س</div>
-            <div class="value ${ (changes.percent_1d || 0) >= 0 ? 'positive' : 'negative' }">
-              ${changes.percent_1d != null ? ((changes.percent_1d >= 0 ? '+' : '') + Number(changes.percent_1d).toFixed(2) + '%') : '—'}
-            </div>
-          </div>
-          <div class="summary-card">
-            <div class="label">تعداد دارایی</div>
-            <div class="value">${positions.length || '—'}</div>
-          </div>
-        `;
-
-        // Chains
-        const sortedChains = Object.entries(byChain)
-          .filter(([_, v]) => Number(v) > 0.5)
-          .sort((a, b) => Number(b[1]) - Number(a[1]));
-
-        if (sortedChains.length === 0) {
-          chainGrid.innerHTML = '<div style="color:var(--muted);font-size:0.85rem">داده‌ای یافت نشد</div>';
-        } else {
-          sortedChains.forEach(([chain, value]) => {
-            const div = document.createElement('div');
-            div.className = 'chain-item';
-            div.innerHTML = `<span class="chain-name">${chain}</span><span class="chain-value">${formatUsd(value)}</span>`;
-            chainGrid.appendChild(div);
-          });
-        }
-
-        // Tokens
-        if (positions.length === 0) {
-          tokenList.innerHTML = '<div style="color:var(--muted);padding:10px">توکنی یافت نشد</div>';
-        } else {
-          positions.forEach(pos => {
-            const a = pos.attributes || {};
-            const fi = a.fungible_info || {};
-            const qty = a.quantity?.float ?? 0;
-            const value = a.value ?? 0;
-            const price = a.price ?? 0;
-            const symbol = fi.symbol || '???';
-            const name = fi.name || symbol;
-            const chainId = pos.relationships?.chain?.data?.id || a.chain_id || '—';
-
-            if (value < 0.1 && qty === 0) return; // skip dust
-
-            const div = document.createElement('div');
-            div.className = 'token-item';
-            div.innerHTML = `
-              <div class="token-header">
-                <span class="token-name">${symbol} <small style="color:var(--muted);font-weight:400">(${name})</small></span>
-                <span class="token-value">${formatUsd(value)}</span>
-              </div>
-              <div class="token-meta">${formatNum(qty)} ${symbol} · قیمت ${formatUsd(price)} · ${chainId}</div>
-            `;
-            tokenList.appendChild(div);
-          });
-        }
-
-        addressBox.innerHTML = `<strong>آدرس:</strong> ${address}`;
-        linksEl.innerHTML = `
-          <a href="https://app.zerion.io/${address}/overview" target="_blank">Zerion</a>
-          <a href="https://debank.com/profile/${address}" target="_blank">DeBank</a>
-        `;
-
-        resultsEl.classList.add('show');
-        statusEl.textContent = 'موفق';
-        statusEl.className = 'status';
-      } catch (err) {
-        console.error(err);
-        statusEl.textContent = err.message || 'خطا در ارتباط با API';
-        statusEl.className = 'status error';
-      } finally {
-        checkBtn.disabled = false;
-      }
-    }
-  </script>
 </body>
 </html>
