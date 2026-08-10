@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>بررسی موجودی کیف پول چندشبکه‌ای</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap');
+
+    :root {
+      --bg: #0f1117;
+      --card: #1a1d27;
+      --border: #2a2e3a;
+      --primary: #6366f1;
+      --primary-hover: #818cf8;
+      --success: #22c55e;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --danger: #ef4444;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Vazirmatn', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+      background-image: 
+        radial-gradient(ellipse at top, #1e1b4b 0%, transparent 50%),
+        radial-gradient(ellipse at bottom, #0f172a 0%, transparent 50%);
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-top: 20px;
+    }
+
+    header h1 {
+      font-size: 1.9rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #818cf8, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+
+    .input-group {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background: #12141c;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 18px;
+      color: var(--text);
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--primary);
+    }
+
+    input[type="text"]::placeholder {
+      color: #64748b;
+    }
+
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 0 28px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+
+    button:hover {
+      background: var(--primary-hover);
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .status {
+      text-align: center;
+      margin: 16px 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+      min-height: 24px;
+    }
+
+    .status.loading {
+      color: var(--primary);
+    }
+
+    .status.error {
+      color: var(--danger);
+    }
+
+    .results {
+      display: none;
+      margin-top: 28px;
+    }
+
+    .results.show {
+      display: block;
+    }
+
+    .address-info {
+      background: #12141c;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+      font-size: 0.85rem;
+      word-break: break-all;
+      color: var(--muted);
+    }
+
+    .address-info strong {
+      color: var(--text);
+    }
+
+    .balance-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+    }
+
+    .balance-item {
+      background: #12141c;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      transition: border-color 0.2s;
+    }
+
+    .balance-item:hover {
+      border-color: #3f3f5a;
+    }
+
+    .balance-item .chain {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .balance-item .amount {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .balance-item .symbol {
+      font-size: 0.85rem;
+      color: var(--primary);
+      margin-right: 4px;
+    }
+
+    .balance-item .usd {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .links {
+      margin-top: 28px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .links a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #12141c;
+      border: 1px solid var(--border);
+      color: var(--text);
+      text-decoration: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .links a:hover {
+      border-color: var(--primary);
+      background: #1e1b4b;
+    }
+
+    .note {
+      margin-top: 24px;
+      padding: 14px;
+      background: rgba(99, 102, 241, 0.08);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 10px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      color: #64748b;
+      font-size: 0.8rem;
+    }
+
+    @media (max-width: 500px) {
+      .input-group {
+        flex-direction: column;
+      }
+      button {
+        padding: 14px;
+      }
+      header h1 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>بررسی موجودی کیف پول</h1>
+      <p>آدرس را وارد کنید تا موجودی native در چندین شبکه نمایش داده شود</p>
+    </header>
+
+    <div class="card">
+      <div class="input-group">
+        <input 
+          type="text" 
+          id="addressInput" 
+          placeholder="آدرس کیف پول را وارد کنید (0x... یا bc1... یا Solana)" 
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button id="checkBtn" onclick="checkBalance()">بررسی</button>
+      </div>
+
+      <div class="status" id="status"></div>
+
+      <div class="results" id="results">
+        <div class="address-info" id="addressInfo"></div>
+        <div class="balance-grid" id="balanceGrid"></div>
+
+        <div class="links" id="links"></div>
+
+        <div class="note">
+          این ابزار فقط موجودی <strong>native</strong> (مثل ETH، BNB، MATIC، SOL، BTC) را نشان می‌دهد.
+          برای دیدن تمام توکن‌ها و موقعیت‌های دیفای از لینک‌های زیر استفاده کنید.
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      ساخته شده برای استفاده شخصی · داده‌ها از RPCهای عمومی
+    </footer>
+  </div>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const resultsEl = document.getElementById('results');
+    const balanceGrid = document.getElementById('balanceGrid');
+    const addressInfo = document.getElementById('addressInfo');
+    const linksEl = document.getElementById('links');
+    const checkBtn = document.getElementById('checkBtn');
+    const input = document.getElementById('addressInput');
+
+    // Enter key support
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') checkBalance();
+    });
+
+    function detectType(addr) {
+      addr = addr.trim();
+      if (/^0x[a-fA-F0-9]{40}$/.test(addr)) return 'evm';
+      if (/^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,62}$/.test(addr)) return 'btc';
+      if (/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(addr)) return 'sol';
+      return 'unknown';
+    }
+
+    async function fetchEvmBalance(rpc, address) {
+      try {
+        const res = await fetch(rpc, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'eth_getBalance',
+            params: [address, 'latest']
+          })
+        });
+        const data = await res.json();
+        if (data.result) {
+          return parseInt(data.result, 16) / 1e18;
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    async function fetchBtcBalance(address) {
+      try {
+        const res = await fetch(`https://blockchain.info/q/addressbalance/${address}?confirmations=1`);
+        const satoshi = await res.text();
+        if (!isNaN(satoshi)) return parseInt(satoshi) / 1e8;
+      } catch (e) {}
+      // fallback
+      try {
+        const res = await fetch(`https://blockstream.info/api/address/${address}`);
+        const data = await res.json();
+        return (data.chain_stats.funded_txo_sum - data.chain_stats.spent_txo_sum) / 1e8;
+      } catch (e) {}
+      return null;
+    }
+
+    async function fetchSolBalance(address) {
+      try {
+        const res = await fetch('https://api.mainnet-beta.solana.com', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'getBalance',
+            params: [address]
+          })
+        });
+        const data = await res.json();
+        if (data.result) return data.result.value / 1e9;
+      } catch (e) {}
+      return null;
+    }
+
+    function formatAmount(num) {
+      if (num === null || num === undefined) return '—';
+      if (num === 0) return '0';
+      if (num < 0.0001) return num.toExponential(2);
+      return num.toLocaleString('en-US', { maximumFractionDigits: 6 });
+    }
+
+    async function checkBalance() {
+      const address = input.value.trim();
+      if (!address) {
+        statusEl.textContent = 'لطفاً آدرس را وارد کنید';
+        statusEl.className = 'status error';
+        return;
+      }
+
+      const type = detectType(address);
+      if (type === 'unknown') {
+        statusEl.textContent = 'فرمت آدرس شناخته نشد. آدرس معتبر وارد کنید.';
+        statusEl.className = 'status error';
+        return;
+      }
+
+      checkBtn.disabled = true;
+      statusEl.textContent = 'در حال دریافت اطلاعات از شبکه‌ها...';
+      statusEl.className = 'status loading';
+      resultsEl.classList.remove('show');
+      balanceGrid.innerHTML = '';
+
+      const chains = [];
+
+      if (type === 'evm') {
+        const rpcs = [
+          { name: 'Ethereum', symbol: 'ETH', rpc: 'https://eth.llamarpc.com' },
+          { name: 'BNB Smart Chain', symbol: 'BNB', rpc: 'https://bsc-dataseed.binance.org' },
+          { name: 'Polygon', symbol: 'MATIC', rpc: 'https://polygon-rpc.com' },
+          { name: 'Arbitrum', symbol: 'ETH', rpc: 'https://arb1.arbitrum.io/rpc' },
+          { name: 'Optimism', symbol: 'ETH', rpc: 'https://mainnet.optimism.io' },
+          { name: 'Base', symbol: 'ETH', rpc: 'https://mainnet.base.org' },
+          { name: 'Avalanche', symbol: 'AVAX', rpc: 'https://api.avax.network/ext/bc/C/rpc' },
+        ];
+
+        const promises = rpcs.map(async (c) => {
+          const bal = await fetchEvmBalance(c.rpc, address);
+          return { ...c, balance: bal };
+        });
+        const results = await Promise.all(promises);
+        chains.push(...results);
+      } 
+      else if (type === 'btc') {
+        const bal = await fetchBtcBalance(address);
+        chains.push({ name: 'Bitcoin', symbol: 'BTC', balance: bal });
+      } 
+      else if (type === 'sol') {
+        const bal = await fetchSolBalance(address);
+        chains.push({ name: 'Solana', symbol: 'SOL', balance: bal });
+      }
+
+      // Display
+      addressInfo.innerHTML = `<strong>آدرس:</strong> ${address}<br><strong>نوع تشخیص‌داده‌شده:</strong> ${type.toUpperCase()}`;
+
+      chains.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'balance-item';
+        div.innerHTML = `
+          <div class="chain">${c.name}</div>
+          <div class="amount">
+            <span class="symbol">${c.symbol}</span>
+            ${formatAmount(c.balance)}
+          </div>
+        `;
+        balanceGrid.appendChild(div);
+      });
+
+      // Links
+      let linksHtml = '';
+      if (type === 'evm') {
+        linksHtml += `<a href="https://debank.com/profile/${address}" target="_blank" rel="noopener">DeBank (پورتفوی کامل)</a>`;
+        linksHtml += `<a href="https://app.zerion.io/${address}/overview" target="_blank" rel="noopener">Zerion</a>`;
+        linksHtml += `<a href="https://etherscan.io/address/${address}" target="_blank" rel="noopener">Etherscan</a>`;
+      } else if (type === 'btc') {
+        linksHtml += `<a href="https://mempool.space/address/${address}" target="_blank" rel="noopener">Mempool.space</a>`;
+        linksHtml += `<a href="https://blockchair.com/bitcoin/address/${address}" target="_blank" rel="noopener">Blockchair</a>`;
+      } else if (type === 'sol') {
+        linksHtml += `<a href="https://solscan.io/account/${address}" target="_blank" rel="noopener">Solscan</a>`;
+        linksHtml += `<a href="https://debank.com/profile/${address}" target="_blank" rel="noopener">DeBank</a>`;
+      }
+      linksEl.innerHTML = linksHtml;
+
+      resultsEl.classList.add('show');
+      statusEl.textContent = 'نتیجه آماده است';
+      statusEl.className = 'status';
+      checkBtn.disabled = false;
+    }
+  </script>
+</body>
+</html>
