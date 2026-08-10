@@ -5,21 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>جستجوی خودکار کیف پول سولانا</title>
 
-<!-- ==================== رفع خطای Buffer ==================== -->
+<!-- کتابخانه‌های مورد نیاز -->
 <script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/dist/buffer.min.js"></script>
 <script>
-    // تعریف Buffer در سطح global برای مرورگر
     window.Buffer = window.Buffer || Buffer;
-    // همچنین برای اطمینان بیشتر
-    if (typeof global === 'undefined') {
-        window.global = window;
-    }
+    window.global = window;
 </script>
 
 <!-- سولانا Web3 -->
 <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.95.8/lib/index.iife.min.js"></script>
-<!-- اتر برای تولید عبارت بازیابی -->
-<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
+
+<!-- کتابخانه BIP39 برای تولید عبارت معتبر -->
+<script src="https://cdn.jsdelivr.net/npm/bip39@3.1.0/dist/bip39.min.js"></script>
+
+<!-- کتابخانه برای derivation مسیر سولانا -->
+<script src="https://cdn.jsdelivr.net/npm/ed25519-hd-key@1.3.0/dist/ed25519-hd-key.min.js"></script>
 
 <style>
 /* ==================== استایل‌ها ==================== */
@@ -418,16 +418,6 @@ textarea.checking{
     border:3px solid #9945FF;
     border-top:3px solid transparent;
 }
-
-.solana-badge{
-    display:inline-block;
-    background:#9945FF;
-    color:#fff;
-    padding:2px 12px;
-    border-radius:20px;
-    font-size:12px;
-    margin-right:8px;
-}
 </style>
 </head>
 
@@ -437,10 +427,10 @@ textarea.checking{
 
     <h1>
         <span class="solana">◎</span> جستجوی خودکار کیف پول سولانا
-        <span>⏳ صبر برای تکمیل بررسی | 🔍 تا پیدا شدن موجودی</span>
+        <span>⏳ تولید عبارت معتبر BIP-39 | 🔍 تا پیدا شدن موجودی</span>
     </h1>
 
-    <div id="status" class="status loading">⏳ در حال بارگذاری کلمات از فایل key.txt...</div>
+    <div id="status" class="status loading">⏳ در حال آماده‌سازی...</div>
 
     <textarea
         id="mnemonic"
@@ -449,8 +439,8 @@ textarea.checking{
         spellcheck="false"></textarea>
 
     <div class="btn-group">
-        <button class="btn-random" id="randomBtn" onclick="setRandomMnemonic()" disabled>
-            🎲 تصادفی
+        <button class="btn-random" id="randomBtn" onclick="setRandomMnemonic()">
+            🎲 تصادفی معتبر
         </button>
         <button class="btn-primary" onclick="generateAddress()">
             🔍 نمایش آدرس
@@ -461,7 +451,7 @@ textarea.checking{
         <button class="btn-copy" onclick="copyMnemonic()" id="copyBtn" disabled>
             📋 کپی
         </button>
-        <button class="btn-start" id="autoBtn" onclick="toggleAutoFind()" disabled>
+        <button class="btn-start" id="autoBtn" onclick="toggleAutoFind()">
             🚀 شروع جستجو
         </button>
     </div>
@@ -505,17 +495,20 @@ textarea.checking{
             <div class="number" id="statAvgTime">0</div>
             <div class="label">میانگین زمان بررسی (ms)</div>
         </div>
+        <div>
+            <div class="number" id="statInvalid">0</div>
+            <div class="label">عبارت نامعتبر</div>
+        </div>
     </div>
 
     <div class="info">
-        ⏳ هر کیف پول کامل بررسی میشه | 🔒 کلمات پیدا شده ذخیره میشن | ⚡ شبکه سولانا
+        ✅ تولید عبارت معتبر BIP-39 با چکسوم | 🔑 مسیر استاندارد سولانا: m/44'/501'/0'/0'
     </div>
 
 </div>
 
 <script>
 // ==================== تنظیمات اولیه ====================
-let fileWords = [];
 let isAutoFinding = false;
 let autoInterval = null;
 let attempts = 0;
@@ -529,8 +522,11 @@ let startTime = 0;
 let isWaitingForCheck = false;
 let totalCheckTime = 0;
 let checkCount = 0;
+let invalidCount = 0;
+let pendingCheck = false;
 
 // ==================== تنظیمات سولانا ====================
+// استفاده از RPC با پشتیبانی بهتر
 const SOLANA_RPC = 'https://api.mainnet-beta.solana.com';
 
 let solanaConnection = null;
@@ -561,74 +557,66 @@ const statFound = document.getElementById('statFound');
 const statEmpty = document.getElementById('statEmpty');
 const statSpeed = document.getElementById('statSpeed');
 const statAvgTime = document.getElementById('statAvgTime');
+const statInvalid = document.getElementById('statInvalid');
 const foundWordsBox = document.getElementById('foundWordsBox');
 const foundWords = document.getElementById('foundWords');
 
-// ==================== بارگذاری فایل ====================
-async function loadWords() {
+// ==================== تولید عبارت معتبر BIP-39 ====================
+function generateValidMnemonic() {
     try {
-        statusDiv.className = 'status loading';
-        statusDiv.textContent = '⏳ در حال خواندن فایل key.txt...';
-        statusDiv.style.display = 'block';
-
-        const response = await fetch('key.txt');
-
-        if (!response.ok) {
-            throw new Error(`خطا: ${response.status}`);
-        }
-
-        const content = await response.text();
-        fileWords = content.split(/\r?\n/).filter(line => line.trim() !== '');
-
-        if (fileWords.length === 0) {
-            throw new Error('فایل خالی است!');
-        }
-
-        if (fileWords.length < 12) {
-            throw new Error(`فایل فقط ${fileWords.length} کلمه دارد! حداقل ۱۲ کلمه نیاز است.`);
-        }
-
-        statusDiv.className = 'status success';
-        statusDiv.textContent = `✅ ${fileWords.length} کلمه بارگذاری شد!`;
-        randomBtn.disabled = false;
-        autoBtn.disabled = false;
-        copyBtn.disabled = true;
-        autoBtn.textContent = '🚀 شروع جستجو';
-
-        setTimeout(() => {
-            statusDiv.style.display = 'none';
-        }, 3000);
-
+        // تولید عبارت ۱۲ کلمه‌ای معتبر با چکسوم
+        const mnemonic = bip39.generateMnemonic(128); // 128 bits = 12 words
+        return mnemonic;
     } catch (error) {
-        statusDiv.className = 'status error';
-        statusDiv.textContent = `❌ خطا: ${error.message}`;
-        statusDiv.style.display = 'block';
-        randomBtn.disabled = true;
-        autoBtn.disabled = true;
-        copyBtn.disabled = true;
-        console.error('Error loading file:', error);
+        console.error('Error generating mnemonic:', error);
+        return null;
+    }
+}
+
+// ==================== تولید آدرس سولانا از عبارت ====================
+function getSolanaAddressFromMnemonic(mnemonic) {
+    try {
+        // 1. تولید seed از عبارت
+        const seed = bip39.mnemonicToSeedSync(mnemonic);
+        
+        // 2. derivation با مسیر استاندارد سولانا: m/44'/501'/0'/0'
+        const path = "m/44'/501'/0'/0'";
+        const derived = ed25519HdKey.derivePath(path, seed.toString('hex'));
+        
+        // 3. تولید keypair از seed
+        const keypair = solanaWeb3.Keypair.fromSeed(derived.key);
+        
+        return {
+            success: true,
+            address: keypair.publicKey.toBase58(),
+            keypair: keypair
+        };
+    } catch (error) {
+        console.error('Error generating Solana address:', error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+// ==================== بررسی اعتبار عبارت ====================
+function isValidMnemonic(mnemonic) {
+    try {
+        return bip39.validateMnemonic(mnemonic);
+    } catch {
+        return false;
     }
 }
 
 // ==================== توابع کمکی ====================
-function getRandomWords() {
-    if (fileWords.length === 0) return null;
-    let selectedWords = [];
-    for (let i = 0; i < 12; i++) {
-        const randomIndex = Math.floor(Math.random() * fileWords.length);
-        selectedWords.push(fileWords[randomIndex]);
-    }
-    return selectedWords;
-}
-
 function setRandomMnemonic() {
-    if (fileWords.length === 0) {
-        errorBox.textContent = '❌ فایل بارگذاری نشده است!';
+    const mnemonic = generateValidMnemonic();
+    if (!mnemonic) {
+        errorBox.textContent = '❌ خطا در تولید عبارت معتبر!';
         return;
     }
-    const words = getRandomWords();
-    if (!words) return;
-    mnemonicInput.value = words.join(' ');
+    mnemonicInput.value = mnemonic;
     mnemonicInput.classList.remove('found', 'checking');
     copyBtn.disabled = false;
     balanceBtn.disabled = true;
@@ -638,97 +626,50 @@ function setRandomMnemonic() {
     foundWordsBox.style.display = 'none';
     
     statusDiv.className = 'status success';
-    statusDiv.textContent = '✅ ۱۲ کلمه تصادفی انتخاب شد!';
+    statusDiv.textContent = '✅ عبارت معتبر BIP-39 تولید شد!';
     statusDiv.style.display = 'block';
     setTimeout(() => {
         statusDiv.style.display = 'none';
     }, 2000);
 }
 
-// ==================== تولید آدرس سولانا (اصلاح شده) ====================
-function tryGenerateSolanaAddress(mnemonic) {
-    try {
-        if (typeof ethers === "undefined") {
-            return { success: false, error: "کتابخانه ethers بارگذاری نشده است." };
-        }
-        const words = mnemonic.split(" ");
-        if (words.length !== 12) {
-            return { success: false, error: "عبارت باید دقیقاً ۱۲ کلمه داشته باشد." };
-        }
-        if (!ethers.Mnemonic.isValidMnemonic(mnemonic)) {
-            return { success: false, error: "عبارت بازیابی معتبر نیست." };
-        }
-        
-        // تولید کلید از عبارت بازیابی
-        const mnemonicObj = ethers.Mnemonic.fromPhrase(mnemonic);
-        const seed = mnemonicObj.computeSeed();
-        
-        // تبدیل به Uint8Array و سپس Buffer
-        const seedArray = new Uint8Array(seed);
-        
-        // استفاده از solana-web3 برای تولید کلید
-        const fromSeed = solanaWeb3.Keypair.fromSeed(seedArray.slice(0, 32));
-        
-        return { 
-            success: true, 
-            address: fromSeed.publicKey.toBase58(),
-            keypair: fromSeed
-        };
-    } catch (error) {
-        console.error('Error generating Solana address:', error);
-        return { success: false, error: "خطا در پردازش عبارت بازیابی: " + error.message };
-    }
-}
-
 function generateAddress() {
-    const input = mnemonicInput;
-    const result = resultDiv;
-    const addressBox = document.getElementById("address");
-    const errorBox = document.getElementById("error");
-
-    result.style.display = "none";
+    const mnemonic = mnemonicInput.value.trim().replace(/\s+/g, " ");
+    resultDiv.style.display = "none";
     balanceResult.style.display = "none";
     errorBox.textContent = "";
     balanceBtn.disabled = true;
-
-    const mnemonic = input.value.trim().replace(/\s+/g, " ");
 
     if (!mnemonic) {
         errorBox.textContent = "❌ عبارت بازیابی را وارد کنید.";
         return;
     }
 
-    if (typeof ethers === "undefined") {
-        errorBox.textContent = "❌ کتابخانه ethers بارگذاری نشده است.";
-        return;
-    }
-
     const words = mnemonic.split(" ");
-    if (words.length !== 12) {
-        errorBox.textContent = "❌ عبارت باید دقیقاً ۱۲ کلمه داشته باشد.";
+    if (words.length !== 12 && words.length !== 24) {
+        errorBox.textContent = "❌ عبارت باید ۱۲ یا ۲۴ کلمه داشته باشد.";
         return;
     }
 
-    try {
-        const result = tryGenerateSolanaAddress(mnemonic);
-        if (!result.success) {
-            errorBox.textContent = "❌ " + result.error;
-            return;
-        }
-        
-        currentAddress = result.address;
-        addressBox.textContent = currentAddress;
-        result.style.display = "block";
-        balanceBtn.disabled = false;
-        copyBtn.disabled = false;
-
-    } catch (error) {
-        console.error(error);
-        errorBox.textContent = "❌ خطا در پردازش عبارت بازیابی.";
+    if (!isValidMnemonic(mnemonic)) {
+        errorBox.textContent = "❌ عبارت بازیابی معتبر نیست (چکسوم اشتباه است).";
+        return;
     }
+
+    const result = getSolanaAddressFromMnemonic(mnemonic);
+    if (!result.success) {
+        errorBox.textContent = "❌ " + result.error;
+        return;
+    }
+
+    currentAddress = result.address;
+    addressBox.textContent = currentAddress;
+    resultDiv.style.display = "block";
+    balanceBtn.disabled = false;
+    copyBtn.disabled = false;
 }
 
-// ==================== بررسی موجودی در سولانا ====================
+// ==================== بررسی موجودی ====================
 async function checkBalance() {
     if (!currentAddress) {
         errorBox.textContent = '❌ ابتدا آدرس را تولید کنید!';
@@ -752,7 +693,12 @@ async function checkBalance() {
         const connection = getSolanaConnection();
         const publicKey = new solanaWeb3.PublicKey(currentAddress);
         
-        const balance = await connection.getBalance(publicKey);
+        // دریافت موجودی با timeout
+        const balance = await Promise.race([
+            connection.getBalance(publicKey),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+        ]);
+        
         const balanceInSol = balance / solanaWeb3.LAMPORTS_PER_SOL;
         
         const checkTime = Date.now() - checkStart;
@@ -795,6 +741,7 @@ async function checkBalance() {
         balanceBtn.disabled = false;
         balanceBtn.textContent = '💰 بررسی موجودی';
         isChecking = false;
+        pendingCheck = false;
 
         return hasBalance;
 
@@ -802,123 +749,133 @@ async function checkBalance() {
         console.error('Error checking Solana balance:', error);
         balanceList.innerHTML = `
             <div style="text-align:center;color:#f87171;padding:15px;">
-                ❌ خطا در بررسی شبکه سولانا: ${error.message}
+                ❌ خطا در بررسی شبکه: ${error.message}
+                <div style="font-size:12px;color:#888;margin-top:5px;">تلاش مجدد...</div>
             </div>
         `;
         balanceBtn.disabled = false;
         balanceBtn.textContent = '💰 بررسی موجودی';
         isChecking = false;
+        pendingCheck = false;
         return false;
     }
 }
 
-// ==================== جستجوی خودکار ====================
+// ==================== جستجوی خودکار (اصلاح شده) ====================
 async function findAddressAuto() {
-    if (foundAddress) {
-        stopAutoFind();
+    if (foundAddress || pendingCheck) {
         return;
     }
 
+    // اگر در حال بررسی هستیم، صبر می‌کنیم
     if (isChecking || isWaitingForCheck) {
         return;
     }
 
+    pendingCheck = true;
     attempts++;
-    const words = getRandomWords();
-    if (!words) {
-        stopAutoFind();
+
+    // تولید عبارت معتبر
+    const mnemonic = generateValidMnemonic();
+    if (!mnemonic) {
+        pendingCheck = false;
         return;
     }
-
-    const mnemonic = words.join(' ');
     
     mnemonicInput.value = mnemonic;
     mnemonicInput.classList.add('checking');
     mnemonicInput.classList.remove('found');
 
-    const result = tryGenerateSolanaAddress(mnemonic);
+    // تولید آدرس
+    const result = getSolanaAddressFromMnemonic(mnemonic);
     
-    if (result.success) {
-        currentAddress = result.address;
-        addressBox.textContent = currentAddress;
-        resultDiv.style.display = "block";
-        errorBox.textContent = "";
-        copyBtn.disabled = false;
-        balanceBtn.disabled = false;
+    if (!result.success) {
+        invalidCount++;
+        statInvalid.textContent = invalidCount;
+        pendingCheck = false;
+        mnemonicInput.classList.remove('checking');
+        return;
+    }
 
-        statAttempts.textContent = attempts;
-        statsDiv.style.display = 'flex';
-        
-        if (startTime > 0) {
-            const elapsed = (Date.now() - startTime) / 1000;
-            if (elapsed > 0) {
-                const speed = Math.round(attempts / elapsed);
-                statSpeed.textContent = speed;
-            }
+    currentAddress = result.address;
+    addressBox.textContent = currentAddress;
+    resultDiv.style.display = "block";
+    errorBox.textContent = "";
+    copyBtn.disabled = false;
+    balanceBtn.disabled = false;
+
+    // به‌روزرسانی آمار
+    statAttempts.textContent = attempts;
+    statsDiv.style.display = 'flex';
+    
+    if (startTime > 0) {
+        const elapsed = (Date.now() - startTime) / 1000;
+        if (elapsed > 0) {
+            const speed = Math.round(attempts / elapsed);
+            statSpeed.textContent = speed;
         }
+    }
 
-        statusDiv.className = 'status checking';
-        statusDiv.innerHTML = `
-            <span class="spinner spinner-purple"></span> 
-            در حال بررسی موجودی کیف پول سولانا... (${attempts} تلاش)
-        `;
+    statusDiv.className = 'status checking';
+    statusDiv.innerHTML = `
+        <span class="spinner spinner-purple"></span> 
+        در حال بررسی موجودی... (${attempts} تلاش)
+    `;
+    statusDiv.style.display = 'block';
+    
+    counterDiv.className = 'counter checking';
+    counterDiv.textContent = `⏳ در حال بررسی... (${attempts})`;
+
+    isWaitingForCheck = true;
+    
+    // بررسی موجودی
+    const hasBalance = await checkBalance();
+    
+    isWaitingForCheck = false;
+    pendingCheck = false;
+    mnemonicInput.classList.remove('checking');
+    
+    if (hasBalance) {
+        foundAddress = true;
+        foundWithBalance++;
+        statFound.textContent = foundWithBalance;
+        foundMnemonic = mnemonic;
+        
+        mnemonicInput.value = foundMnemonic;
+        mnemonicInput.classList.add('found');
+        
+        foundWords.textContent = foundMnemonic;
+        foundWordsBox.style.display = 'block';
+        
+        statusDiv.className = 'status found';
+        statusDiv.textContent = `🎉 کیف پول سولانا با موجودی پیدا شد! (${attempts} تلاش)`;
         statusDiv.style.display = 'block';
         
-        counterDiv.className = 'counter checking';
-        counterDiv.textContent = `⏳ در حال بررسی... (${attempts})`;
-
-        isWaitingForCheck = true;
+        counterDiv.className = 'counter found';
+        counterDiv.textContent = `✅ پیدا شد! ${foundMnemonic}`;
         
-        const hasBalance = await checkBalance();
+        stopAutoFind();
         
-        isWaitingForCheck = false;
-        mnemonicInput.classList.remove('checking');
-        
-        if (hasBalance) {
-            foundAddress = true;
-            foundWithBalance++;
-            statFound.textContent = foundWithBalance;
-            foundMnemonic = mnemonic;
-            
-            mnemonicInput.value = foundMnemonic;
-            mnemonicInput.classList.add('found');
-            
-            foundWords.textContent = foundMnemonic;
-            foundWordsBox.style.display = 'block';
-            
-            statusDiv.className = 'status found';
-            statusDiv.textContent = `🎉 کیف پول سولانا با موجودی پیدا شد! (${attempts} تلاش)`;
-            statusDiv.style.display = 'block';
-            
-            counterDiv.className = 'counter found';
-            counterDiv.textContent = `✅ پیدا شد! ${foundMnemonic}`;
-            
-            stopAutoFind();
-            
-            setTimeout(() => {
-                statusDiv.style.display = 'none';
-            }, 10000);
-            
-        } else {
-            foundEmpty++;
-            statEmpty.textContent = foundEmpty;
-            
-            counterDiv.className = 'counter';
-            counterDiv.textContent = `🔄 جستجو... (${attempts} | ${foundEmpty} بدون موجودی)`;
-            
-            if (attempts % 10 === 0) {
-                errorBox.textContent = `🔍 ${attempts} تلاش انجام شد... ${foundEmpty} تا بدون موجودی`;
-            }
-            
-            setTimeout(() => {
-                balanceResult.style.display = 'none';
-                statusDiv.style.display = 'none';
-            }, 200);
-        }
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 10000);
         
     } else {
-        errorBox.textContent = `❌ ${result.error}`;
-        counterDiv.textContent = `🔄 خطا... (${attempts})`;
+        foundEmpty++;
+        statEmpty.textContent = foundEmpty;
+        
+        counterDiv.className = 'counter';
+        const invalidMsg = invalidCount > 0 ? ` | ${invalidCount} نامعتبر` : '';
+        counterDiv.textContent = `🔄 جستجو... (${attempts} | ${foundEmpty} بدون موجودی${invalidMsg})`;
+        
+        if (attempts % 5 === 0) {
+            errorBox.textContent = `🔍 ${attempts} تلاش انجام شد... ${foundEmpty} بدون موجودی`;
+        }
+        
+        setTimeout(() => {
+            balanceResult.style.display = 'none';
+            statusDiv.style.display = 'none';
+        }, 100);
     }
 }
 
@@ -931,20 +888,17 @@ function toggleAutoFind() {
 }
 
 function startAutoFind() {
-    if (fileWords.length === 0) {
-        errorBox.textContent = '❌ فایل بارگذاری نشده است!';
-        return;
-    }
-
     isAutoFinding = true;
     foundAddress = false;
     attempts = 0;
     foundWithBalance = 0;
     foundEmpty = 0;
+    invalidCount = 0;
     startTime = Date.now();
     totalCheckTime = 0;
     checkCount = 0;
     isWaitingForCheck = false;
+    pendingCheck = false;
     balanceResult.style.display = 'none';
     foundWordsBox.style.display = 'none';
     mnemonicInput.classList.remove('found', 'checking');
@@ -955,6 +909,7 @@ function startAutoFind() {
     statEmpty.textContent = '0';
     statSpeed.textContent = '0';
     statAvgTime.textContent = '0';
+    statInvalid.textContent = '0';
     
     autoBtn.textContent = '⏹ توقف';
     autoBtn.className = 'btn-stop';
@@ -970,11 +925,16 @@ function startAutoFind() {
     statusDiv.textContent = '⚡ جستجو در شبکه سولانا در حال اجرا...';
     statusDiv.style.display = 'block';
 
+    // شروع با تاخیر
     setTimeout(() => {
         findAddressAuto();
-    }, 200);
+    }, 500);
     
-    autoInterval = setInterval(findAddressAuto, 150);
+    // فاصله بین تلاش‌ها: 500ms برای جلوگیری از محدودیت RPC
+    autoInterval = setInterval(async () => {
+        if (!isAutoFinding) return;
+        await findAddressAuto();
+    }, 500);
 }
 
 function stopAutoFind() {
@@ -988,12 +948,13 @@ function stopAutoFind() {
     autoBtn.className = 'btn-start';
     randomBtn.disabled = false;
     balanceBtn.disabled = false;
+    pendingCheck = false;
     
     if (!foundAddress) {
         statusDiv.className = 'status info';
         statusDiv.textContent = '⏹ جستجو متوقف شد.';
         statusDiv.style.display = 'block';
-        counterDiv.textContent = `⏹ متوقف شد. ${attempts} تلاش | ${foundEmpty} بدون موجودی`;
+        counterDiv.textContent = `⏹ متوقف شد. ${attempts} تلاش | ${foundEmpty} بدون موجودی | ${invalidCount} نامعتبر`;
         mnemonicInput.classList.remove('checking');
         
         setTimeout(() => {
@@ -1025,9 +986,16 @@ function copyMnemonic() {
 }
 
 // ==================== بارگذاری اولیه ====================
-window.addEventListener('DOMContentLoaded', loadWords);
+window.addEventListener('DOMContentLoaded', function() {
+    statusDiv.className = 'status success';
+    statusDiv.textContent = '✅ آماده! برای شروع دکمه "شروع جستجو" را بزنید.';
+    statusDiv.style.display = 'block';
+    setTimeout(() => {
+        statusDiv.style.display = 'none';
+    }, 2000);
+});
 
-console.log('✅ کد سولانا آماده است!');
+console.log('✅ کد سولانا با رفع همه ایرادات آماده است!');
 </script>
 
 </body>
