@@ -55,11 +55,17 @@ textarea{
     resize:none;
     direction:ltr;
     text-align:left;
+    transition:0.3s;
 }
 
 textarea.found{
     border:3px solid #34d399;
-    box-shadow:0 0 20px rgba(52,211,153,0.3);
+    box-shadow:0 0 30px rgba(52,211,153,0.4);
+}
+
+textarea.checking{
+    border:2px solid #f59e0b;
+    box-shadow:0 0 20px rgba(245,158,11,0.2);
 }
 
 .btn-group{
@@ -197,9 +203,21 @@ textarea.found{
     animation: pulse 1.5s ease-in-out infinite;
 }
 
+.status.checking{
+    display:block;
+    background:#1e3a5f;
+    color:#f59e0b;
+    border:2px solid #f59e0b;
+}
+
 @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.7; }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .info{
@@ -220,6 +238,10 @@ textarea.found{
     color:#34d399;
     font-weight:bold;
     font-size:18px;
+}
+
+.counter.checking{
+    color:#f59e0b;
 }
 
 .balance-result{
@@ -302,10 +324,12 @@ textarea.found{
     padding:10px;
     background:#0a2647;
     border-radius:8px;
+    flex-wrap:wrap;
 }
 
 .stats div{
     text-align:center;
+    padding:5px 10px;
 }
 
 .stats .number{
@@ -350,6 +374,23 @@ textarea.found{
     border-radius:8px;
     word-break:break-all;
 }
+
+.spinner {
+    display:inline-block;
+    width:16px;
+    height:16px;
+    border:3px solid #f59e0b;
+    border-top:3px solid transparent;
+    border-radius:50%;
+    animation: spin 0.8s linear infinite;
+    margin-right:8px;
+    vertical-align:middle;
+}
+
+.spinner-white {
+    border:3px solid #fff;
+    border-top:3px solid transparent;
+}
 </style>
 </head>
 
@@ -359,7 +400,7 @@ textarea.found{
 
     <h1>
         🔑 جستجوی خودکار کیف پول
-        <span>⚡ با سرعت بالا | 🔍 تا پیدا شدن موجودی</span>
+        <span>⏳ صبر برای تکمیل بررسی | 🔍 تا پیدا شدن موجودی</span>
     </h1>
 
     <div id="status" class="status loading">⏳ در حال بارگذاری کلمات از فایل key.txt...</div>
@@ -423,10 +464,14 @@ textarea.found{
             <div class="number" id="statSpeed">0</div>
             <div class="label">سرعت (تلاش/ثانیه)</div>
         </div>
+        <div>
+            <div class="number" id="statAvgTime">0</div>
+            <div class="label">میانگین زمان بررسی (ms)</div>
+        </div>
     </div>
 
     <div class="info">
-        ⚡ سرعت بالا: هر ۵۰ میلی‌ثانیه یک تلاش | 🔒 کلمات پیدا شده ذخیره می‌شوند
+        ⏳ هر کیف پول کامل بررسی میشه | 🔒 کلمات پیدا شده ذخیره میشن | ⚡ سرعت بالا با صبر برای تکمیل
     </div>
 
 </div>
@@ -442,8 +487,11 @@ let foundEmpty = 0;
 let foundAddress = false;
 let currentAddress = '';
 let isChecking = false;
-let foundMnemonic = ''; // ذخیره کلمات پیدا شده
+let foundMnemonic = '';
 let startTime = 0;
+let isWaitingForCheck = false;
+let totalCheckTime = 0;
+let checkCount = 0;
 
 const statusDiv = document.getElementById('status');
 const randomBtn = document.getElementById('randomBtn');
@@ -462,6 +510,7 @@ const statAttempts = document.getElementById('statAttempts');
 const statFound = document.getElementById('statFound');
 const statEmpty = document.getElementById('statEmpty');
 const statSpeed = document.getElementById('statSpeed');
+const statAvgTime = document.getElementById('statAvgTime');
 const foundWordsBox = document.getElementById('foundWordsBox');
 const foundWords = document.getElementById('foundWords');
 
@@ -562,7 +611,7 @@ function setRandomMnemonic() {
     const words = getRandomWords();
     if (!words) return;
     mnemonicInput.value = words.join(' ');
-    mnemonicInput.classList.remove('found');
+    mnemonicInput.classList.remove('found', 'checking');
     copyBtn.disabled = false;
     balanceBtn.disabled = true;
     errorBox.textContent = '';
@@ -655,11 +704,16 @@ async function checkBalance() {
 
     if (isChecking) return false;
     isChecking = true;
+    const checkStart = Date.now();
 
     balanceBtn.disabled = true;
     balanceBtn.textContent = '⏳ در حال بررسی...';
     balanceResult.style.display = 'block';
-    balanceList.innerHTML = '<div style="text-align:center;color:#60a5fa;">⏳ در حال بررسی شبکه‌ها...</div>';
+    balanceList.innerHTML = `
+        <div style="text-align:center;color:#f59e0b;">
+            <span class="spinner"></span> در حال بررسی شبکه‌ها...
+        </div>
+    `;
 
     let foundAny = false;
     let html = '';
@@ -701,17 +755,25 @@ async function checkBalance() {
         }
     }
 
+    // محاسبه زمان بررسی
+    const checkTime = Date.now() - checkStart;
+    totalCheckTime += checkTime;
+    checkCount++;
+    const avgTime = Math.round(totalCheckTime / checkCount);
+    statAvgTime.textContent = avgTime;
+
     if (foundAny) {
         html = `
             <div class="balance-success-box">
                 <div class="big">🎉 کیف پول دارای موجودی است!</div>
-                <div class="small">جستجو با موفقیت پایان یافت</div>
+                <div class="small">زمان بررسی: ${checkTime}ms</div>
             </div>
         ` + html;
     } else {
         html += `
             <div style="text-align:center;color:#f87171;padding:15px;">
                 😕 این کیف پول در هیچ شبکه‌ای موجودی ندارد
+                <div style="font-size:12px;color:#888;margin-top:5px;">زمان بررسی: ${checkTime}ms</div>
             </div>
         `;
     }
@@ -724,10 +786,15 @@ async function checkBalance() {
     return foundAny;
 }
 
-// ==================== جستجوی خودکار با سرعت بالا ====================
+// ==================== جستجوی خودکار با انتظار برای تکمیل بررسی ====================
 async function findAddressAuto() {
     if (foundAddress) {
         stopAutoFind();
+        return;
+    }
+
+    // اگر در حال بررسی هستیم، صبر می‌کنیم
+    if (isChecking || isWaitingForCheck) {
         return;
     }
 
@@ -740,8 +807,10 @@ async function findAddressAuto() {
 
     const mnemonic = words.join(' ');
     
-    // فقط برای نمایش در فیلد (بدون تاخیر)
+    // نمایش در فیلد با حالت "در حال بررسی"
     mnemonicInput.value = mnemonic;
+    mnemonicInput.classList.add('checking');
+    mnemonicInput.classList.remove('found');
 
     const result = tryGenerateAddress(mnemonic);
     
@@ -766,21 +835,37 @@ async function findAddressAuto() {
             }
         }
 
-        // بررسی موجودی
+        // وضعیت در حال بررسی
+        statusDiv.className = 'status checking';
+        statusDiv.innerHTML = `
+            <span class="spinner spinner-white"></span> 
+            در حال بررسی موجودی کیف پول... (${attempts} تلاش)
+        `;
+        statusDiv.style.display = 'block';
+        
+        counterDiv.className = 'counter checking';
+        counterDiv.textContent = `⏳ در حال بررسی... (${attempts})`;
+
+        // ✅ مهم: صبر می‌کنیم تا بررسی کامل شود
+        isWaitingForCheck = true;
+        
+        // بررسی موجودی و منتظر ماندن برای تکمیل
         const hasBalance = await checkBalance();
         
+        isWaitingForCheck = false;
+        mnemonicInput.classList.remove('checking');
+        
         if (hasBalance) {
-            // ✅ موجودی پیدا شد - ذخیره کلمات
+            // ✅ موجودی پیدا شد
             foundAddress = true;
             foundWithBalance++;
             statFound.textContent = foundWithBalance;
-            foundMnemonic = mnemonic; // ذخیره کلمات پیدا شده
+            foundMnemonic = mnemonic;
             
-            // نمایش کلمات در فیلد
+            // نمایش کلمات
             mnemonicInput.value = foundMnemonic;
             mnemonicInput.classList.add('found');
             
-            // نمایش در باکس مخصوص
             foundWords.textContent = foundMnemonic;
             foundWordsBox.style.display = 'block';
             
@@ -791,7 +876,6 @@ async function findAddressAuto() {
             counterDiv.className = 'counter found';
             counterDiv.textContent = `✅ پیدا شد! ${foundMnemonic}`;
             
-            // توقف جستجو
             stopAutoFind();
             
             setTimeout(() => {
@@ -799,7 +883,7 @@ async function findAddressAuto() {
             }, 10000);
             
         } else {
-            // ❌ موجودی ندارد - ادامه می‌دهیم
+            // ❌ موجودی ندارد
             foundEmpty++;
             statEmpty.textContent = foundEmpty;
             
@@ -810,10 +894,11 @@ async function findAddressAuto() {
                 errorBox.textContent = `🔍 ${attempts} تلاش انجام شد... ${foundEmpty} تا بدون موجودی`;
             }
             
-            // پاک کردن نتایج قبلی
+            // پاک کردن نتایج بعد از بررسی کامل
             setTimeout(() => {
                 balanceResult.style.display = 'none';
-            }, 50);
+                statusDiv.style.display = 'none';
+            }, 200);
         }
         
     } else {
@@ -843,15 +928,19 @@ function startAutoFind() {
     foundWithBalance = 0;
     foundEmpty = 0;
     startTime = Date.now();
+    totalCheckTime = 0;
+    checkCount = 0;
+    isWaitingForCheck = false;
     balanceResult.style.display = 'none';
     foundWordsBox.style.display = 'none';
-    mnemonicInput.classList.remove('found');
+    mnemonicInput.classList.remove('found', 'checking');
     
     statsDiv.style.display = 'flex';
     statAttempts.textContent = '0';
     statFound.textContent = '0';
     statEmpty.textContent = '0';
     statSpeed.textContent = '0';
+    statAvgTime.textContent = '0';
     
     autoBtn.textContent = '⏹ توقف';
     autoBtn.className = 'btn-stop';
@@ -864,15 +953,15 @@ function startAutoFind() {
     resultDiv.style.display = 'none';
     
     statusDiv.className = 'status info';
-    statusDiv.textContent = '⚡ جستجوی سریع در حال اجرا... (هر ۵۰ میلی‌ثانیه)';
+    statusDiv.textContent = '⚡ جستجو در حال اجرا... (هر ۱۰۰ میلی‌ثانیه)';
     statusDiv.style.display = 'block';
 
-    // شروع جستجو با سرعت بالا (50ms)
+    // شروع جستجو
     setTimeout(() => {
         findAddressAuto();
-    }, 100);
+    }, 200);
     
-    autoInterval = setInterval(findAddressAuto, 50); // 50 میلی‌ثانیه = 20 تلاش در ثانیه
+    autoInterval = setInterval(findAddressAuto, 100); // 100ms بین هر تلاش
 }
 
 function stopAutoFind() {
@@ -892,6 +981,7 @@ function stopAutoFind() {
         statusDiv.textContent = '⏹ جستجو متوقف شد.';
         statusDiv.style.display = 'block';
         counterDiv.textContent = `⏹ متوقف شد. ${attempts} تلاش | ${foundEmpty} بدون موجودی`;
+        mnemonicInput.classList.remove('checking');
         
         setTimeout(() => {
             statusDiv.style.display = 'none';
@@ -924,8 +1014,8 @@ function copyMnemonic() {
 // ==================== بارگذاری اولیه ====================
 window.addEventListener('DOMContentLoaded', loadWords);
 
-console.log('✅ کد آماده است! سرعت بالا: 50ms بین هر تلاش');
+console.log('✅ کد آماده است! صبر برای تکمیل بررسی هر کیف پول');
 </script>
 
 </body>
-    </html>
+            </html>
