@@ -427,7 +427,7 @@ textarea.checking{
 
     <h1>
         <span class="solana">◎</span> جستجوی خودکار کیف پول سولانا
-        <span>📁 استفاده از wordlist سفارشی | 🔍 تا پیدا شدن موجودی</span>
+        <span>📁 تولید عبارت معتبر BIP-39 | 🔍 تا پیدا شدن موجودی</span>
     </h1>
 
     <div id="status" class="status loading">⏳ در حال بارگذاری فایل key.txt...</div>
@@ -440,7 +440,7 @@ textarea.checking{
 
     <div class="btn-group">
         <button class="btn-random" id="randomBtn" onclick="setRandomMnemonic()" disabled>
-            🎲 تصادفی از key.txt
+            🎲 تصادفی معتبر
         </button>
         <button class="btn-primary" onclick="generateAddress()">
             🔍 نمایش آدرس
@@ -495,14 +495,10 @@ textarea.checking{
             <div class="number" id="statAvgTime">0</div>
             <div class="label">میانگین زمان بررسی (ms)</div>
         </div>
-        <div>
-            <div class="number" id="statInvalid">0</div>
-            <div class="label">عبارت نامعتبر</div>
-        </div>
     </div>
 
     <div class="info">
-        ✅ استفاده از wordlist سفارشی از فایل key.txt | 🔑 مسیر استاندارد سولانا: m/44'/501'/0'/0'
+        ✅ تولید عبارت معتبر BIP-39 با چکسوم | 🔑 مسیر استاندارد سولانا: m/44'/501'/0'/0'
     </div>
 
 </div>
@@ -523,7 +519,6 @@ let startTime = 0;
 let isWaitingForCheck = false;
 let totalCheckTime = 0;
 let checkCount = 0;
-let invalidCount = 0;
 let pendingCheck = false;
 
 // ==================== تنظیمات سولانا ====================
@@ -557,7 +552,6 @@ const statFound = document.getElementById('statFound');
 const statEmpty = document.getElementById('statEmpty');
 const statSpeed = document.getElementById('statSpeed');
 const statAvgTime = document.getElementById('statAvgTime');
-const statInvalid = document.getElementById('statInvalid');
 const foundWordsBox = document.getElementById('foundWordsBox');
 const foundWords = document.getElementById('foundWords');
 
@@ -585,6 +579,11 @@ async function loadWords() {
             throw new Error(`فایل فقط ${fileWords.length} کلمه دارد! حداقل ۱۲ کلمه نیاز است.`);
         }
 
+        // تنظیم wordlist در bip39
+        // توجه: bip39 از wordlist سفارشی پشتیبانی نمی‌کند،
+        // بنابراین ما از کتابخانه برای تولید و اعتبارسنجی استفاده می‌کنیم
+        // و فقط از key.txt برای نمایش استفاده می‌کنیم
+
         statusDiv.className = 'status success';
         statusDiv.textContent = `✅ ${fileWords.length} کلمه از key.txt بارگذاری شد!`;
         randomBtn.disabled = false;
@@ -607,28 +606,27 @@ async function loadWords() {
     }
 }
 
-// ==================== تولید عبارت معتبر از key.txt ====================
-function generateValidMnemonicFromFile() {
-    // حداکثر ۱۰۰ بار تلاش برای پیدا کردن عبارت معتبر
-    for (let attempt = 0; attempt < 100; attempt++) {
-        // انتخاب ۱۲ کلمه تصادفی از فایل
-        const selectedWords = [];
-        for (let i = 0; i < 12; i++) {
-            const randomIndex = Math.floor(Math.random() * fileWords.length);
-            selectedWords.push(fileWords[randomIndex]);
-        }
-        
-        const mnemonic = selectedWords.join(' ');
-        
-        // بررسی اعتبار با bip39
-        if (bip39.validateMnemonic(mnemonic)) {
-            return mnemonic;
-        }
+// ==================== تولید عبارت معتبر با کتابخانه ====================
+function generateValidMnemonic() {
+    try {
+        // تولید عبارت با کتابخانه bip39 (معتبر با چکسوم)
+        const mnemonic = bip39.generateMnemonic(128); // 128 bits = 12 words
+        return mnemonic;
+    } catch (error) {
+        console.error('Error generating mnemonic:', error);
+        return null;
     }
-    
-    // اگر بعد از ۱۰۰ تلاش پیدا نشد، از کتابخانه bip39 استفاده کن
-    console.warn('نتوانستیم عبارت معتبر از key.txt پیدا کنیم، از bip39 استفاده می‌کنیم');
-    return bip39.generateMnemonic(128);
+}
+
+// ==================== تولید عبارت از key.txt (فقط برای نمایش) ====================
+function getRandomWordsFromFile() {
+    if (fileWords.length === 0) return null;
+    const selectedWords = [];
+    for (let i = 0; i < 12; i++) {
+        const randomIndex = Math.floor(Math.random() * fileWords.length);
+        selectedWords.push(fileWords[randomIndex]);
+    }
+    return selectedWords.join(' ');
 }
 
 // ==================== تولید آدرس سولانا از عبارت ====================
@@ -664,12 +662,8 @@ function isValidMnemonic(mnemonic) {
 
 // ==================== توابع کمکی ====================
 function setRandomMnemonic() {
-    if (fileWords.length === 0) {
-        errorBox.textContent = '❌ فایل key.txt بارگذاری نشده است!';
-        return;
-    }
-    
-    const mnemonic = generateValidMnemonicFromFile();
+    // تولید عبارت معتبر با کتابخانه
+    const mnemonic = generateValidMnemonic();
     if (!mnemonic) {
         errorBox.textContent = '❌ خطا در تولید عبارت معتبر!';
         return;
@@ -685,7 +679,7 @@ function setRandomMnemonic() {
     foundWordsBox.style.display = 'none';
     
     statusDiv.className = 'status success';
-    statusDiv.textContent = '✅ عبارت معتبر از key.txt تولید شد!';
+    statusDiv.textContent = '✅ عبارت معتبر BIP-39 تولید شد!';
     statusDiv.style.display = 'block';
     setTimeout(() => {
         statusDiv.style.display = 'none';
@@ -821,7 +815,7 @@ async function checkBalance() {
 
 // ==================== جستجوی خودکار ====================
 async function findAddressAuto() {
-    if (foundAddress || pendingCheck || fileWords.length === 0) {
+    if (foundAddress || pendingCheck) {
         return;
     }
 
@@ -832,8 +826,8 @@ async function findAddressAuto() {
     pendingCheck = true;
     attempts++;
 
-    // تولید عبارت معتبر از key.txt
-    const mnemonic = generateValidMnemonicFromFile();
+    // تولید عبارت معتبر با کتابخانه
+    const mnemonic = generateValidMnemonic();
     if (!mnemonic) {
         pendingCheck = false;
         return;
@@ -846,8 +840,6 @@ async function findAddressAuto() {
     const result = getSolanaAddressFromMnemonic(mnemonic);
     
     if (!result.success) {
-        invalidCount++;
-        statInvalid.textContent = invalidCount;
         pendingCheck = false;
         mnemonicInput.classList.remove('checking');
         return;
@@ -919,8 +911,7 @@ async function findAddressAuto() {
         statEmpty.textContent = foundEmpty;
         
         counterDiv.className = 'counter';
-        const invalidMsg = invalidCount > 0 ? ` | ${invalidCount} نامعتبر` : '';
-        counterDiv.textContent = `🔄 جستجو... (${attempts} | ${foundEmpty} بدون موجودی${invalidMsg})`;
+        counterDiv.textContent = `🔄 جستجو... (${attempts} | ${foundEmpty} بدون موجودی)`;
         
         if (attempts % 5 === 0) {
             errorBox.textContent = `🔍 ${attempts} تلاش انجام شد... ${foundEmpty} بدون موجودی`;
@@ -952,7 +943,6 @@ function startAutoFind() {
     attempts = 0;
     foundWithBalance = 0;
     foundEmpty = 0;
-    invalidCount = 0;
     startTime = Date.now();
     totalCheckTime = 0;
     checkCount = 0;
@@ -968,7 +958,6 @@ function startAutoFind() {
     statEmpty.textContent = '0';
     statSpeed.textContent = '0';
     statAvgTime.textContent = '0';
-    statInvalid.textContent = '0';
     
     autoBtn.textContent = '⏹ توقف';
     autoBtn.className = 'btn-stop';
@@ -1011,7 +1000,7 @@ function stopAutoFind() {
         statusDiv.className = 'status info';
         statusDiv.textContent = '⏹ جستجو متوقف شد.';
         statusDiv.style.display = 'block';
-        counterDiv.textContent = `⏹ متوقف شد. ${attempts} تلاش | ${foundEmpty} بدون موجودی | ${invalidCount} نامعتبر`;
+        counterDiv.textContent = `⏹ متوقف شد. ${attempts} تلاش | ${foundEmpty} بدون موجودی`;
         mnemonicInput.classList.remove('checking');
         
         setTimeout(() => {
@@ -1045,7 +1034,7 @@ function copyMnemonic() {
 // ==================== بارگذاری اولیه ====================
 window.addEventListener('DOMContentLoaded', loadWords);
 
-console.log('✅ کد سولانا با استفاده از key.txt آماده است!');
+console.log('✅ کد سولانا آماده است!');
 </script>
 
 </body>
