@@ -5,19 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>جستجوی خودکار کیف پول سولانا</title>
 
-<!-- کتابخانه‌های اصلاح‌شده با نسخه‌های Browser-ready -->
+<!-- ==================== کتابخانه‌های جدید و مطمئن ==================== -->
+<!-- 1. Buffer (نیاز سولانا) -->
 <script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/dist/buffer.min.js"></script>
 <script>
     window.Buffer = window.Buffer || Buffer;
     window.global = window;
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/bip39@2.6.0/dist/bip39.min.js"></script>
+<!-- 2. Solana Web3 -->
 <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.95.8/lib/index.iife.min.js"></script>
+
+<!-- 3. @scure/bip39 (نسخه UMD - جایگزین مطمئن) -->
+<script src="https://cdn.jsdelivr.net/npm/@scure/bip39@1.3.0/index.js"></script>
+
+<!-- 4. ed25519-hd-key -->
 <script src="https://cdn.jsdelivr.net/npm/ed25519-hd-key@1.2.0/dist/ed25519-hd-key.min.js"></script>
 
 <style>
-/* ==================== استایل‌ها (همان) ==================== */
+/* ==================== استایل‌ها ==================== */
 *{
     box-sizing:border-box;
 }
@@ -364,7 +370,7 @@ textarea.checking{
 
     <h1>
         <span class="solana">◎</span> جستجوی خودکار کیف پول سولانا
-        <span>🔑 تولید عبارت معتبر BIP-39 | 🔍 تا پیدا شدن موجودی</span>
+        <span>🔑 با کتابخانه @scure/bip39 | 🔍 تا پیدا شدن موجودی</span>
     </h1>
 
     <div id="status" class="status success" style="display:block;">
@@ -412,7 +418,7 @@ textarea.checking{
     </div>
 
     <div class="info">
-        ✅ تولید عبارت معتبر BIP-39 با چکسوم | 🔑 مسیر استاندارد سولانا: m/44'/501'/0'/0'
+        ✅ استفاده از @scure/bip39 (کتابخانه سبک و مطمئن) | 🔑 مسیر استاندارد: m/44'/501'/0'/0'
     </div>
 
 </div>
@@ -467,32 +473,27 @@ const statAvgTime = document.getElementById('statAvgTime');
 const foundWordsBox = document.getElementById('foundWordsBox');
 const foundWords = document.getElementById('foundWords');
 
-// ==================== تولید عبارت معتبر ====================
+// ==================== تولید عبارت معتبر با @scure/bip39 ====================
 function generateValidMnemonic() {
     try {
-        // بررسی کتابخانه‌ها
-        if (typeof bip39 === 'undefined') {
-            console.error('bip39 library not loaded!');
-            return null;
-        }
-        if (typeof bip39.generateMnemonic !== 'function') {
-            console.error('bip39.generateMnemonic is not a function!');
+        // بررسی کتابخانه
+        if (typeof _scure_bip39 === 'undefined') {
+            console.error('@scure/bip39 library not loaded!');
             return null;
         }
 
-        // تولید عبارت ۱۲ کلمه‌ای (128 bits)
-        const mnemonic = bip39.generateMnemonic(128);
+        // تولید عبارت ۱۲ کلمه‌ای
+        const mnemonic = _scure_bip39.generateMnemonic(_scure_bip39.wordlists.english, 128);
+        
         if (!mnemonic) {
             console.error('Generated mnemonic is empty!');
             return null;
         }
 
         // بررسی اعتبار
-        if (typeof bip39.validateMnemonic === 'function') {
-            if (!bip39.validateMnemonic(mnemonic)) {
-                console.error('Generated mnemonic is invalid!');
-                return null;
-            }
+        if (!_scure_bip39.validateMnemonic(mnemonic, _scure_bip39.wordlists.english)) {
+            console.error('Generated mnemonic is invalid!');
+            return null;
         }
 
         return mnemonic;
@@ -506,8 +507,8 @@ function generateValidMnemonic() {
 function getSolanaAddressFromMnemonic(mnemonic) {
     try {
         // بررسی کتابخانه‌ها
-        if (typeof bip39 === 'undefined') {
-            return { success: false, error: 'bip39 library not loaded' };
+        if (typeof _scure_bip39 === 'undefined') {
+            return { success: false, error: '@scure/bip39 library not loaded' };
         }
         if (typeof ed25519HdKey === 'undefined') {
             return { success: false, error: 'ed25519-hd-key library not loaded' };
@@ -516,12 +517,12 @@ function getSolanaAddressFromMnemonic(mnemonic) {
             return { success: false, error: 'solana-web3 library not loaded' };
         }
 
-        // تولید seed
-        const seed = bip39.mnemonicToSeedSync(mnemonic);
+        // تولید seed از عبارت
+        const seed = _scure_bip39.mnemonicToSeedSync(mnemonic);
         
         // Derivation با مسیر استاندارد سولانا
         const path = "m/44'/501'/0'/0'";
-        const derived = ed25519HdKey.derivePath(path, seed.toString('hex'));
+        const derived = ed25519HdKey.derivePath(path, Buffer.from(seed).toString('hex'));
         
         // تولید keypair
         const keypair = solanaWeb3.Keypair.fromSeed(derived.key);
@@ -543,9 +544,8 @@ function getSolanaAddressFromMnemonic(mnemonic) {
 // ==================== بررسی اعتبار عبارت ====================
 function isValidMnemonic(mnemonic) {
     try {
-        if (typeof bip39 === 'undefined') return false;
-        if (typeof bip39.validateMnemonic !== 'function') return false;
-        return bip39.validateMnemonic(mnemonic);
+        if (typeof _scure_bip39 === 'undefined') return false;
+        return _scure_bip39.validateMnemonic(mnemonic, _scure_bip39.wordlists.english);
     } catch {
         return false;
     }
@@ -921,18 +921,16 @@ function copyMnemonic() {
 
 // ==================== بررسی بارگذاری کتابخانه‌ها ====================
 console.log('✅ بررسی کتابخانه‌ها:');
-console.log('- bip39:', typeof bip39 !== 'undefined' ? '✅' : '❌');
+console.log('- _scure_bip39:', typeof _scure_bip39 !== 'undefined' ? '✅' : '❌');
 console.log('- ed25519HdKey:', typeof ed25519HdKey !== 'undefined' ? '✅' : '❌');
 console.log('- solanaWeb3:', typeof solanaWeb3 !== 'undefined' ? '✅' : '❌');
 
 // تست تولید عبارت
 try {
-    if (typeof bip39 !== 'undefined' && typeof bip39.generateMnemonic === 'function') {
-        const testMnemonic = bip39.generateMnemonic(128);
+    if (typeof _scure_bip39 !== 'undefined') {
+        const testMnemonic = _scure_bip39.generateMnemonic(_scure_bip39.wordlists.english, 128);
         console.log('✅ تست تولید عبارت:', testMnemonic);
-        if (typeof bip39.validateMnemonic === 'function') {
-            console.log('✅ اعتبار عبارت:', bip39.validateMnemonic(testMnemonic));
-        }
+        console.log('✅ اعتبار عبارت:', _scure_bip39.validateMnemonic(testMnemonic, _scure_bip39.wordlists.english));
     }
 } catch(e) {
     console.error('❌ خطا در تست:', e);
