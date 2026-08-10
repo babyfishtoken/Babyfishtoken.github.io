@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mnemonic → Wallet + Balance Auto</title>
+<title>جستجوی خودکار کیف پول با موجودی</title>
 
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/web3@4.16.0/dist/web3.min.js"></script>
@@ -57,6 +57,11 @@ textarea{
     text-align:left;
 }
 
+textarea.found{
+    border:3px solid #34d399;
+    box-shadow:0 0 20px rgba(52,211,153,0.3);
+}
+
 .btn-group{
     display:flex;
     gap:10px;
@@ -73,6 +78,7 @@ textarea{
     font-size:15px;
     cursor:pointer;
     min-width:70px;
+    transition:0.2s;
 }
 
 .btn-group button:disabled{
@@ -188,6 +194,12 @@ textarea{
     background:#064e3b;
     color:#34d399;
     border:2px solid #34d399;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
 }
 
 .info{
@@ -202,6 +214,12 @@ textarea{
     text-align:center;
     color:#60a5fa;
     font-size:14px;
+}
+
+.counter.found{
+    color:#34d399;
+    font-weight:bold;
+    font-size:18px;
 }
 
 .balance-result{
@@ -296,9 +314,41 @@ textarea{
     font-weight:bold;
 }
 
+.stats .number.green{
+    color:#34d399;
+}
+
 .stats .label{
     color:#9ca3af;
     font-size:12px;
+}
+
+.found-words-box{
+    margin-top:15px;
+    padding:15px;
+    background:#064e3b;
+    border-radius:12px;
+    border:2px solid #34d399;
+    display:none;
+}
+
+.found-words-box .title{
+    color:#34d399;
+    font-weight:bold;
+    text-align:center;
+    margin-bottom:10px;
+}
+
+.found-words-box .words{
+    color:#fff;
+    direction:ltr;
+    text-align:center;
+    font-family:monospace;
+    font-size:16px;
+    padding:10px;
+    background:#0a3d2a;
+    border-radius:8px;
+    word-break:break-all;
 }
 </style>
 </head>
@@ -309,7 +359,7 @@ textarea{
 
     <h1>
         🔑 جستجوی خودکار کیف پول
-        <span>🔍 تا زمانی که موجودی پیدا شود</span>
+        <span>⚡ با سرعت بالا | 🔍 تا پیدا شدن موجودی</span>
     </h1>
 
     <div id="status" class="status loading">⏳ در حال بارگذاری کلمات از فایل key.txt...</div>
@@ -346,6 +396,11 @@ textarea{
         <div id="address" class="address"></div>
     </div>
 
+    <div id="foundWordsBox" class="found-words-box">
+        <div class="title">🔑 کلمات پیدا شده (با موجودی)</div>
+        <div id="foundWords" class="words"></div>
+    </div>
+
     <div id="balanceResult" class="balance-result">
         <div class="balance-title">💰 موجودی در شبکه‌های اصلی</div>
         <div id="balanceList"></div>
@@ -357,17 +412,21 @@ textarea{
             <div class="label">تعداد تلاش</div>
         </div>
         <div>
-            <div class="number" id="statFound">0</div>
+            <div class="number green" id="statFound">0</div>
             <div class="label">با موجودی</div>
         </div>
         <div>
             <div class="number" id="statEmpty">0</div>
             <div class="label">بدون موجودی</div>
         </div>
+        <div>
+            <div class="number" id="statSpeed">0</div>
+            <div class="label">سرعت (تلاش/ثانیه)</div>
+        </div>
     </div>
 
     <div class="info">
-        💡 دکمه "شروع جستجو" به صورت خودکار کلمات تصادفی را تست میکند تا کیف پولی با موجودی پیدا شود
+        ⚡ سرعت بالا: هر ۵۰ میلی‌ثانیه یک تلاش | 🔒 کلمات پیدا شده ذخیره می‌شوند
     </div>
 
 </div>
@@ -383,6 +442,8 @@ let foundEmpty = 0;
 let foundAddress = false;
 let currentAddress = '';
 let isChecking = false;
+let foundMnemonic = ''; // ذخیره کلمات پیدا شده
+let startTime = 0;
 
 const statusDiv = document.getElementById('status');
 const randomBtn = document.getElementById('randomBtn');
@@ -400,6 +461,9 @@ const statsDiv = document.getElementById('stats');
 const statAttempts = document.getElementById('statAttempts');
 const statFound = document.getElementById('statFound');
 const statEmpty = document.getElementById('statEmpty');
+const statSpeed = document.getElementById('statSpeed');
+const foundWordsBox = document.getElementById('foundWordsBox');
+const foundWords = document.getElementById('foundWords');
 
 // ==================== تنظیمات شبکه‌ها ====================
 const NETWORKS = [
@@ -498,11 +562,13 @@ function setRandomMnemonic() {
     const words = getRandomWords();
     if (!words) return;
     mnemonicInput.value = words.join(' ');
+    mnemonicInput.classList.remove('found');
     copyBtn.disabled = false;
     balanceBtn.disabled = true;
     errorBox.textContent = '';
     resultDiv.style.display = 'none';
     balanceResult.style.display = 'none';
+    foundWordsBox.style.display = 'none';
     
     statusDiv.className = 'status success';
     statusDiv.textContent = '✅ ۱۲ کلمه تصادفی انتخاب شد!';
@@ -658,7 +724,7 @@ async function checkBalance() {
     return foundAny;
 }
 
-// ==================== جستجوی خودکار با بررسی موجودی ====================
+// ==================== جستجوی خودکار با سرعت بالا ====================
 async function findAddressAuto() {
     if (foundAddress) {
         stopAutoFind();
@@ -673,6 +739,8 @@ async function findAddressAuto() {
     }
 
     const mnemonic = words.join(' ');
+    
+    // فقط برای نمایش در فیلد (بدون تاخیر)
     mnemonicInput.value = mnemonic;
 
     const result = tryGenerateAddress(mnemonic);
@@ -688,22 +756,42 @@ async function findAddressAuto() {
         // به‌روزرسانی آمار
         statAttempts.textContent = attempts;
         statsDiv.style.display = 'flex';
+        
+        // محاسبه سرعت
+        if (startTime > 0) {
+            const elapsed = (Date.now() - startTime) / 1000;
+            if (elapsed > 0) {
+                const speed = Math.round(attempts / elapsed);
+                statSpeed.textContent = speed;
+            }
+        }
 
         // بررسی موجودی
         const hasBalance = await checkBalance();
         
         if (hasBalance) {
-            // موجودی پیدا شد ✅
+            // ✅ موجودی پیدا شد - ذخیره کلمات
             foundAddress = true;
             foundWithBalance++;
             statFound.textContent = foundWithBalance;
+            foundMnemonic = mnemonic; // ذخیره کلمات پیدا شده
+            
+            // نمایش کلمات در فیلد
+            mnemonicInput.value = foundMnemonic;
+            mnemonicInput.classList.add('found');
+            
+            // نمایش در باکس مخصوص
+            foundWords.textContent = foundMnemonic;
+            foundWordsBox.style.display = 'block';
             
             statusDiv.className = 'status found';
             statusDiv.textContent = `🎉 کیف پول با موجودی پیدا شد! (${attempts} تلاش)`;
             statusDiv.style.display = 'block';
             
-            counterDiv.textContent = `✅ پیدا شد! تعداد تلاش: ${attempts}`;
+            counterDiv.className = 'counter found';
+            counterDiv.textContent = `✅ پیدا شد! ${foundMnemonic}`;
             
+            // توقف جستجو
             stopAutoFind();
             
             setTimeout(() => {
@@ -711,25 +799,26 @@ async function findAddressAuto() {
             }, 10000);
             
         } else {
-            // موجودی ندارد ❌ ادامه می‌دهیم
+            // ❌ موجودی ندارد - ادامه می‌دهیم
             foundEmpty++;
             statEmpty.textContent = foundEmpty;
             
-            counterDiv.textContent = `🔄 در حال جستجو... (${attempts} تلاش | ${foundEmpty} بدون موجودی)`;
+            counterDiv.className = 'counter';
+            counterDiv.textContent = `🔄 جستجو... (${attempts} | ${foundEmpty} بدون موجودی)`;
             
-            if (attempts % 5 === 0) {
-                errorBox.textContent = `🔍 ${attempts} تلاش انجام شد... هنوز موجودی پیدا نشده`;
+            if (attempts % 10 === 0) {
+                errorBox.textContent = `🔍 ${attempts} تلاش انجام شد... ${foundEmpty} تا بدون موجودی`;
             }
             
             // پاک کردن نتایج قبلی
             setTimeout(() => {
                 balanceResult.style.display = 'none';
-            }, 100);
+            }, 50);
         }
         
     } else {
         errorBox.textContent = `❌ ${result.error}`;
-        counterDiv.textContent = `🔄 خطا در تولید آدرس... (${attempts} تلاش)`;
+        counterDiv.textContent = `🔄 خطا... (${attempts})`;
     }
 }
 
@@ -753,31 +842,37 @@ function startAutoFind() {
     attempts = 0;
     foundWithBalance = 0;
     foundEmpty = 0;
+    startTime = Date.now();
     balanceResult.style.display = 'none';
+    foundWordsBox.style.display = 'none';
+    mnemonicInput.classList.remove('found');
+    
     statsDiv.style.display = 'flex';
     statAttempts.textContent = '0';
     statFound.textContent = '0';
     statEmpty.textContent = '0';
+    statSpeed.textContent = '0';
     
     autoBtn.textContent = '⏹ توقف';
     autoBtn.className = 'btn-stop';
     randomBtn.disabled = true;
     balanceBtn.disabled = true;
     
-    counterDiv.textContent = '🔄 شروع جستجوی خودکار...';
+    counterDiv.className = 'counter';
+    counterDiv.textContent = '⚡ شروع جستجوی سریع...';
     errorBox.textContent = '';
     resultDiv.style.display = 'none';
     
     statusDiv.className = 'status info';
-    statusDiv.textContent = '🔍 در حال جستجوی کیف پول با موجودی...';
+    statusDiv.textContent = '⚡ جستجوی سریع در حال اجرا... (هر ۵۰ میلی‌ثانیه)';
     statusDiv.style.display = 'block';
 
-    // شروع جستجو
+    // شروع جستجو با سرعت بالا (50ms)
     setTimeout(() => {
         findAddressAuto();
-    }, 500);
+    }, 100);
     
-    autoInterval = setInterval(findAddressAuto, 400); // 1.5 ثانیه بین هر تلاش
+    autoInterval = setInterval(findAddressAuto, 50); // 50 میلی‌ثانیه = 20 تلاش در ثانیه
 }
 
 function stopAutoFind() {
@@ -796,7 +891,7 @@ function stopAutoFind() {
         statusDiv.className = 'status info';
         statusDiv.textContent = '⏹ جستجو متوقف شد.';
         statusDiv.style.display = 'block';
-        counterDiv.textContent = `⏹ متوقف شد. تعداد تلاش: ${attempts} | بدون موجودی: ${foundEmpty}`;
+        counterDiv.textContent = `⏹ متوقف شد. ${attempts} تلاش | ${foundEmpty} بدون موجودی`;
         
         setTimeout(() => {
             statusDiv.style.display = 'none';
@@ -829,8 +924,8 @@ function copyMnemonic() {
 // ==================== بارگذاری اولیه ====================
 window.addEventListener('DOMContentLoaded', loadWords);
 
-console.log('✅ کد آماده است!');
+console.log('✅ کد آماده است! سرعت بالا: 50ms بین هر تلاش');
 </script>
 
 </body>
-          </html>
+    </html>
