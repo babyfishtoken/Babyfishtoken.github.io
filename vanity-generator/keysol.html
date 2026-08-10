@@ -5,12 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>جستجوی خودکار کیف پول سولانا</title>
 
+<!-- ==================== رفع خطای Buffer ==================== -->
+<script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/dist/buffer.min.js"></script>
+<script>
+    // تعریف Buffer در سطح global برای مرورگر
+    window.Buffer = window.Buffer || Buffer;
+    // همچنین برای اطمینان بیشتر
+    if (typeof global === 'undefined') {
+        window.global = window;
+    }
+</script>
+
 <!-- سولانا Web3 -->
 <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.95.8/lib/index.iife.min.js"></script>
 <!-- اتر برای تولید عبارت بازیابی -->
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
 
 <style>
+/* ==================== استایل‌ها ==================== */
 *{
     box-sizing:border-box;
 }
@@ -502,7 +514,7 @@ textarea.checking{
 </div>
 
 <script>
-
+// ==================== تنظیمات اولیه ====================
 let fileWords = [];
 let isAutoFinding = false;
 let autoInterval = null;
@@ -520,8 +532,6 @@ let checkCount = 0;
 
 // ==================== تنظیمات سولانا ====================
 const SOLANA_RPC = 'https://api.mainnet-beta.solana.com';
-// برای RPC سریع‌تر می‌توانید از این استفاده کنید:
-// const SOLANA_RPC = 'https://solana-api.projectserum.com';
 
 let solanaConnection = null;
 
@@ -532,6 +542,7 @@ function getSolanaConnection() {
     return solanaConnection;
 }
 
+// ==================== المان‌های DOM ====================
 const statusDiv = document.getElementById('status');
 const randomBtn = document.getElementById('randomBtn');
 const copyBtn = document.getElementById('copyBtn');
@@ -634,7 +645,7 @@ function setRandomMnemonic() {
     }, 2000);
 }
 
-// ==================== تولید آدرس سولانا ====================
+// ==================== تولید آدرس سولانا (اصلاح شده) ====================
 function tryGenerateSolanaAddress(mnemonic) {
     try {
         if (typeof ethers === "undefined") {
@@ -648,12 +659,15 @@ function tryGenerateSolanaAddress(mnemonic) {
             return { success: false, error: "عبارت بازیابی معتبر نیست." };
         }
         
-        // تولید کلید از عبارت بازیابی (برای سولانا از مسیر 44'/501'/0'/0' استفاده می‌شود)
-        const seed = ethers.Mnemonic.fromPhrase(mnemonic).computeSeed();
-        const seedBuffer = Buffer.from(seed);
+        // تولید کلید از عبارت بازیابی
+        const mnemonicObj = ethers.Mnemonic.fromPhrase(mnemonic);
+        const seed = mnemonicObj.computeSeed();
+        
+        // تبدیل به Uint8Array و سپس Buffer
+        const seedArray = new Uint8Array(seed);
         
         // استفاده از solana-web3 برای تولید کلید
-        const fromSeed = solanaWeb3.Keypair.fromSeed(seedBuffer.slice(0, 32));
+        const fromSeed = solanaWeb3.Keypair.fromSeed(seedArray.slice(0, 32));
         
         return { 
             success: true, 
@@ -661,7 +675,7 @@ function tryGenerateSolanaAddress(mnemonic) {
             keypair: fromSeed
         };
     } catch (error) {
-        console.error(error);
+        console.error('Error generating Solana address:', error);
         return { success: false, error: "خطا در پردازش عبارت بازیابی: " + error.message };
     }
 }
@@ -738,12 +752,8 @@ async function checkBalance() {
         const connection = getSolanaConnection();
         const publicKey = new solanaWeb3.PublicKey(currentAddress);
         
-        // دریافت موجودی
         const balance = await connection.getBalance(publicKey);
         const balanceInSol = balance / solanaWeb3.LAMPORTS_PER_SOL;
-        
-        // دریافت توکن‌های SPL (اختیاری)
-        // برای سادگی فقط موجودی اصلی را نمایش می‌دهیم
         
         const checkTime = Date.now() - checkStart;
         totalCheckTime += checkTime;
@@ -802,7 +812,7 @@ async function checkBalance() {
     }
 }
 
-// ==================== جستجوی خودکار با انتظار برای تکمیل بررسی ====================
+// ==================== جستجوی خودکار ====================
 async function findAddressAuto() {
     if (foundAddress) {
         stopAutoFind();
@@ -1021,4 +1031,4 @@ console.log('✅ کد سولانا آماده است!');
 </script>
 
 </body>
-</html>
+    </html>
