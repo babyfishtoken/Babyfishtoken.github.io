@@ -15,7 +15,7 @@
 <!-- سولانا Web3 -->
 <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.95.8/lib/index.iife.min.js"></script>
 
-<!-- کتابخانه BIP39 -->
+<!-- کتابخانه BIP39 - نسخه پایدار -->
 <script src="https://cdn.jsdelivr.net/npm/bip39@3.1.0/dist/bip39.min.js"></script>
 
 <!-- کتابخانه برای derivation مسیر سولانا -->
@@ -427,10 +427,12 @@ textarea.checking{
 
     <h1>
         <span class="solana">◎</span> جستجوی خودکار کیف پول سولانا
-        <span>📁 تولید عبارت معتبر BIP-39 | 🔍 تا پیدا شدن موجودی</span>
+        <span>🔑 تولید عبارت معتبر BIP-39 | 🔍 تا پیدا شدن موجودی</span>
     </h1>
 
-    <div id="status" class="status loading">⏳ در حال بارگذاری فایل key.txt...</div>
+    <div id="status" class="status success" style="display:block;">
+        ✅ آماده! برای شروع دکمه "شروع جستجو" را بزنید.
+    </div>
 
     <textarea
         id="mnemonic"
@@ -439,7 +441,7 @@ textarea.checking{
         spellcheck="false"></textarea>
 
     <div class="btn-group">
-        <button class="btn-random" id="randomBtn" onclick="setRandomMnemonic()" disabled>
+        <button class="btn-random" id="randomBtn" onclick="setRandomMnemonic()">
             🎲 تصادفی معتبر
         </button>
         <button class="btn-primary" onclick="generateAddress()">
@@ -451,7 +453,7 @@ textarea.checking{
         <button class="btn-copy" onclick="copyMnemonic()" id="copyBtn" disabled>
             📋 کپی
         </button>
-        <button class="btn-start" id="autoBtn" onclick="toggleAutoFind()" disabled>
+        <button class="btn-start" id="autoBtn" onclick="toggleAutoFind()">
             🚀 شروع جستجو
         </button>
     </div>
@@ -505,7 +507,6 @@ textarea.checking{
 
 <script>
 // ==================== تنظیمات اولیه ====================
-let fileWords = [];
 let isAutoFinding = false;
 let autoInterval = null;
 let attempts = 0;
@@ -555,62 +556,24 @@ const statAvgTime = document.getElementById('statAvgTime');
 const foundWordsBox = document.getElementById('foundWordsBox');
 const foundWords = document.getElementById('foundWords');
 
-// ==================== بارگذاری فایل key.txt ====================
-async function loadWords() {
-    try {
-        statusDiv.className = 'status loading';
-        statusDiv.textContent = '⏳ در حال خواندن فایل key.txt...';
-        statusDiv.style.display = 'block';
-
-        const response = await fetch('key.txt');
-
-        if (!response.ok) {
-            throw new Error(`خطا: ${response.status}`);
-        }
-
-        const content = await response.text();
-        fileWords = content.split(/\r?\n/).filter(line => line.trim() !== '');
-
-        if (fileWords.length === 0) {
-            throw new Error('فایل خالی است!');
-        }
-
-        if (fileWords.length < 12) {
-            throw new Error(`فایل فقط ${fileWords.length} کلمه دارد! حداقل ۱۲ کلمه نیاز است.`);
-        }
-
-        // تنظیم wordlist در bip39
-        // توجه: bip39 از wordlist سفارشی پشتیبانی نمی‌کند،
-        // بنابراین ما از کتابخانه برای تولید و اعتبارسنجی استفاده می‌کنیم
-        // و فقط از key.txt برای نمایش استفاده می‌کنیم
-
-        statusDiv.className = 'status success';
-        statusDiv.textContent = `✅ ${fileWords.length} کلمه از key.txt بارگذاری شد!`;
-        randomBtn.disabled = false;
-        autoBtn.disabled = false;
-        copyBtn.disabled = true;
-        autoBtn.textContent = '🚀 شروع جستجو';
-
-        setTimeout(() => {
-            statusDiv.style.display = 'none';
-        }, 3000);
-
-    } catch (error) {
-        statusDiv.className = 'status error';
-        statusDiv.textContent = `❌ خطا: ${error.message}`;
-        statusDiv.style.display = 'block';
-        randomBtn.disabled = true;
-        autoBtn.disabled = true;
-        copyBtn.disabled = true;
-        console.error('Error loading file:', error);
-    }
-}
-
-// ==================== تولید عبارت معتبر با کتابخانه ====================
+// ==================== تولید عبارت معتبر ====================
 function generateValidMnemonic() {
     try {
-        // تولید عبارت با کتابخانه bip39 (معتبر با چکسوم)
-        const mnemonic = bip39.generateMnemonic(128); // 128 bits = 12 words
+        // بررسی اینکه کتابخانه bip39 وجود دارد
+        if (typeof bip39 === 'undefined') {
+            console.error('bip39 library not loaded!');
+            return null;
+        }
+        
+        // تولید عبارت ۱۲ کلمه‌ای (128 bits)
+        const mnemonic = bip39.generateMnemonic(128);
+        
+        // بررسی اعتبار
+        if (!bip39.validateMnemonic(mnemonic)) {
+            console.error('Generated mnemonic is invalid!');
+            return null;
+        }
+        
         return mnemonic;
     } catch (error) {
         console.error('Error generating mnemonic:', error);
@@ -618,23 +581,28 @@ function generateValidMnemonic() {
     }
 }
 
-// ==================== تولید عبارت از key.txt (فقط برای نمایش) ====================
-function getRandomWordsFromFile() {
-    if (fileWords.length === 0) return null;
-    const selectedWords = [];
-    for (let i = 0; i < 12; i++) {
-        const randomIndex = Math.floor(Math.random() * fileWords.length);
-        selectedWords.push(fileWords[randomIndex]);
-    }
-    return selectedWords.join(' ');
-}
-
-// ==================== تولید آدرس سولانا از عبارت ====================
+// ==================== تولید آدرس سولانا ====================
 function getSolanaAddressFromMnemonic(mnemonic) {
     try {
+        // بررسی کتابخانه‌ها
+        if (typeof bip39 === 'undefined') {
+            return { success: false, error: 'bip39 library not loaded' };
+        }
+        if (typeof ed25519HdKey === 'undefined') {
+            return { success: false, error: 'ed25519-hd-key library not loaded' };
+        }
+        if (typeof solanaWeb3 === 'undefined') {
+            return { success: false, error: 'solana-web3 library not loaded' };
+        }
+
+        // تولید seed
         const seed = bip39.mnemonicToSeedSync(mnemonic);
+        
+        // Derivation با مسیر استاندارد سولانا
         const path = "m/44'/501'/0'/0'";
         const derived = ed25519HdKey.derivePath(path, seed.toString('hex'));
+        
+        // تولید keypair
         const keypair = solanaWeb3.Keypair.fromSeed(derived.key);
         
         return {
@@ -654,6 +622,7 @@ function getSolanaAddressFromMnemonic(mnemonic) {
 // ==================== بررسی اعتبار عبارت ====================
 function isValidMnemonic(mnemonic) {
     try {
+        if (typeof bip39 === 'undefined') return false;
         return bip39.validateMnemonic(mnemonic);
     } catch {
         return false;
@@ -662,10 +631,12 @@ function isValidMnemonic(mnemonic) {
 
 // ==================== توابع کمکی ====================
 function setRandomMnemonic() {
-    // تولید عبارت معتبر با کتابخانه
     const mnemonic = generateValidMnemonic();
     if (!mnemonic) {
         errorBox.textContent = '❌ خطا در تولید عبارت معتبر!';
+        statusDiv.className = 'status error';
+        statusDiv.textContent = '❌ خطا در تولید عبارت';
+        statusDiv.style.display = 'block';
         return;
     }
     
@@ -826,7 +797,7 @@ async function findAddressAuto() {
     pendingCheck = true;
     attempts++;
 
-    // تولید عبارت معتبر با کتابخانه
+    // تولید عبارت معتبر
     const mnemonic = generateValidMnemonic();
     if (!mnemonic) {
         pendingCheck = false;
@@ -933,11 +904,6 @@ function toggleAutoFind() {
 }
 
 function startAutoFind() {
-    if (fileWords.length === 0) {
-        errorBox.textContent = '❌ فایل key.txt بارگذاری نشده است!';
-        return;
-    }
-
     isAutoFinding = true;
     foundAddress = false;
     attempts = 0;
@@ -1031,10 +997,22 @@ function copyMnemonic() {
     });
 }
 
-// ==================== بارگذاری اولیه ====================
-window.addEventListener('DOMContentLoaded', loadWords);
+// ==================== بررسی بارگذاری کتابخانه‌ها ====================
+console.log('✅ کتابخانه‌ها:');
+console.log('- bip39:', typeof bip39 !== 'undefined' ? '✅' : '❌');
+console.log('- ed25519HdKey:', typeof ed25519HdKey !== 'undefined' ? '✅' : '❌');
+console.log('- solanaWeb3:', typeof solanaWeb3 !== 'undefined' ? '✅' : '❌');
 
-console.log('✅ کد سولانا آماده است!');
+// تست تولید عبارت
+try {
+    if (typeof bip39 !== 'undefined') {
+        const testMnemonic = bip39.generateMnemonic(128);
+        console.log('✅ تست تولید عبارت:', testMnemonic);
+        console.log('✅ اعتبار عبارت:', bip39.validateMnemonic(testMnemonic));
+    }
+} catch(e) {
+    console.error('❌ خطا در تست:', e);
+}
 </script>
 
 </body>
