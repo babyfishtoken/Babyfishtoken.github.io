@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>مشاهده موجودی ولت</title>
+    <title>مشاهده همه توکن‌های ولت</title>
     <style>
         body {
             font-family: Tahoma, sans-serif;
@@ -11,21 +11,22 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            padding: 20px;
         }
         .container {
             background: #16213e;
-            padding: 40px;
+            padding: 30px;
             border-radius: 16px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-            width: 500px;
-            text-align: center;
+            width: 100%;
+            max-width: 600px;
         }
         h1 {
             color: #fff;
             font-size: 22px;
-            margin-bottom: 20px;
+            text-align: center;
         }
         input {
             width: 100%;
@@ -63,9 +64,24 @@
             padding: 16px;
             border-radius: 8px;
             color: #4fc3f7;
-            font-size: 18px;
+            font-size: 16px;
             min-height: 50px;
-            word-break: break-all;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .token-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #1a3a5c;
+            color: #fff;
+        }
+        .token-symbol {
+            font-weight: bold;
+            color: #4fc3f7;
+        }
+        .token-balance {
+            color: #ffd93d;
         }
         .error {
             color: #ff6b6b !important;
@@ -73,56 +89,121 @@
         .loading {
             color: #ffd93d !important;
         }
+        .eth-balance {
+            background: #0a2647;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            color: #fff;
+            font-size: 18px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🔍 مشاهده موجودی ولت</h1>
+    <h1>🔍 نمایش همه توکن‌های ولت</h1>
     <input type="text" id="walletInput" placeholder="مثال: 0x742d35Cc6634C0532925a3b844Bc9e7598f0b0C5" />
-    <button onclick="getBalance()">بررسی موجودی</button>
+    <button onclick="getAllTokens()">بررسی موجودی</button>
     <div id="result">👈 آدرس را وارد کنید</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/web3@4.16.0/dist/web3.min.js"></script>
 <script>
-    // کلید اینفوورا و شبکه اصلی اتریوم
     const INFURA_KEY = '934a2ae012c840dea039c5c2571bce16';
     const web3 = new Web3(`https://mainnet.infura.io/v3/${INFURA_KEY}`);
 
-    async function getBalance() {
+    // ✅ قراردادهای معروف (می‌توانید اضافه کنید)
+    const TOKEN_CONTRACTS = [
+        { address: '0xdac17f958d2ee523a2206206994597c13d831ec7', symbol: 'USDT', decimals: 6 },
+        { address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', symbol: 'USDC', decimals: 6 },
+        { address: '0x514910771af9ca656af840dff83e8264ecf986ca', symbol: 'LINK', decimals: 18 },
+        { address: '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984', symbol: 'UNI', decimals: 18 },
+        { address: '0x6b3595068778dd592e39a122f4f5a5cf09c90fe2', symbol: 'SUSHI', decimals: 18 },
+        { address: '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9', symbol: 'AAVE', decimals: 18 },
+    ];
+
+    // ABI حداقلی برای خواندن موجودی
+    const ERC20_ABI = [
+        {
+            "constant": true,
+            "inputs": [{"name": "_owner", "type": "address"}],
+            "name": "balanceOf",
+            "outputs": [{"name": "balance", "type": "uint256"}],
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [],
+            "name": "decimals",
+            "outputs": [{"name": "", "type": "uint8"}],
+            "type": "function"
+        }
+    ];
+
+    async function getAllTokens() {
         const address = document.getElementById('walletInput').value.trim();
         const resultDiv = document.getElementById('result');
 
-        // اعتبارسنجی ساده آدرس
         if (!address || !address.startsWith('0x') || address.length !== 42) {
-            resultDiv.innerHTML = '❌ آدرس نامعتبر است (باید ۰x + ۴۰ کاراکتر باشد)';
+            resultDiv.innerHTML = '❌ آدرس نامعتبر است';
             resultDiv.className = 'error';
             return;
         }
 
-        resultDiv.innerHTML = '⏳ در حال دریافت موجودی...';
+        resultDiv.innerHTML = '⏳ در حال دریافت اطلاعات...';
         resultDiv.className = 'loading';
 
-        try {
-            // دریافت موجودی به Wei
-            const balanceWei = await web3.eth.getBalance(address);
-            // تبدیل به اتر
-            const balanceEth = web3.utils.fromWei(balanceWei, 'ether');
+        let html = '';
 
-            // نمایش با ۴ رقم اعشار
-            resultDiv.innerHTML = `💰 موجودی: <strong>${parseFloat(balanceEth).toFixed(4)} ETH</strong>`;
+        try {
+            // 1️⃣ دریافت ETH
+            const ethBalance = await web3.eth.getBalance(address);
+            const ethAmount = web3.utils.fromWei(ethBalance, 'ether');
+            html += `<div class="eth-balance">💰 ETH: <strong>${parseFloat(ethAmount).toFixed(4)}</strong></div>`;
+
+            // 2️⃣ دریافت توکن‌ها
+            let foundAny = false;
+
+            for (const token of TOKEN_CONTRACTS) {
+                try {
+                    const contract = new web3.eth.Contract(ERC20_ABI, token.address);
+                    const balance = await contract.methods.balanceOf(address).call();
+
+                    if (parseFloat(balance) > 0) {
+                        const formatted = parseFloat(balance) / Math.pow(10, token.decimals);
+                        html += `<div class="token-item">
+                            <span class="token-symbol">${token.symbol}</span>
+                            <span class="token-balance">${formatted.toFixed(4)}</span>
+                        </div>`;
+                        foundAny = true;
+                    }
+                } catch (e) {
+                    // بعضی توکن‌ها ممکن است خطا بدهند (نادیده گرفته می‌شوند)
+                    console.log(`خطا در ${token.symbol}:`, e.message);
+                }
+            }
+
+            if (!foundAny && parseFloat(ethAmount) === 0) {
+                html += `<div style="color:#aaa; text-align:center; padding:20px;">😕 این ولت هیچ توکنی ندارد</div>`;
+            } else if (!foundAny) {
+                html += `<div style="color:#aaa; text-align:center; padding:10px;">ℹ️ فقط ETH دارد (توکن معروفی پیدا نشد)</div>`;
+            }
+
+            resultDiv.innerHTML = html;
             resultDiv.className = '';
+
         } catch (error) {
-            resultDiv.innerHTML = '❌ خطا در اتصال به شبکه. مجدداً تلاش کنید.';
+            resultDiv.innerHTML = '❌ خطا در اتصال به شبکه';
             resultDiv.className = 'error';
             console.error(error);
         }
     }
 
-    // با فشار Enter هم کار کند
+    // Enter
     document.getElementById('walletInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') getBalance();
+        if (e.key === 'Enter') getAllTokens();
     });
 </script>
 
