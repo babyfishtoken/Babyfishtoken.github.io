@@ -69,6 +69,11 @@ textarea.checking{
     box-shadow:0 0 20px rgba(245,158,11,0.2);
 }
 
+textarea.invalid{
+    border:2px solid #ef4444;
+    box-shadow:0 0 20px rgba(239,68,68,0.2);
+}
+
 .btn-group{
     display:flex;
     gap:10px;
@@ -401,7 +406,7 @@ textarea.checking{
 
     <h1>
         🔑 جستجوی خودکار کلید خصوصی
-        <span>⏳ صبر برای تکمیل بررسی | 🔍 تا پیدا شدن موجودی</span>
+        <span>⏳ فقط آدرس‌های معتبر | 🔍 تا پیدا شدن موجودی</span>
     </h1>
 
     <div id="status" class="status loading">⏳ در حال آماده‌سازی...</div>
@@ -462,6 +467,10 @@ textarea.checking{
             <div class="label">بدون موجودی</div>
         </div>
         <div>
+            <div class="number" id="statInvalid">0</div>
+            <div class="label">نامعتبر</div>
+        </div>
+        <div>
             <div class="number" id="statSpeed">0</div>
             <div class="label">سرعت (تلاش/ثانیه)</div>
         </div>
@@ -472,7 +481,7 @@ textarea.checking{
     </div>
 
     <div class="info">
-        ⏳ هر کلید خصوصی کامل بررسی میشه | 🔒 کلیدهای پیدا شده ذخیره میشن | ⚡ سرعت بالا با صبر برای تکمیل
+        ⏳ فقط کلیدهای معتبر بررسی می‌شوند | 🔒 کلیدهای پیدا شده ذخیره می‌شن | ⚡ سرعت بالا با صبر برای تکمیل
     </div>
 
 </div>
@@ -484,6 +493,7 @@ let autoInterval = null;
 let attempts = 0;
 let foundWithBalance = 0;
 let foundEmpty = 0;
+let foundInvalid = 0;
 let foundAddress = false;
 let currentAddress = '';
 let isChecking = false;
@@ -509,6 +519,7 @@ const statsDiv = document.getElementById('stats');
 const statAttempts = document.getElementById('statAttempts');
 const statFound = document.getElementById('statFound');
 const statEmpty = document.getElementById('statEmpty');
+const statInvalid = document.getElementById('statInvalid');
 const statSpeed = document.getElementById('statSpeed');
 const statAvgTime = document.getElementById('statAvgTime');
 const foundWordsBox = document.getElementById('foundWordsBox');
@@ -546,15 +557,63 @@ const NETWORKS = [
     }
 ];
 
-// ==================== تولید کلید خصوصی تصادفی ====================
+// ==================== اعتبارسنجی کلید خصوصی ====================
+function isValidPrivateKey(key) {
+    // حذف 0x اگر وجود داشته باشد
+    let cleanKey = key;
+    if (cleanKey.startsWith("0x")) {
+        cleanKey = cleanKey.substring(2);
+    }
+    
+    // بررسی طول
+    if (cleanKey.length !== 64) {
+        return { valid: false, error: "طول باید 64 کاراکتر باشد" };
+    }
+    
+    // بررسی کاراکترها
+    if (!/^[0-9a-fA-F]{64}$/.test(cleanKey)) {
+        return { valid: false, error: "فقط شامل 0-9 و a-f می‌شود" };
+    }
+    
+    // بررسی اینکه کلید صفر نباشد
+    if (cleanKey === "0000000000000000000000000000000000000000000000000000000000000000") {
+        return { valid: false, error: "کلید خصوصی نمی‌تواند صفر باشد" };
+    }
+    
+    // بررسی اینکه کلید معتبر باشد (کوچکتر از n - ترتیب منحنی)
+    // تقریباً همه کلیدهای 64 کاراکتری به جز صفر معتبر هستند
+    // اما برای اطمینان بیشتر، سعی می‌کنیم کیف پول بسازیم
+    try {
+        const wallet = new ethers.Wallet("0x" + cleanKey);
+        return { valid: true, wallet: wallet };
+    } catch (error) {
+        return { valid: false, error: "کلید خصوصی نامعتبر است" };
+    }
+}
+
+// ==================== تولید کلید خصوصی تصادفی معتبر ====================
 function generateRandomPrivateKey() {
     const chars = '0123456789abcdef';
     let key = '';
-    for (let i = 0; i < 64; i++) {
-        key += chars.charAt(Math.floor(Math.random() * chars.length));
+    let attempts = 0;
+    let isValid = false;
+    
+    // تا زمانی که کلید معتبر پیدا نشود، ادامه بده
+    while (!isValid && attempts < 100) {
+        key = '';
+        for (let i = 0; i < 64; i++) {
+            key += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        attempts++;
+        
+        // بررسی اینکه کلید صفر نباشد
+        if (key !== "0000000000000000000000000000000000000000000000000000000000000000") {
+            isValid = true;
+        }
     }
+    
     privateKeyInput.value = key;
-    privateKeyInput.classList.remove('found', 'checking');
+    privateKeyInput.classList.remove('found', 'checking', 'invalid');
     copyBtn.disabled = false;
     balanceBtn.disabled = true;
     errorBox.textContent = '';
@@ -563,7 +622,7 @@ function generateRandomPrivateKey() {
     foundWordsBox.style.display = 'none';
     
     statusDiv.className = 'status success';
-    statusDiv.textContent = '✅ کلید خصوصی تصادفی ۶۴ کاراکتری ساخته شد!';
+    statusDiv.textContent = '✅ کلید خصوصی معتبر ۶۴ کاراکتری ساخته شد!';
     statusDiv.style.display = 'block';
     setTimeout(() => {
         statusDiv.style.display = 'none';
@@ -581,6 +640,7 @@ function generateAddressFromPrivateKey() {
     balanceResult.style.display = "none";
     errorBox.textContent = "";
     balanceBtn.disabled = true;
+    input.classList.remove('invalid');
 
     let privateKey = input.value.trim().replace(/\s+/g, "");
 
@@ -594,32 +654,28 @@ function generateAddressFromPrivateKey() {
         return;
     }
 
-    // حذف "0x" اگر وجود داشته باشد
-    if (privateKey.startsWith("0x")) {
-        privateKey = privateKey.substring(2);
-    }
-
-    if (privateKey.length !== 64) {
-        errorBox.textContent = "❌ کلید خصوصی باید دقیقاً 64 کاراکتر هگزادسیمال باشد.";
-        return;
-    }
-
-    if (!/^[0-9a-fA-F]{64}$/.test(privateKey)) {
-        errorBox.textContent = "❌ کلید خصوصی باید فقط شامل ارقام و حروف a-f باشد.";
+    // اعتبارسنجی کلید
+    const validation = isValidPrivateKey(privateKey);
+    
+    if (!validation.valid) {
+        errorBox.textContent = `❌ ${validation.error}`;
+        input.classList.add('invalid');
         return;
     }
 
     try {
-        const wallet = new ethers.Wallet("0x" + privateKey);
+        const wallet = validation.wallet || new ethers.Wallet("0x" + privateKey);
         currentAddress = wallet.address;
         addressBox.textContent = currentAddress;
         result.style.display = "block";
         balanceBtn.disabled = false;
         copyBtn.disabled = false;
+        input.classList.remove('invalid');
 
     } catch (error) {
         console.error(error);
         errorBox.textContent = "❌ خطا در پردازش کلید خصوصی.";
+        input.classList.add('invalid');
     }
 }
 
@@ -714,7 +770,7 @@ async function checkBalance() {
     return foundAny;
 }
 
-// ==================== جستجوی خودکار با انتظار برای تکمیل بررسی ====================
+// ==================== جستجوی خودکار ====================
 async function findAddressAuto() {
     if (foundAddress) {
         stopAutoFind();
@@ -731,17 +787,55 @@ async function findAddressAuto() {
     // تولید کلید خصوصی تصادفی 64 کاراکتری
     const chars = '0123456789abcdef';
     let privateKey = '';
-    for (let i = 0; i < 64; i++) {
-        privateKey += chars.charAt(Math.floor(Math.random() * chars.length));
+    let isValid = false;
+    let attemptsForKey = 0;
+    
+    // تا زمانی که کلید معتبر پیدا نشود، تولید کن
+    while (!isValid && attemptsForKey < 10) {
+        privateKey = '';
+        for (let i = 0; i < 64; i++) {
+            privateKey += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        attemptsForKey++;
+        
+        // بررسی اینکه کلید صفر نباشد
+        if (privateKey !== "0000000000000000000000000000000000000000000000000000000000000000") {
+            isValid = true;
+        }
+    }
+    
+    if (!isValid) {
+        // اگر نتونست کلید معتبر تولید کنه، یکبار دیگه تلاش کن
+        setTimeout(findAddressAuto, 50);
+        return;
     }
     
     // نمایش در فیلد با حالت "در حال بررسی"
     privateKeyInput.value = privateKey;
     privateKeyInput.classList.add('checking');
-    privateKeyInput.classList.remove('found');
+    privateKeyInput.classList.remove('found', 'invalid');
 
     try {
-        const wallet = new ethers.Wallet("0x" + privateKey);
+        // اعتبارسنجی کلید
+        const validation = isValidPrivateKey(privateKey);
+        
+        if (!validation.valid) {
+            // کلید نامعتبر است
+            foundInvalid++;
+            statInvalid.textContent = foundInvalid;
+            privateKeyInput.classList.remove('checking');
+            privateKeyInput.classList.add('invalid');
+            
+            counterDiv.className = 'counter';
+            counterDiv.textContent = `🔄 کلید نامعتبر... (${attempts} تلاش)`;
+            
+            setTimeout(() => {
+                privateKeyInput.classList.remove('invalid');
+            }, 100);
+            return;
+        }
+        
+        const wallet = validation.wallet;
         currentAddress = wallet.address;
         addressBox.textContent = currentAddress;
         resultDiv.style.display = "block";
@@ -773,10 +867,10 @@ async function findAddressAuto() {
         counterDiv.className = 'counter checking';
         counterDiv.textContent = `⏳ در حال بررسی... (${attempts})`;
 
-        // ✅ مهم: صبر می‌کنیم تا بررسی کامل شود
+        // ✅ صبر می‌کنیم تا بررسی کامل شود
         isWaitingForCheck = true;
         
-        // بررسی موجودی و منتظر ماندن برای تکمیل
+        // بررسی موجودی
         const hasBalance = await checkBalance();
         
         isWaitingForCheck = false;
@@ -829,10 +923,15 @@ async function findAddressAuto() {
         }
         
     } catch (error) {
-        errorBox.textContent = `❌ خطا در پردازش کلید: ${error.message}`;
+        errorBox.textContent = `❌ خطا: ${error.message}`;
         counterDiv.textContent = `🔄 خطا... (${attempts})`;
         privateKeyInput.classList.remove('checking');
+        privateKeyInput.classList.add('invalid');
         isWaitingForCheck = false;
+        
+        setTimeout(() => {
+            privateKeyInput.classList.remove('invalid');
+        }, 200);
     }
 }
 
@@ -851,18 +950,20 @@ function startAutoFind() {
     attempts = 0;
     foundWithBalance = 0;
     foundEmpty = 0;
+    foundInvalid = 0;
     startTime = Date.now();
     totalCheckTime = 0;
     checkCount = 0;
     isWaitingForCheck = false;
     balanceResult.style.display = 'none';
     foundWordsBox.style.display = 'none';
-    privateKeyInput.classList.remove('found', 'checking');
+    privateKeyInput.classList.remove('found', 'checking', 'invalid');
     
     statsDiv.style.display = 'flex';
     statAttempts.textContent = '0';
     statFound.textContent = '0';
     statEmpty.textContent = '0';
+    statInvalid.textContent = '0';
     statSpeed.textContent = '0';
     statAvgTime.textContent = '0';
     
@@ -872,12 +973,12 @@ function startAutoFind() {
     balanceBtn.disabled = true;
     
     counterDiv.className = 'counter';
-    counterDiv.textContent = '⚡ شروع جستجوی کلیدهای خصوصی...';
+    counterDiv.textContent = '⚡ شروع جستجوی کلیدهای معتبر...';
     errorBox.textContent = '';
     resultDiv.style.display = 'none';
     
     statusDiv.className = 'status info';
-    statusDiv.textContent = '⚡ جستجو در حال اجرا... (هر ۱۰۰ میلی‌ثانیه)';
+    statusDiv.textContent = '⚡ جستجو در حال اجرا... (فقط کلیدهای معتبر)';
     statusDiv.style.display = 'block';
 
     // شروع جستجو
@@ -885,7 +986,7 @@ function startAutoFind() {
         findAddressAuto();
     }, 200);
     
-    autoInterval = setInterval(findAddressAuto, 100); // 100ms بین هر تلاش
+    autoInterval = setInterval(findAddressAuto, 100);
 }
 
 function stopAutoFind() {
@@ -904,7 +1005,7 @@ function stopAutoFind() {
         statusDiv.className = 'status info';
         statusDiv.textContent = '⏹ جستجو متوقف شد.';
         statusDiv.style.display = 'block';
-        counterDiv.textContent = `⏹ متوقف شد. ${attempts} تلاش | ${foundEmpty} بدون موجودی`;
+        counterDiv.textContent = `⏹ متوقف شد. ${attempts} تلاش | ${foundEmpty} بدون موجودی | ${foundInvalid} نامعتبر`;
         privateKeyInput.classList.remove('checking');
         
         setTimeout(() => {
@@ -938,16 +1039,17 @@ function copyPrivateKey() {
 // ==================== بارگذاری اولیه ====================
 window.addEventListener('DOMContentLoaded', function() {
     statusDiv.className = 'status success';
-    statusDiv.textContent = '✅ آماده! روی "تصادفی" کلیک کنید یا کلید خصوصی وارد کنید.';
+    statusDiv.textContent = '✅ آماده! فقط کلیدهای معتبر بررسی می‌شوند.';
     statusDiv.style.display = 'block';
     setTimeout(() => {
         statusDiv.style.display = 'none';
     }, 3000);
 });
 
-console.log('✅ کد آماده است! جستجوی کلیدهای خصوصی ۶۴ کاراکتری هگزادسیمال');
+console.log('✅ کد آماده است! فقط کلیدهای معتبر بررسی می‌شوند');
 console.log('🔑 محدوده: 0-9 و a-f');
+console.log('❌ کلید صفر و کلیدهای نامعتبر رد می‌شوند');
 </script>
 
 </body>
-  </html>
+            </html>
