@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>جستجوی خودکار کلید خصوصی با موجودی</title>
+
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/web3@4.16.0/dist/web3.min.js"></script>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    padding:30px 15px;
+    background:#111827;
+    color:#fff;
+    font-family:Arial,sans-serif;
+}
+
+.container{
+    max-width:750px;
+    margin:auto;
+    background:#1f2937;
+    padding:25px;
+    border-radius:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,.3);
+}
+
+h1{
+    text-align:center;
+    margin-top:0;
+    color:#60a5fa;
+}
+
+h1 span{
+    color:#f59e0b;
+    font-size:14px;
+    display:block;
+    margin-top:5px;
+}
+
+textarea{
+    width:100%;
+    height:80px;
+    padding:15px;
+    border:1px solid #374151;
+    border-radius:12px;
+    background:#111827;
+    color:#fff;
+    font-size:14px;
+    resize:none;
+    direction:ltr;
+    text-align:left;
+    transition:0.3s;
+    font-family:monospace;
+}
+
+textarea.found{
+    border:3px solid #34d399;
+    box-shadow:0 0 30px rgba(52,211,153,0.4);
+}
+
+textarea.checking{
+    border:2px solid #f59e0b;
+    box-shadow:0 0 20px rgba(245,158,11,0.2);
+}
+
+textarea.inactive{
+    border:2px solid #6b7280;
+    opacity:0.6;
+}
+
+.btn-group{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+    flex-wrap:wrap;
+}
+
+.btn-group button{
+    flex:1;
+    padding:12px 10px;
+    border:0;
+    border-radius:12px;
+    color:white;
+    font-size:15px;
+    cursor:pointer;
+    min-width:70px;
+    transition:0.2s;
+}
+
+.btn-group button:disabled{
+    opacity:0.4;
+    cursor:not-allowed;
+}
+
+.btn-primary{
+    background:#2563eb;
+}
+.btn-primary:hover:not(:disabled){
+    background:#1d4ed8;
+}
+
+.btn-random{
+    background:#059669;
+}
+.btn-random:hover:not(:disabled){
+    background:#047857;
+}
+
+.btn-copy{
+    background:#7c3aed;
+}
+.btn-copy:hover:not(:disabled){
+    background:#6d28d9;
+}
+
+.btn-start{
+    background:#059669;
+}
+.btn-start:hover:not(:disabled){
+    background:#047857;
+}
+
+.btn-stop{
+    background:#dc2626;
+}
+.btn-stop:hover:not(:disabled){
+    background:#b91c1c;
+}
+
+.btn-balance{
+    background:#f59e0b;
+}
+.btn-balance:hover:not(:disabled){
+    background:#d97706;
+}
+
+.result{
+    display:none;
+    margin-top:20px;
+    padding:15px;
+    background:#111827;
+    border-radius:12px;
+}
+
+.label{
+    color:#9ca3af;
+    margin-bottom:8px;
+}
+
+.address{
+    direction:ltr;
+    text-align:left;
+    word-break:break-all;
+    color:#34d399;
+    font-family:monospace;
+    font-size:15px;
+}
+
+.error{
+    margin-top:15px;
+    color:#f87171;
+    text-align:center;
+}
+
+.status{
+    margin-top:10px;
+    padding:10px;
+    border-radius:8px;
+    text-align:center;
+    font-size:14px;
+    display:none;
+}
+
+.status.loading{
+    display:block;
+    background:#1e3a5f;
+    color:#60a5fa;
+}
+
+.status.success{
+    display:block;
+    background:#064e3b;
+    color:#34d399;
+}
+
+.status.error{
+    display:block;
+    background:#7f1d1d;
+    color:#f87171;
+}
+
+.status.info{
+    display:block;
+    background:#1e3a5f;
+    color:#60a5fa;
+}
+
+.status.found{
+    display:block;
+    background:#064e3b;
+    color:#34d399;
+    border:2px solid #34d399;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.status.checking{
+    display:block;
+    background:#1e3a5f;
+    color:#f59e0b;
+    border:2px solid #f59e0b;
+}
+
+.status.inactive{
+    display:block;
+    background:#374151;
+    color:#9ca3af;
+    border:2px solid #6b7280;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.info{
+    margin-top:12px;
+    color:#9ca3af;
+    font-size:13px;
+    text-align:center;
+}
+
+.counter{
+    margin-top:10px;
+    text-align:center;
+    color:#60a5fa;
+    font-size:14px;
+}
+
+.counter.found{
+    color:#34d399;
+    font-weight:bold;
+    font-size:18px;
+}
+
+.counter.checking{
+    color:#f59e0b;
+}
+
+.balance-result{
+    margin-top:15px;
+    padding:15px;
+    background:#0a2647;
+    border-radius:12px;
+    display:none;
+}
+
+.balance-title{
+    color:#4fc3f7;
+    font-weight:bold;
+    margin-bottom:10px;
+    text-align:center;
+}
+
+.balance-item{
+    display:flex;
+    justify-content:space-between;
+    padding:8px 12px;
+    margin:5px 0;
+    background:#0f3460;
+    border-radius:8px;
+    color:#fff;
+}
+
+.balance-item .network{
+    color:#4fc3f7;
+    font-weight:bold;
+}
+
+.balance-item .amount{
+    color:#ffd93d;
+}
+
+.balance-item .empty{
+    color:#888;
+}
+
+.balance-item .symbol{
+    color:#6fcf97;
+    margin-right:8px;
+}
+
+.balance-found{
+    border-right:4px solid #34d399;
+    background:#0a3d2a;
+}
+
+.balance-empty{
+    border-right:4px solid #ef4444;
+    opacity:0.6;
+}
+
+.balance-success-box{
+    background:linear-gradient(135deg,#064e3b,#0a3d2a);
+    padding:15px;
+    border-radius:12px;
+    text-align:center;
+    margin-top:10px;
+    border:2px solid #34d399;
+}
+
+.balance-success-box .big{
+    font-size:22px;
+    color:#34d399;
+    font-weight:bold;
+}
+
+.balance-success-box .small{
+    color:#6fcf97;
+    font-size:14px;
+}
+
+.stats{
+    display:flex;
+    justify-content:space-around;
+    margin-top:10px;
+    padding:10px;
+    background:#0a2647;
+    border-radius:8px;
+    flex-wrap:wrap;
+}
+
+.stats div{
+    text-align:center;
+    padding:5px 10px;
+}
+
+.stats .number{
+    color:#f59e0b;
+    font-size:20px;
+    font-weight:bold;
+}
+
+.stats .number.green{
+    color:#34d399;
+}
+
+.stats .number.gray{
+    color:#9ca3af;
+}
+
+.stats .label{
+    color:#9ca3af;
+    font-size:12px;
+}
+
+.found-words-box{
+    margin-top:15px;
+    padding:15px;
+    background:#064e3b;
+    border-radius:12px;
+    border:2px solid #34d399;
+    display:none;
+}
+
+.found-words-box .title{
+    color:#34d399;
+    font-weight:bold;
+    text-align:center;
+    margin-bottom:10px;
+}
+
+.found-words-box .words{
+    color:#fff;
+    direction:ltr;
+    text-align:center;
+    font-family:monospace;
+    font-size:16px;
+    padding:10px;
+    background:#0a3d2a;
+    border-radius:8px;
+    word-break:break-all;
+}
+
+.spinner {
+    display:inline-block;
+    width:16px;
+    height:16px;
+    border:3px solid #f59e0b;
+    border-top:3px solid transparent;
+    border-radius:50%;
+    animation: spin 0.8s linear infinite;
+    margin-right:8px;
+    vertical-align:middle;
+}
+
+.spinner-white {
+    border:3px solid #fff;
+    border-top:3px solid transparent;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>
+        🔑 جستجوی خودکار کلید خصوصی
+        <span>⏳ فقط آدرس‌های فعال با موجودی | 🔍 تا پیدا شدن</span>
+    </h1>
+
+    <div id="status" class="status loading">⏳ در حال آماده‌سازی...</div>
+
+    <textarea
+        id="privateKey"
+        placeholder="کلید خصوصی (64 کاراکتر هگزادسیمال) را وارد کنید..."
+        autocomplete="off"
+        spellcheck="false"></textarea>
+
+    <div class="btn-group">
+        <button class="btn-random" id="randomBtn" onclick="generateRandomPrivateKey()">
+            🎲 تصادفی
+        </button>
+        <button class="btn-primary" onclick="generateAddressFromPrivateKey()">
+            🔍 نمایش آدرس
+        </button>
+        <button class="btn-balance" onclick="checkBalance()" id="balanceBtn" disabled>
+            💰 بررسی موجودی
+        </button>
+        <button class="btn-copy" onclick="copyPrivateKey()" id="copyBtn" disabled>
+            📋 کپی
+        </button>
+        <button class="btn-start" id="autoBtn" onclick="toggleAutoFind()">
+            🚀 شروع جستجو
+        </button>
+    </div>
+
+    <div id="counter" class="counter"></div>
+    <div id="error" class="error"></div>
+
+    <div id="result" class="result">
+        <div class="label">آدرس کیف پول:</div>
+        <div id="address" class="address"></div>
+    </div>
+
+    <div id="foundWordsBox" class="found-words-box">
+        <div class="title">🔑 کلید خصوصی پیدا شده (با موجودی)</div>
+        <div id="foundWords" class="words"></div>
+    </div>
+
+    <div id="balanceResult" class="balance-result">
+        <div class="balance-title">💰 موجودی در شبکه‌های اصلی</div>
+        <div id="balanceList"></div>
+    </div>
+
+    <div id="stats" class="stats" style="display:none;">
+        <div>
+            <div class="number" id="statAttempts">0</div>
+            <div class="label">تعداد تلاش</div>
+        </div>
+        <div>
+            <div class="number green" id="statFound">0</div>
+            <div class="label">با موجودی</div>
+        </div>
+        <div>
+            <div class="number" id="statEmpty">0</div>
+            <div class="label">بدون موجودی</div>
+        </div>
+        <div>
+            <div class="number gray" id="statInactive">0</div>
+            <div class="label">غیرفعال</div>
+        </div>
+        <div>
+            <div class="number" id="statSpeed">0</div>
+            <div class="label">سرعت (تلاش/ثانیه)</div>
+        </div>
+        <div>
+            <div class="number" id="statAvgTime">0</div>
+            <div class="label">میانگین زمان بررسی (ms)</div>
+        </div>
+    </div>
+
+    <div class="info">
+        🔍 فقط آدرس‌هایی که حداقل یک تراکنش داشته‌اند بررسی می‌شوند | ⚡ سرعت بالا با صبر برای تکمیل
+    </div>
+
+</div>
+
+<script>
+
+let isAutoFinding = false;
+let autoInterval = null;
+let attempts = 0;
+let foundWithBalance = 0;
+let foundEmpty = 0;
+let foundInactive = 0;
+let foundAddress = false;
+let currentAddress = '';
+let isChecking = false;
+let foundPrivateKey = '';
+let startTime = 0;
+let isWaitingForCheck = false;
+let totalCheckTime = 0;
+let checkCount = 0;
+
+const statusDiv = document.getElementById('status');
+const randomBtn = document.getElementById('randomBtn');
+const copyBtn = document.getElementById('copyBtn');
+const autoBtn = document.getElementById('autoBtn');
+const balanceBtn = document.getElementById('balanceBtn');
+const privateKeyInput = document.getElementById('privateKey');
+const resultDiv = document.getElementById('result');
+const addressBox = document.getElementById('address');
+const errorBox = document.getElementById('error');
+const counterDiv = document.getElementById('counter');
+const balanceResult = document.getElementById('balanceResult');
+const balanceList = document.getElementById('balanceList');
+const statsDiv = document.getElementById('stats');
+const statAttempts = document.getElementById('statAttempts');
+const statFound = document.getElementById('statFound');
+const statEmpty = document.getElementById('statEmpty');
+const statInactive = document.getElementById('statInactive');
+const statSpeed = document.getElementById('statSpeed');
+const statAvgTime = document.getElementById('statAvgTime');
+const foundWordsBox = document.getElementById('foundWordsBox');
+const foundWords = document.getElementById('foundWords');
+
+// ==================== تنظیمات ====================
+const ETHERSCAN_API_KEY = 'YOUR_ETHERSCAN_API_KEY'; // برای بررسی تراکنش‌ها
+const INFURA_ID = '934a2ae012c840dea039c5c2571bce16';
+
+const NETWORKS = [
+    {
+        id: 'ethereum',
+        name: '🟣 اتریوم',
+        rpc: `https://mainnet.infura.io/v3/${INFURA_ID}`,
+        symbol: 'ETH',
+        native: true,
+        etherscanApi: 'https://api.etherscan.io/api'
+    },
+    {
+        id: 'polygon',
+        name: '🔵 پالیگان',
+        rpc: `https://polygon-mainnet.infura.io/v3/${INFURA_ID}`,
+        symbol: 'MATIC',
+        native: true,
+        etherscanApi: 'https://api.polygonscan.com/api'
+    },
+    {
+        id: 'bsc',
+        name: '🟡 BSC',
+        rpc: 'https://bsc-dataseed.binance.org/',
+        symbol: 'BNB',
+        native: true,
+        etherscanApi: 'https://api.bscscan.com/api'
+    },
+    {
+        id: 'arbitrum',
+        name: '🔴 آربیتروم',
+        rpc: 'https://arb1.arbitrum.io/rpc',
+        symbol: 'ETH',
+        native: true,
+        etherscanApi: 'https://api.arbiscan.io/api'
+    }
+];
+
+// ==================== بررسی فعالیت آدرس (بدون API Key) ====================
+async function checkAddressActivity(address) {
+    // روش اول: بررسی Nonce (تعداد تراکنش‌ها) از طریق RPC
+    try {
+        const web3 = new Web3(NETWORKS[0].rpc);
+        const nonce = await web3.eth.getTransactionCount(address);
+        if (nonce > 0) {
+            return { active: true, nonce: nonce, network: 'ethereum' };
+        }
+    } catch (error) {
+        console.log('Error checking nonce:', error);
+    }
+
+    // روش دوم: بررسی موجودی (اگر موجودی داشته باشد فعال است)
+    try {
+        for (const network of NETWORKS) {
+            const web3 = new Web3(network.rpc);
+            const balanceWei = await web3.eth.getBalance(address);
+            const balance = parseFloat(web3.utils.fromWei(balanceWei, 'ether'));
+            if (balance > 0) {
+                return { active: true, balance: balance, network: network.id };
+            }
+        }
+    } catch (error) {
+        console.log('Error checking balance:', error);
+    }
+
+    return { active: false };
+}
+
+// ==================== اعتبارسنجی کلید خصوصی ====================
+function isValidPrivateKey(key) {
+    let cleanKey = key;
+    if (cleanKey.startsWith("0x")) {
+        cleanKey = cleanKey.substring(2);
+    }
+    
+    if (cleanKey.length !== 64) {
+        return { valid: false, error: "طول باید 64 کاراکتر باشد" };
+    }
+    
+    if (!/^[0-9a-fA-F]{64}$/.test(cleanKey)) {
+        return { valid: false, error: "فقط شامل 0-9 و a-f می‌شود" };
+    }
+    
+    if (cleanKey === "0000000000000000000000000000000000000000000000000000000000000000") {
+        return { valid: false, error: "کلید خصوصی نمی‌تواند صفر باشد" };
+    }
+    
+    try {
+        const wallet = new ethers.Wallet("0x" + cleanKey);
+        return { valid: true, wallet: wallet };
+    } catch (error) {
+        return { valid: false, error: "کلید خصوصی نامعتبر است" };
+    }
+}
+
+// ==================== تولید کلید خصوصی تصادفی ====================
+function generateRandomPrivateKey() {
+    const chars = '0123456789abcdef';
+    let key = '';
+    let attempts = 0;
+    let isValid = false;
+    
+    while (!isValid && attempts < 100) {
+        key = '';
+        for (let i = 0; i < 64; i++) {
+            key += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        attempts++;
+        
+        if (key !== "0000000000000000000000000000000000000000000000000000000000000000") {
+            isValid = true;
+        }
+    }
+    
+    privateKeyInput.value = key;
+    privateKeyInput.className = '';
+    copyBtn.disabled = false;
+    balanceBtn.disabled = true;
+    errorBox.textContent = '';
+    resultDiv.style.display = 'none';
+    balanceResult.style.display = 'none';
+    foundWordsBox.style.display = 'none';
+    
+    statusDiv.className = 'status success';
+    statusDiv.textContent = '✅ کلید خصوصی معتبر ساخته شد!';
+    statusDiv.style.display = 'block';
+    setTimeout(() => {
+        statusDiv.style.display = 'none';
+    }, 2000);
+}
+
+// ==================== تولید آدرس ====================
+function generateAddressFromPrivateKey() {
+    const input = privateKeyInput;
+    const result = resultDiv;
+    const addressBox = document.getElementById("address");
+    const errorBox = document.getElementById("error");
+
+    result.style.display = "none";
+    balanceResult.style.display = "none";
+    errorBox.textContent = "";
+    balanceBtn.disabled = true;
+    input.className = '';
+
+    let privateKey = input.value.trim().replace(/\s+/g, "");
+
+    if (!privateKey) {
+        errorBox.textContent = "❌ کلید خصوصی را وارد کنید.";
+        return;
+    }
+
+    if (typeof ethers === "undefined") {
+        errorBox.textContent = "❌ کتابخانه ethers بارگذاری نشده است.";
+        return;
+    }
+
+    const validation = isValidPrivateKey(privateKey);
+    
+    if (!validation.valid) {
+        errorBox.textContent = `❌ ${validation.error}`;
+        return;
+    }
+
+    try {
+        const wallet = validation.wallet;
+        currentAddress = wallet.address;
+        addressBox.textContent = currentAddress;
+        result.style.display = "block";
+        balanceBtn.disabled = false;
+        copyBtn.disabled = false;
+
+    } catch (error) {
+        console.error(error);
+        errorBox.textContent = "❌ خطا در پردازش کلید خصوصی.";
+    }
+}
+
+// ==================== بررسی موجودی و فعالیت ====================
+async function checkBalance() {
+    if (!currentAddress) {
+        errorBox.textContent = '❌ ابتدا آدرس را تولید کنید!';
+        return false;
+    }
+
+    if (isChecking) return false;
+    isChecking = true;
+    const checkStart = Date.now();
+
+    balanceBtn.disabled = true;
+    balanceBtn.textContent = '⏳ در حال بررسی...';
+    balanceResult.style.display = 'block';
+    balanceList.innerHTML = `
+        <div style="text-align:center;color:#f59e0b;">
+            <span class="spinner"></span> در حال بررسی شبکه‌ها...
+        </div>
+    `;
+
+    // اول بررسی میکنیم آیا آدرس فعال است
+    const activity = await checkAddressActivity(currentAddress);
+    
+    if (!activity.active) {
+        // آدرس غیرفعال است
+        balanceList.innerHTML = `
+            <div style="text-align:center;color:#9ca3af;padding:20px;">
+                😕 این آدرس در هیچ شبکه‌ای فعالیتی نداشته است
+                <div style="font-size:12px;color:#6b7280;margin-top:10px;">
+                    (هیچ تراکنش یا موجودی در بلاکچین ثبت نشده)
+                </div>
+            </div>
+        `;
+        balanceBtn.disabled = false;
+        balanceBtn.textContent = '💰 بررسی موجودی';
+        isChecking = false;
+        return false;
+    }
+
+    // آدرس فعال است، موجودی را بررسی میکنیم
+    let foundAny = false;
+    let html = `
+        <div class="balance-success-box" style="background:#1e3a5f;border-color:#60a5fa;">
+            <div class="big" style="color:#60a5fa;">✅ آدرس فعال است!</div>
+            <div class="small">حداقل ${activity.nonce || 'یک'} تراکنش داشته است</div>
+        </div>
+    `;
+
+    for (const network of NETWORKS) {
+        try {
+            const web3 = new Web3(network.rpc);
+            const balanceWei = await web3.eth.getBalance(currentAddress);
+            const balance = web3.utils.fromWei(balanceWei, 'ether');
+            const balanceNum = parseFloat(balance);
+
+            if (balanceNum > 0) {
+                foundAny = true;
+                html += `
+                    <div class="balance-item balance-found">
+                        <span class="network">${network.name}</span>
+                        <span>
+                            <span class="amount">${balanceNum.toFixed(6)}</span>
+                            <span class="symbol">${network.symbol}</span>
+                        </span>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="balance-item balance-empty">
+                        <span class="network">${network.name}</span>
+                        <span class="empty">0 ${network.symbol}</span>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            html += `
+                <div class="balance-item balance-empty">
+                    <span class="network">${network.name}</span>
+                    <span class="empty">❌ خطا</span>
+                </div>
+            `;
+            console.error(`Error checking ${network.id}:`, error);
+        }
+    }
+
+    const checkTime = Date.now() - checkStart;
+    totalCheckTime += checkTime;
+    checkCount++;
+    const avgTime = Math.round(totalCheckTime / checkCount);
+    statAvgTime.textContent = avgTime;
+
+    if (foundAny) {
+        html = `
+            <div class="balance-success-box">
+                <div class="big">🎉 کیف پول دارای موجودی است!</div>
+                <div class="small">زمان بررسی: ${checkTime}ms</div>
+            </div>
+        ` + html;
+    } else {
+        html += `
+            <div style="text-align:center;color:#f59e0b;padding:15px;">
+                💡 آدرس فعال است اما موجودی ندارد
+                <div style="font-size:12px;color:#888;margin-top:5px;">زمان بررسی: ${checkTime}ms</div>
+            </div>
+        `;
+    }
+
+    balanceList.innerHTML = html;
+    balanceBtn.disabled = false;
+    balanceBtn.textContent = '💰 بررسی موجودی';
+    isChecking = false;
+
+    return foundAny;
+}
+
+// ==================== جستجوی خودکار ====================
+async function findAddressAuto() {
+    if (foundAddress) {
+        stopAutoFind();
+        return;
+    }
+
+    if (isChecking || isWaitingForCheck) {
+        return;
+    }
+
+    attempts++;
+    
+    const chars = '0123456789abcdef';
+    let privateKey = '';
+    let isValid = false;
+    let attemptsForKey = 0;
+    
+    while (!isValid && attemptsForKey < 10) {
+        privateKey = '';
+        for (let i = 0; i < 64; i++) {
+            privateKey += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        attemptsForKey++;
+        
+        if (privateKey !== "0000000000000000000000000000000000000000000000000000000000000000") {
+            isValid = true;
+        }
+    }
+    
+    if (!isValid) {
+        setTimeout(findAddressAuto, 50);
+        return;
+    }
+    
+    privateKeyInput.value = privateKey;
+    privateKeyInput.className = 'checking';
+
+    try {
+        const validation = isValidPrivateKey(privateKey);
+        
+        if (!validation.valid) {
+            privateKeyInput.className = '';
+            return;
+        }
+        
+        const wallet = validation.wallet;
+        currentAddress = wallet.address;
+        addressBox.textContent = currentAddress;
+        resultDiv.style.display = "block";
+        errorBox.textContent = "";
+        copyBtn.disabled = false;
+        balanceBtn.disabled = false;
+
+        statAttempts.textContent = attempts;
+        statsDiv.style.display = 'flex';
+        
+        if (startTime > 0) {
+            const elapsed = (Date.now() - startTime) / 1000;
+            if (elapsed > 0) {
+                const speed = Math.round(attempts / elapsed);
+                statSpeed.textContent = speed;
+            }
+        }
+
+        statusDiv.className = 'status checking';
+        statusDiv.innerHTML = `
+            <span class="spinner spinner-white"></span> 
+            در حال بررسی آدرس... (${attempts} تلاش)
+        `;
+        statusDiv.style.display = 'block';
+        
+        counterDiv.className = 'counter checking';
+        counterDiv.textContent = `⏳ در حال بررسی... (${attempts})`;
+
+        isWaitingForCheck = true;
+        
+        // بررسی فعالیت و موجودی
+        const hasBalance = await checkBalance();
+        
+        isWaitingForCheck = false;
+        privateKeyInput.className = '';
+        
+        if (hasBalance) {
+            // ✅ موجودی پیدا شد
+            foundAddress = true;
+            foundWithBalance++;
+            statFound.textContent = foundWithBalance;
+            foundPrivateKey = privateKey;
+            
+            privateKeyInput.value = foundPrivateKey;
+            privateKeyInput.className = 'found';
+            
+            foundWords.textContent = foundPrivateKey;
+            foundWordsBox.style.display = 'block';
+            
+            statusDiv.className = 'status found';
+            statusDiv.textContent = `🎉 کیف پول با موجودی پیدا شد! (${attempts} تلاش)`;
+            statusDiv.style.display = 'block';
+            
+            counterDiv.className = 'counter found';
+            counterDiv.textContent = `✅ پیدا شد! ${foundPrivateKey}`;
+            
+            stopAutoFind();
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 10000);
+            
+        } else {
+            // بررسی می‌کنیم که آیا آدرس غیرفعال بود یا فقط موجودی نداشت
+            const lastBalanceHtml = balanceList.innerHTML;
+            if (lastBalanceHtml.includes('فعالیتی نداشته')) {
+                foundInactive++;
+                statInactive.textContent = foundInactive;
+                privateKeyInput.className = 'inactive';
+                
+                counterDiv.className = 'counter';
+                counterDiv.textContent = `⏹ آدرس غیرفعال... (${attempts} | ${foundInactive} غیرفعال)`;
+            } else {
+                foundEmpty++;
+                statEmpty.textContent = foundEmpty;
+                
+                counterDiv.className = 'counter';
+                counterDiv.textContent = `🔄 جستجو... (${attempts} | ${foundEmpty} بدون موجودی)`;
+            }
+            
+            if (attempts % 10 === 0) {
+                errorBox.textContent = `🔍 ${attempts} تلاش | ${foundEmpty} بدون موجودی | ${foundInactive} غیرفعال`;
+            }
+            
+            setTimeout(() => {
+                balanceResult.style.display = 'none';
+                statusDiv.style.display = 'none';
+                privateKeyInput.className = '';
+            }, 300);
+        }
+        
+    } catch (error) {
+        errorBox.textContent = `❌ خطا: ${error.message}`;
+        counterDiv.textContent = `🔄 خطا... (${attempts})`;
+        privateKeyInput.className = '';
+        isWaitingForCheck = false;
+    }
+}
+
+function toggleAutoFind() {
+    if (isAutoFinding) {
+        stopAutoFind();
+    } else {
+        startAutoFind();
+    }
+}
+
+function startAutoFind() {
+    isAutoFinding = true;
+    foundAddress = false;
+    attempts = 0;
+    foundWithBalance = 0;
+    foundEmpty = 0;
+    foundInactive = 0;
+    startTime = Date.now();
+    totalCheckTime = 0;
+    checkCount = 0;
+    isWaitingForCheck = false;
+    balanceResult.style.display = 'none';
+    foundWordsBox.style.display = 'none';
+    privateKeyInput.className = '';
+    
+    statsDiv.style.display = 'flex';
+    statAttempts.textContent = '0';
+    statFound.textContent = '0';
+    statEmpty.textContent = '0';
+    statInactive.textContent = '0';
+    statSpeed.textContent = '0';
+    statAvgTime.textContent = '0';
+    
+    autoBtn.textContent = '⏹ توقف';
+    autoBtn.className = 'btn-stop';
+    randomBtn.disabled = true;
+    balanceBtn.disabled = true;
+    
+    counterDiv.className = 'counter';
+    counterDiv.textContent = '⚡ شروع جستجوی آدرس‌های فعال...';
+    errorBox.textContent = '';
+    resultDiv.style.display = 'none';
+    
+    statusDiv.className = 'status info';
+    statusDiv.textContent = '⚡ جستجو در حال اجرا... (فقط آدرس‌های فعال با موجودی)';
+    statusDiv.style.display = 'block';
+
+    setTimeout(() => {
+        findAddressAuto();
+    }, 200);
+    
+    autoInterval = setInterval(findAddressAuto, 150);
+}
+
+function stopAutoFind() {
+    isAutoFinding = false;
+    if (autoInterval) {
+        clearInterval(autoInterval);
+        autoInterval = null;
+    }
+    
+    autoBtn.textContent = '🚀 شروع جستجو';
+    autoBtn.className = 'btn-start';
+    randomBtn.disabled = false;
+    balanceBtn.disabled = false;
+    
+    if (!foundAddress) {
+        statusDiv.className = 'status info';
+        statusDiv.textContent = '⏹ جستجو متوقف شد.';
+        statusDiv.style.display = 'block';
+        counterDiv.textContent = `⏹ متوقف شد. ${attempts} تلاش | ${foundEmpty} بدون موجودی | ${foundInactive} غیرفعال`;
+        privateKeyInput.className = '';
+        
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 3000);
+    }
+}
+
+function copyPrivateKey() {
+    const text = privateKeyInput.value;
+    if (!text) return;
+
+    navigator.clipboard.writeText(text).then(() => {
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = '✅ کپی شد!';
+        setTimeout(() => {
+            copyBtn.textContent = originalText;
+        }, 2000);
+    }).catch(() => {
+        privateKeyInput.select();
+        document.execCommand('copy');
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = '✅ کپی شد!';
+        setTimeout(() => {
+            copyBtn.textContent = originalText;
+        }, 2000);
+    });
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+    statusDiv.className = 'status success';
+    statusDiv.textContent = '✅ آماده! فقط آدرس‌های فعال بررسی می‌شوند.';
+    statusDiv.style.display = 'block';
+    setTimeout(() => {
+        statusDiv.style.display = 'none';
+    }, 3000);
+});
+
+console.log('✅ کد آماده است! فقط آدرس‌های فعال با موجودی پیدا می‌شوند');
+console.log('🔍 روش: بررسی Nonce (تعداد تراکنش‌ها) و موجودی');
+</script>
+
+</body>
+</html>
