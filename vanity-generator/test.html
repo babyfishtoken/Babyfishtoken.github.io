@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>جستجوی معکوس با کلمات کلید</title>
+
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/web3@4.16.0/dist/web3.min.js"></script>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    padding: 30px 15px;
+    background: #111827;
+    color: #fff;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: #1f2937;
+    padding: 25px;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.3);
+}
+
+h1 {
+    text-align: center;
+    margin-top: 0;
+    color: #60a5fa;
+}
+
+h1 span {
+    color: #f59e0b;
+    font-size: 14px;
+    display: block;
+    margin-top: 5px;
+}
+
+input, textarea, select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #374151;
+    border-radius: 12px;
+    background: #111827;
+    color: #fff;
+    font-size: 16px;
+    transition: 0.3s;
+    font-family: monospace;
+}
+
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: #60a5fa;
+}
+
+input {
+    height: 50px;
+    direction: ltr;
+    text-align: left;
+}
+
+textarea {
+    height: 120px;
+    resize: none;
+    direction: ltr;
+    text-align: left;
+}
+
+label {
+    display: block;
+    color: #9ca3af;
+    margin-bottom: 8px;
+    margin-top: 15px;
+}
+
+.btn-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+.btn-group button {
+    flex: 1;
+    padding: 12px 10px;
+    border: 0;
+    border-radius: 12px;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+    min-width: 70px;
+    transition: 0.2s;
+}
+
+.btn-group button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.btn-primary { background: #2563eb; }
+.btn-primary:hover:not(:disabled) { background: #1d4ed8; }
+
+.btn-random { background: #059669; }
+.btn-random:hover:not(:disabled) { background: #047857; }
+
+.btn-copy { background: #7c3aed; }
+.btn-copy:hover:not(:disabled) { background: #6d28d9; }
+
+.btn-start { background: #059669; }
+.btn-start:hover:not(:disabled) { background: #047857; }
+
+.btn-stop { background: #dc2626; }
+.btn-stop:hover:not(:disabled) { background: #b91c1c; }
+
+.btn-warning { background: #f59e0b; color: #000; }
+.btn-warning:hover:not(:disabled) { background: #d97706; }
+
+.result-box {
+    margin-top: 20px;
+    padding: 15px;
+    background: #111827;
+    border-radius: 12px;
+    display: none;
+}
+
+.result-box .label {
+    color: #9ca3af;
+    margin-bottom: 8px;
+}
+
+.result-box .value {
+    direction: ltr;
+    text-align: left;
+    word-break: break-all;
+    color: #34d399;
+    font-family: monospace;
+    font-size: 14px;
+    padding: 8px;
+    background: #0a2647;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.result-box .value.match {
+    color: #34d399;
+    border: 2px solid #34d399;
+}
+
+.result-box .value.nomatch {
+    color: #f87171;
+    border: 2px solid #f87171;
+}
+
+.error {
+    margin-top: 15px;
+    color: #f87171;
+    text-align: center;
+}
+
+.status {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 14px;
+    display: none;
+}
+
+.status.loading { display: block; background: #1e3a5f; color: #60a5fa; }
+.status.success { display: block; background: #064e3b; color: #34d399; }
+.status.error { display: block; background: #7f1d1d; color: #f87171; }
+.status.info { display: block; background: #1e3a5f; color: #60a5fa; }
+.status.found { display: block; background: #064e3b; color: #34d399; border: 2px solid #34d399; animation: pulse 1.5s ease-in-out infinite; }
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 3px solid #f59e0b;
+    border-top: 3px solid transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 15px;
+    padding: 10px;
+    background: #0a2647;
+    border-radius: 8px;
+    flex-wrap: wrap;
+}
+
+.stats div {
+    text-align: center;
+    padding: 5px 10px;
+}
+
+.stats .number {
+    color: #f59e0b;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.stats .number.green { color: #34d399; }
+.stats .number.red { color: #f87171; }
+.stats .label { color: #9ca3af; font-size: 12px; }
+
+.found-box {
+    margin-top: 15px;
+    padding: 15px;
+    background: #064e3b;
+    border-radius: 12px;
+    border: 2px solid #34d399;
+    display: none;
+}
+
+.found-box .title {
+    color: #34d399;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.found-box .data {
+    color: #fff;
+    direction: ltr;
+    text-align: left;
+    font-family: monospace;
+    font-size: 14px;
+    padding: 10px;
+    background: #0a3d2a;
+    border-radius: 8px;
+    word-break: break-all;
+    line-height: 1.8;
+}
+
+.word-list {
+    margin-top: 15px;
+    padding: 15px;
+    background: #0a2647;
+    border-radius: 12px;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+}
+
+.word-list .title {
+    color: #60a5fa;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.word-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+}
+
+.word-grid span {
+    background: #1f2937;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #9ca3af;
+    font-family: monospace;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.word-grid span:hover {
+    background: #374151;
+    color: #fff;
+    transform: scale(1.05);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #1f2937;
+    border-radius: 3px;
+    margin-top: 10px;
+    overflow: hidden;
+    display: none;
+}
+
+.progress-bar .fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f59e0b, #34d399);
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.3s;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>
+        🔑 جستجوی معکوس با کلمات کلید
+        <span>🎯 آدرس → ترکیب کلمات از key.txt → بررسی تطابق</span>
+    </h1>
+
+    <div id="status" class="status loading">⏳ در حال بارگذاری فایل key.txt...</div>
+
+    <label>🎯 آدرس هدف:</label>
+    <input type="text" id="targetAddress" placeholder="0x742d35Cc6634C0532925a3b844Bc7Dd9E3d6e6e9" dir="ltr">
+
+    <div class="btn-group">
+        <button class="btn-start" id="autoBtn" onclick="toggleSearch()">
+            🚀 شروع جستجو
+        </button>
+        <button class="btn-random" onclick="testRandomCombination()">
+            🎲 تست ترکیب تصادفی
+        </button>
+        <button class="btn-warning" onclick="showAllWords()">
+            📚 نمایش کلمات
+        </button>
+        <button class="btn-copy" onclick="copyResult()" id="copyBtn" disabled>
+            📋 کپی
+        </button>
+    </div>
+
+    <div id="counter" class="counter"></div>
+    <div id="error" class="error"></div>
+
+    <div id="resultBox" class="result-box">
+        <div class="label">📝 ترکیب کلمات تست شده:</div>
+        <div id="testedMnemonic" class="value"></div>
+        <div class="label">📍 آدرس تولید شده:</div>
+        <div id="generatedAddress" class="value"></div>
+        <div class="label">🎯 آدرس هدف:</div>
+        <div id="targetDisplay" class="value"></div>
+        <div class="label" id="matchResult"></div>
+    </div>
+
+    <div id="foundBox" class="found-box">
+        <div class="title">🎉 تطابق پیدا شد!</div>
+        <div id="foundData" class="data"></div>
+    </div>
+
+    <div id="wordList" class="word-list">
+        <div class="title">📚 کلمات موجود در key.txt</div>
+        <div id="wordGrid" class="word-grid"></div>
+    </div>
+
+    <div id="stats" class="stats" style="display:none;">
+        <div>
+            <div class="number" id="statAttempts">0</div>
+            <div class="label">تعداد ترکیبات</div>
+        </div>
+        <div>
+            <div class="number" id="statSpeed">0</div>
+            <div class="label">سرعت</div>
+        </div>
+        <div>
+            <div class="number" id="statValid">0</div>
+            <div class="label">ترکیبات معتبر</div>
+        </div>
+        <div>
+            <div class="number" id="statElapsed">0</div>
+            <div class="label">زمان (ثانیه)</div>
+        </div>
+    </div>
+
+    <div class="progress-bar" id="progressBar">
+        <div class="fill" id="progressFill"></div>
+    </div>
+
+    <div class="info">
+        ⚡ ترکیب کلمات از key.txt | 🎯 12 کلمه برای ساخت آدرس | 🔍 بررسی تطابق با آدرس هدف
+    </div>
+</div>
+
+<script>
+
+let fileWords = [];
+let isSearching = false;
+let searchInterval = null;
+let attempts = 0;
+let validCombinations = 0;
+let startTime = 0;
+let targetAddress = '';
+let foundMnemonic = '';
+let totalCombinations = 0;
+
+const statusDiv = document.getElementById('status');
+const autoBtn = document.getElementById('autoBtn');
+const copyBtn = document.getElementById('copyBtn');
+const targetInput = document.getElementById('targetAddress');
+const counterDiv = document.getElementById('counter');
+const errorDiv = document.getElementById('error');
+const resultBox = document.getElementById('resultBox');
+const testedMnemonic = document.getElementById('testedMnemonic');
+const generatedAddress = document.getElementById('generatedAddress');
+const targetDisplay = document.getElementById('targetDisplay');
+const matchResult = document.getElementById('matchResult');
+const foundBox = document.getElementById('foundBox');
+const foundData = document.getElementById('foundData');
+const wordList = document.getElementById('wordList');
+const wordGrid = document.getElementById('wordGrid');
+const statAttempts = document.getElementById('statAttempts');
+const statSpeed = document.getElementById('statSpeed');
+const statValid = document.getElementById('statValid');
+const statElapsed = document.getElementById('statElapsed');
+const statsDiv = document.getElementById('stats');
+const progressBar = document.getElementById('progressBar');
+const progressFill = document.getElementById('progressFill');
+
+// ==================== بارگذاری فایل ====================
+async function loadWords() {
+    try {
+        statusDiv.className = 'status loading';
+        statusDiv.textContent = '⏳ در حال خواندن فایل key.txt...';
+        statusDiv.style.display = 'block';
+
+        const response = await fetch('key.txt');
+
+        if (!response.ok) {
+            throw new Error(`خطا: ${response.status}`);
+        }
+
+        const content = await response.text();
+        fileWords = content.split(/\r?\n/).filter(line => line.trim() !== '');
+
+        if (fileWords.length === 0) {
+            throw new Error('فایل خالی است!');
+        }
+
+        if (fileWords.length < 12) {
+            throw new Error(`فایل فقط ${fileWords.length} کلمه دارد! حداقل ۱۲ کلمه نیاز است.`);
+        }
+
+        statusDiv.className = 'status success';
+        statusDiv.textContent = `✅ ${fileWords.length} کلمه بارگذاری شد!`;
+        statusDiv.style.display = 'block';
+        autoBtn.disabled = false;
+
+        // محاسبه تعداد کل ترکیبات ممکن
+        totalCombinations = Math.pow(fileWords.length, 12);
+        document.querySelector('.info').textContent = 
+            `📊 ${fileWords.length} کلمه | ${totalCombinations.toExponential(2)} ترکیب ممکن | جستجوی هوشمند`;
+
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 3000);
+
+    } catch (error) {
+        statusDiv.className = 'status error';
+        statusDiv.textContent = `❌ خطا: ${error.message}`;
+        statusDiv.style.display = 'block';
+        autoBtn.disabled = true;
+        console.error('Error loading file:', error);
+    }
+}
+
+// ==================== تولید ترکیب تصادفی 12 کلمه ====================
+function getRandomCombination() {
+    if (fileWords.length === 0) return null;
+    let selected = [];
+    for (let i = 0; i < 12; i++) {
+        const randomIndex = Math.floor(Math.random() * fileWords.length);
+        selected.push(fileWords[randomIndex]);
+    }
+    return selected.join(' ');
+}
+
+// ==================== تولید ترکیب با روش هوشمند (تغییر تدریجی) ====================
+function getSmartCombination(seed) {
+    if (fileWords.length === 0) return null;
+    let selected = [];
+    // از seed برای تولید ترکیب استفاده می‌کنیم
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+        hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+        hash = hash & hash;
+    }
+    
+    for (let i = 0; i < 12; i++) {
+        const index = (hash + i * 7 + Math.floor(attempts / 100) * 3) % fileWords.length;
+        selected.push(fileWords[Math.abs(index)]);
+        hash = (hash * 31 + i * 13) & 0xFFFFFFFF;
+    }
+    return selected.join(' ');
+}
+
+// ==================== تست ترکیب ====================
+function testCombination(mnemonic) {
+    try {
+        // بررسی اعتبار عبارت
+        if (!ethers.Mnemonic.isValidMnemonic(mnemonic)) {
+            return { valid: false, error: 'عبارت نامعتبر' };
+        }
+
+        // تولید کیف پول
+        const wallet = ethers.HDNodeWallet.fromPhrase(mnemonic);
+        const address = wallet.address;
+
+        return {
+            valid: true,
+            address: address,
+            privateKey: wallet.privateKey,
+            mnemonic: mnemonic
+        };
+    } catch (error) {
+        return { valid: false, error: error.message };
+    }
+}
+
+// ==================== جستجوی اصلی ====================
+function tryFindKey() {
+    if (!isSearching) return;
+    if (foundMnemonic) {
+        stopSearch();
+        return;
+    }
+
+    attempts++;
+    
+    // تولید ترکیب
+    let mnemonic;
+    if (attempts % 10 === 0) {
+        // هر 10 بار یکبار از روش هوشمند استفاده کن
+        mnemonic = getSmartCombination(targetAddress + attempts.toString());
+    } else {
+        mnemonic = getRandomCombination();
+    }
+    
+    if (!mnemonic) return;
+
+    // تست ترکیب
+    const result = testCombination(mnemonic);
+    
+    if (result.valid) {
+        validCombinations++;
+        statValid.textContent = validCombinations;
+
+        // نمایش
+        testedMnemonic.textContent = mnemonic;
+        generatedAddress.textContent = result.address;
+        targetDisplay.textContent = targetAddress;
+        resultBox.style.display = 'block';
+
+        // بررسی تطابق
+        if (result.address.toLowerCase() === targetAddress.toLowerCase()) {
+            // ✅ پیدا شد!
+            foundMnemonic = mnemonic;
+            stopSearch();
+            
+            matchResult.textContent = '✅ مطابقت کامل!';
+            matchResult.style.color = '#34d399';
+            generatedAddress.className = 'value match';
+            
+            statusDiv.className = 'status found';
+            statusDiv.innerHTML = `🎉 کلمات پیدا شدند! (${attempts} تلاش)`;
+            statusDiv.style.display = 'block';
+            
+            foundData.innerHTML = `
+                <strong>🔑 ۱۲ کلمه پیدا شده:</strong><br>
+                ${mnemonic}<br><br>
+                <strong>📍 آدرس:</strong><br>
+                ${result.address}<br><br>
+                <strong>🔑 کلید خصوصی:</strong><br>
+                ${result.privateKey}
+            `;
+            foundBox.style.display = 'block';
+            copyBtn.disabled = false;
+            
+            counterDiv.className = 'counter found';
+            counterDiv.textContent = `✅ پیدا شد!`;
+            return;
+        } else {
+            // ❌ تطابق نداره
+            matchResult.textContent = '❌ تطابق ندارد';
+            matchResult.style.color = '#f87171';
+            generatedAddress.className = 'value nomatch';
+        }
+
+        // به‌روزرسانی آمار
+        statAttempts.textContent = attempts;
+        
+        if (startTime > 0) {
+            const elapsed = (Date.now() - startTime) / 1000;
+            if (elapsed > 0) {
+                statSpeed.textContent = Math.round(attempts / elapsed);
+                statElapsed.textContent = Math.round(elapsed);
+            }
+        }
+
+        // پیشرفت (تخمینی)
+        const progress = Math.min(100, (attempts / 10000) * 100);
+        progressFill.style.width = progress + '%';
+        progressBar.style.display = 'block';
+
+        // نمایش وضعیت
+        if (attempts % 20 === 0) {
+            statusDiv.className = 'status info';
+            statusDiv.innerHTML = `🔍 ${attempts.toLocaleString()} ترکیب تست شد`;
+            statusDiv.style.display = 'block';
+            counterDiv.textContent = `🔄 ${attempts.toLocaleString()} | معتبر: ${validCombinations}`;
+            setTimeout(() => statusDiv.style.display = 'none', 100);
+        }
+    }
+}
+
+// ==================== کنترل جستجو ====================
+function toggleSearch() {
+    if (isSearching) {
+        stopSearch();
+    } else {
+        startSearch();
+    }
+}
+
+function startSearch() {
+    targetAddress = targetInput.value.trim();
+    
+    if (!targetAddress) {
+        errorDiv.textContent = '❌ لطفاً آدرس هدف را وارد کنید!';
+        return;
+    }
+
+    if (!targetAddress.startsWith('0x') || targetAddress.length !== 42) {
+        errorDiv.textContent = '❌ آدرس نامعتبر! آدرس باید با 0x شروع شود و 42 کاراکتر باشد.';
+        return;
+    }
+
+    if (fileWords.length === 0) {
+        errorDiv.textContent = '❌ فایل key.txt بارگذاری نشده است!';
+        return;
+    }
+
+    // ریست
+    attempts = 0;
+    validCombinations = 0;
+    startTime = Date.now();
+    isSearching = true;
+    foundMnemonic = '';
+    foundBox.style.display = 'none';
+    copyBtn.disabled = true;
+    errorDiv.textContent = '';
+    progressFill.style.width = '0%';
+    progressBar.style.display = 'block';
+    
+    statsDiv.style.display = 'flex';
+    statAttempts.textContent = '0';
+    statSpeed.textContent = '0';
+    statValid.textContent = '0';
+    statElapsed.textContent = '0';
+
+    autoBtn.textContent = '⏹ توقف';
+    autoBtn.className = 'btn-stop';
+    targetInput.disabled = true;
+
+    statusDiv.className = 'status info';
+    statusDiv.innerHTML = `⚡ شروع جستجو برای ${targetAddress.substring(0, 10)}...`;
+    statusDiv.style.display = 'block';
+    counterDiv.textContent = '⏳ در حال جستجو...';
+
+    // شروع
+    setTimeout(() => tryFindKey(), 100);
+    searchInterval = setInterval(tryFindKey, 0);
+}
+
+function stopSearch() {
+    isSearching = false;
+    if (searchInterval) {
+        clearInterval(searchInterval);
+        searchInterval = null;
+    }
+    
+    autoBtn.textContent = '🚀 شروع جستجو';
+    autoBtn.className = 'btn-start';
+    targetInput.disabled = false;
+    
+    if (!foundMnemonic) {
+        statusDiv.className = 'status info';
+        statusDiv.textContent = `⏹ توقف شد. ${attempts.toLocaleString()} ترکیب تست شد`;
+        statusDiv.style.display = 'block';
+        counterDiv.textContent = `⏹ ${attempts.toLocaleString()} | معتبر: ${validCombinations}`;
+        setTimeout(() => statusDiv.style.display = 'none', 3000);
+    }
+}
+
+// ==================== تست ترکیب تصادفی ====================
+function testRandomCombination() {
+    if (isSearching) return;
+    
+    targetAddress = targetInput.value.trim();
+    if (!targetAddress) {
+        errorDiv.textContent = '❌ لطفاً آدرس هدف را وارد کنید!';
+        return;
+    }
+
+    const mnemonic = getRandomCombination();
+    if (!mnemonic) {
+        errorDiv.textContent = '❌ کلمات کافی در فایل وجود ندارد!';
+        return;
+    }
+
+    const result = testCombination(mnemonic);
+    
+    testedMnemonic.textContent = mnemonic;
+    targetDisplay.textContent = targetAddress;
+    resultBox.style.display = 'block';
+
+    if (result.valid) {
+        generatedAddress.textContent = result.address;
+        
+        if (result.address.toLowerCase() === targetAddress.toLowerCase()) {
+            matchResult.textContent = '✅ مطابقت کامل!';
+            matchResult.style.color = '#34d399';
+            generatedAddress.className = 'value match';
+            statusDiv.className = 'status found';
+            statusDiv.textContent = '🎉 پیدا شد!';
+            statusDiv.style.display = 'block';
+        } else {
+            matchResult.textContent = '❌ تطابق ندارد';
+            matchResult.style.color = '#f87171';
+            generatedAddress.className = 'value nomatch';
+            statusDiv.className = 'status info';
+            statusDiv.textContent = '❌ ترکیب تست شد، تطابق ندارد';
+            statusDiv.style.display = 'block';
+            setTimeout(() => statusDiv.style.display = 'none', 2000);
+        }
+    } else {
+        generatedAddress.textContent = '❌ ' + result.error;
+        matchResult.textContent = '❌ عبارت نامعتبر';
+        matchResult.style.color = '#f87171';
+    }
+}
+
+// ==================== نمایش کلمات ====================
+function showAllWords() {
+    if (wordList.style.display === 'block') {
+        wordList.style.display = 'none';
+        return;
+    }
+    
+    wordGrid.innerHTML = '';
+    fileWords.forEach(word => {
+        const span = document.createElement('span');
+        span.textContent = word;
+        span.onclick = () => {
+            targetInput.value = targetInput.value + ' ' + word;
+        };
+        wordGrid.appendChild(span);
+    });
+    
+    wordList.style.display = 'block';
+}
+
+// ==================== کپی ====================
+function copyResult() {
+    const text = foundMnemonic || testedMnemonic.textContent;
+    if (!text) return;
+
+    navigator.clipboard.writeText(text).then(() => {
+        copyBtn.textContent = '✅ کپی شد!';
+        setTimeout(() => copyBtn.textContent = '📋 کپی', 2000);
+    }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        copyBtn.textContent = '✅ کپی شد!';
+        setTimeout(() => copyBtn.textContent = '📋 کپی', 2000);
+    });
+}
+
+// ==================== بارگذاری اولیه ====================
+window.addEventListener('DOMContentLoaded', loadWords);
+
+console.log('✅ ابزار جستجوی معکوس با کلمات کلید آماده است!');
+console.log(`📊 ${fileWords.length} کلمه بارگذاری شد`);
+console.log('🎯 روش: آدرس → ترکیب کلمات → تبدیل به آدرس → مقایسه');
+</script>
+</body>
+  </html>
