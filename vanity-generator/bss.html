@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>بررسی موجودی لیست آدرس‌ها</title>
+
+<script src="https://cdn.jsdelivr.net/npm/web3@4.16.0/dist/web3.min.js"></script>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    padding:30px 15px;
+    background:#111827;
+    color:#fff;
+    font-family:Arial,sans-serif;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+    background:#1f2937;
+    padding:25px;
+    border-radius:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,.3);
+}
+
+h1{
+    text-align:center;
+    margin-top:0;
+    color:#60a5fa;
+}
+
+h1 span{
+    color:#f59e0b;
+    font-size:14px;
+    display:block;
+    margin-top:5px;
+}
+
+textarea{
+    width:100%;
+    height:180px;
+    padding:15px;
+    border:1px solid #374151;
+    border-radius:12px;
+    background:#111827;
+    color:#fff;
+    font-size:14px;
+    resize:vertical;
+    direction:ltr;
+    text-align:left;
+    font-family:monospace;
+    transition:0.3s;
+}
+
+textarea:focus{
+    border-color:#60a5fa;
+    outline:none;
+}
+
+.btn-group{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+    flex-wrap:wrap;
+}
+
+.btn-group button{
+    flex:1;
+    padding:12px 10px;
+    border:0;
+    border-radius:12px;
+    color:white;
+    font-size:15px;
+    cursor:pointer;
+    min-width:70px;
+    transition:0.2s;
+}
+
+.btn-group button:disabled{
+    opacity:0.4;
+    cursor:not-allowed;
+}
+
+.btn-primary{
+    background:#2563eb;
+}
+.btn-primary:hover:not(:disabled){
+    background:#1d4ed8;
+}
+
+.btn-check{
+    background:#059669;
+}
+.btn-check:hover:not(:disabled){
+    background:#047857;
+}
+
+.btn-copy{
+    background:#7c3aed;
+}
+.btn-copy:hover:not(:disabled){
+    background:#6d28d9;
+}
+
+.status{
+    margin-top:10px;
+    padding:10px;
+    border-radius:8px;
+    text-align:center;
+    font-size:14px;
+    display:none;
+}
+
+.status.loading{
+    display:block;
+    background:#1e3a5f;
+    color:#60a5fa;
+}
+
+.status.success{
+    display:block;
+    background:#064e3b;
+    color:#34d399;
+}
+
+.status.error{
+    display:block;
+    background:#7f1d1d;
+    color:#f87171;
+}
+
+.status.info{
+    display:block;
+    background:#1e3a5f;
+    color:#60a5fa;
+}
+
+.spinner {
+    display:inline-block;
+    width:16px;
+    height:16px;
+    border:3px solid #f59e0b;
+    border-top:3px solid transparent;
+    border-radius:50%;
+    animation: spin 0.8s linear infinite;
+    margin-left:8px;
+    vertical-align:middle;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.result-box{
+    margin-top:20px;
+    background:#0a2647;
+    border-radius:12px;
+    padding:15px;
+    display:none;
+}
+
+.result-box .title{
+    color:#4fc3f7;
+    font-weight:bold;
+    font-size:18px;
+    text-align:center;
+    margin-bottom:15px;
+}
+
+.balance-item{
+    display:flex;
+    justify-content:space-between;
+    padding:10px 15px;
+    margin:6px 0;
+    background:#0f3460;
+    border-radius:8px;
+    font-family:monospace;
+    font-size:14px;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:5px;
+}
+
+.balance-item .address{
+    color:#60a5fa;
+    word-break:break-all;
+    flex:1;
+    min-width:150px;
+}
+
+.balance-item .amount{
+    color:#ffd93d;
+    font-weight:bold;
+    white-space:nowrap;
+}
+
+.balance-item .symbol{
+    color:#6fcf97;
+    margin-right:5px;
+}
+
+.balance-item .empty{
+    color:#888;
+}
+
+.balance-item .index{
+    color:#9ca3af;
+    margin-left:10px;
+    font-size:12px;
+}
+
+.total-box{
+    margin-top:15px;
+    padding:15px;
+    background:#0a3d2a;
+    border-radius:12px;
+    text-align:center;
+    border:2px solid #34d399;
+}
+
+.total-box .label{
+    color:#9ca3af;
+    font-size:14px;
+}
+
+.total-box .value{
+    color:#ffd93d;
+    font-size:24px;
+    font-weight:bold;
+    font-family:monospace;
+}
+
+.total-box .symbol{
+    color:#6fcf97;
+    font-size:18px;
+    margin-right:5px;
+}
+
+.stats{
+    display:flex;
+    justify-content:space-around;
+    margin-top:10px;
+    padding:10px;
+    background:#0a2647;
+    border-radius:8px;
+    flex-wrap:wrap;
+}
+
+.stats div{
+    text-align:center;
+    padding:5px 10px;
+}
+
+.stats .number{
+    color:#f59e0b;
+    font-size:20px;
+    font-weight:bold;
+}
+
+.stats .number.green{
+    color:#34d399;
+}
+
+.stats .label{
+    color:#9ca3af;
+    font-size:12px;
+}
+
+.info{
+    margin-top:12px;
+    color:#9ca3af;
+    font-size:13px;
+    text-align:center;
+}
+
+.error{
+    margin-top:10px;
+    color:#f87171;
+    text-align:center;
+}
+
+.address-count{
+    color:#9ca3af;
+    font-size:14px;
+    text-align:center;
+    margin-top:5px;
+}
+
+.network-tag{
+    display:inline-block;
+    padding:2px 10px;
+    border-radius:12px;
+    font-size:12px;
+    font-weight:bold;
+    margin-left:8px;
+}
+
+.network-eth{
+    background:#627eea;
+    color:#fff;
+}
+
+.network-bsc{
+    background:#f0b90b;
+    color:#1a1a1a;
+}
+
+.network-polygon{
+    background:#8247e5;
+    color:#fff;
+}
+
+.network-arb{
+    background:#2d374b;
+    color:#fff;
+}
+
+.network-op{
+    background:#ff0420;
+    color:#fff;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #1f2937;
+    border-radius: 4px;
+    margin-top: 10px;
+    overflow: hidden;
+    display: none;
+}
+
+.progress-bar .fill {
+    height: 100%;
+    background: linear-gradient(90deg, #059669, #34d399);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>
+        💰 بررسی موجودی لیست آدرس‌ها
+        <span>⚡ بررسی همزمان تمام آدرس‌ها در تمام شبکه‌ها</span>
+    </h1>
+
+    <div id="status" class="status info">📋 آدرس‌ها را وارد کنید و دکمه بررسی را بزنید</div>
+
+    <textarea id="addressInput" placeholder="آدرس‌ها را هر کدام در یک خط وارد کنید...&#10;مثال:&#10;0xF8977A480D394a43a559F0B98EF1B0D5497a25B3&#10;0x94C7A6656843bFA27C412e6e39487D063544c91F"></textarea>
+
+    <div class="address-count" id="addressCount">تعداد آدرس‌ها: 0</div>
+
+    <div class="btn-group">
+        <button class="btn-primary" onclick="parseAddresses()">
+            📋 تجزیه آدرس‌ها
+        </button>
+        <button class="btn-check" id="checkBtn" onclick="checkAllBalances()" disabled>
+            💰 بررسی موجودی
+        </button>
+        <button class="btn-copy" onclick="copyResults()" id="copyBtn" disabled>
+            📋 کپی نتایج
+        </button>
+    </div>
+
+    <div id="error" class="error"></div>
+
+    <div class="progress-bar" id="progressBar">
+        <div class="fill" id="progressFill"></div>
+    </div>
+
+    <div id="resultBox" class="result-box">
+        <div class="title">💰 نتایج موجودی</div>
+        <div id="balanceList"></div>
+        <div id="totalBox" class="total-box" style="display:none;">
+            <div class="label">💰 جمع کل موجودی (ETH)</div>
+            <div class="value" id="totalAmount">0.0000</div>
+        </div>
+    </div>
+
+    <div id="stats" class="stats" style="display:none;">
+        <div>
+            <div class="number" id="statTotal">0</div>
+            <div class="label">تعداد آدرس‌ها</div>
+        </div>
+        <div>
+            <div class="number green" id="statWithBalance">0</div>
+            <div class="label">با موجودی</div>
+        </div>
+        <div>
+            <div class="number" id="statEmpty">0</div>
+            <div class="label">بدون موجودی</div>
+        </div>
+        <div>
+            <div class="number" id="statErrors">0</div>
+            <div class="label">خطا</div>
+        </div>
+    </div>
+
+    <div class="info">
+        ⚡ بررسی همزمان در شبکه‌های اتریوم، BSC، پالیگان، آربیتروم و آپتیمیزم | 💰 نمایش موجودی و جمع کل
+    </div>
+
+</div>
+
+<script>
+
+// ==================== تنظیمات شبکه‌ها ====================
+const NETWORKS = [
+    {
+        id: 'ethereum',
+        name: 'اتریوم',
+        rpc: 'https://mainnet.infura.io/v3/934a2ae012c840dea039c5c2571bce16',
+        symbol: 'ETH',
+        tag: 'network-eth'
+    },
+    {
+        id: 'bsc',
+        name: 'BSC',
+        rpc: 'https://bsc-dataseed.binance.org/',
+        symbol: 'BNB',
+        tag: 'network-bsc'
+    },
+    {
+        id: 'polygon',
+        name: 'پالیگان',
+        rpc: 'https://polygon-mainnet.infura.io/v3/934a2ae012c840dea039c5c2571bce16',
+        symbol: 'MATIC',
+        tag: 'network-polygon'
+    },
+    {
+        id: 'arbitrum',
+        name: 'آربیتروم',
+        rpc: 'https://arb1.arbitrum.io/rpc',
+        symbol: 'ETH',
+        tag: 'network-arb'
+    },
+    {
+        id: 'optimism',
+        name: 'آپتیمیزم',
+        rpc: 'https://mainnet.optimism.io',
+        symbol: 'ETH',
+        tag: 'network-op'
+    }
+];
+
+let addresses = [];
+let balanceResults = [];
+let totalEth = 0;
+
+const addressInput = document.getElementById('addressInput');
+const addressCount = document.getElementById('addressCount');
+const checkBtn = document.getElementById('checkBtn');
+const copyBtn = document.getElementById('copyBtn');
+const statusDiv = document.getElementById('status');
+const errorDiv = document.getElementById('error');
+const resultBox = document.getElementById('resultBox');
+const balanceList = document.getElementById('balanceList');
+const totalBox = document.getElementById('totalBox');
+const totalAmount = document.getElementById('totalAmount');
+const statTotal = document.getElementById('statTotal');
+const statWithBalance = document.getElementById('statWithBalance');
+const statEmpty = document.getElementById('statEmpty');
+const statErrors = document.getElementById('statErrors');
+const statsDiv = document.getElementById('stats');
+const progressBar = document.getElementById('progressBar');
+const progressFill = document.getElementById('progressFill');
+
+// ==================== تجزیه آدرس‌ها ====================
+function parseAddresses() {
+    const text = addressInput.value;
+    const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+    
+    addresses = [];
+    const validAddresses = [];
+    const errors = [];
+    
+    lines.forEach((line, index) => {
+        const addr = line.trim();
+        if (/^0x[a-fA-F0-9]{40}$/.test(addr)) {
+            validAddresses.push(addr);
+        } else {
+            errors.push(`خط ${index + 1}: "${addr}" معتبر نیست`);
+        }
+    });
+    
+    addresses = validAddresses;
+    addressCount.textContent = `تعداد آدرس‌ها: ${addresses.length}`;
+    
+    if (errors.length > 0) {
+        errorDiv.textContent = errors.join(' | ');
+        errorDiv.style.display = 'block';
+    } else {
+        errorDiv.style.display = 'none';
+    }
+    
+    if (addresses.length > 0) {
+        checkBtn.disabled = false;
+        statusDiv.className = 'status success';
+        statusDiv.textContent = `✅ ${addresses.length} آدرس معتبر پیدا شد`;
+        statusDiv.style.display = 'block';
+    } else {
+        checkBtn.disabled = true;
+        statusDiv.className = 'status error';
+        statusDiv.textContent = '❌ هیچ آدرس معتبری یافت نشد';
+        statusDiv.style.display = 'block';
+    }
+    
+    resultBox.style.display = 'none';
+    totalBox.style.display = 'none';
+    copyBtn.disabled = true;
+    statsDiv.style.display = 'none';
+    progressBar.style.display = 'none';
+}
+
+// ==================== بررسی موجودی (همزمان) ====================
+async function checkAllBalances() {
+    if (addresses.length === 0) {
+        errorDiv.textContent = '❌ ابتدا آدرس‌ها را وارد کنید';
+        return;
+    }
+    
+    checkBtn.disabled = true;
+    checkBtn.textContent = '⏳ در حال بررسی...';
+    copyBtn.disabled = true;
+    
+    statusDiv.className = 'status loading';
+    statusDiv.innerHTML = `<span class="spinner"></span> در حال بررسی ${addresses.length} آدرس در ${NETWORKS.length} شبکه...`;
+    statusDiv.style.display = 'block';
+    errorDiv.style.display = 'none';
+    
+    progressBar.style.display = 'block';
+    progressFill.style.width = '0%';
+    
+    balanceResults = [];
+    totalEth = 0;
+    
+    // ایجاد Web3 instances برای هر شبکه (کش کردن)
+    const web3Instances = {};
+    for (const network of NETWORKS) {
+        try {
+            web3Instances[network.id] = new Web3(network.rpc);
+        } catch (e) {
+            console.error(`Failed to create Web3 for ${network.id}:`, e);
+        }
+    }
+    
+    const totalTasks = addresses.length * NETWORKS.length;
+    let completedTasks = 0;
+    
+    // برای هر آدرس، یک Promise ایجاد کن
+    const addressPromises = addresses.map(async (address, index) => {
+        const result = {
+            address: address,
+            networks: {},
+            hasBalance: false
+        };
+        
+        // برای هر شبکه، یک Promise موازی
+        const networkPromises = NETWORKS.map(async (network) => {
+            try {
+                const web3 = web3Instances[network.id];
+                if (!web3) {
+                    throw new Error('Web3 instance not available');
+                }
+                
+                const balanceWei = await web3.eth.getBalance(address);
+                const balance = parseFloat(web3.utils.fromWei(balanceWei, 'ether'));
+                
+                result.networks[network.id] = {
+                    balance: balance,
+                    symbol: network.symbol,
+                    name: network.name,
+                    tag: network.tag,
+                    error: false
+                };
+                
+                if (balance > 0) {
+                    result.hasBalance = true;
+                    // تبدیل به ETH معادل (تقریبی)
+                    totalEth += balance;
+                }
+                
+            } catch (error) {
+                console.error(`Error checking ${address} on ${network.id}:`, error);
+                result.networks[network.id] = {
+                    balance: -1,
+                    symbol: network.symbol,
+                    name: network.name,
+                    tag: network.tag,
+                    error: true
+                };
+            }
+            
+            // به‌روزرسانی پیشرفت
+            completedTasks++;
+            const progress = (completedTasks / totalTasks) * 100;
+            progressFill.style.width = `${Math.min(progress, 100)}%`;
+            
+            // به‌روزرسانی وضعیت هر 10٪
+            if (completedTasks % Math.ceil(totalTasks / 20) === 0 || completedTasks === totalTasks) {
+                const checked = Math.floor(completedTasks / NETWORKS.length);
+                statusDiv.innerHTML = `<span class="spinner"></span> ${checked}/${addresses.length} آدرس بررسی شد (${Math.round(progress)}%)`;
+            }
+        });
+        
+        // اجرای موازی تمام شبکه‌ها برای این آدرس
+        await Promise.all(networkPromises);
+        return result;
+    });
+    
+    // اجرای موازی تمام آدرس‌ها
+    balanceResults = await Promise.all(addressPromises);
+    
+    // محاسبه آمار
+    let withBalance = 0;
+    let empty = 0;
+    let errors = 0;
+    
+    balanceResults.forEach(result => {
+        if (result.hasBalance) {
+            withBalance++;
+        } else {
+            empty++;
+        }
+        // شمارش خطاها
+        for (const [id, data] of Object.entries(result.networks)) {
+            if (data.error) errors++;
+        }
+    });
+    
+    // نمایش نتایج
+    displayResults(withBalance, empty, errors);
+    
+    checkBtn.disabled = false;
+    checkBtn.textContent = '💰 بررسی موجودی';
+    copyBtn.disabled = false;
+    progressBar.style.display = 'none';
+}
+
+// ==================== نمایش نتایج ====================
+function displayResults(withBalance, empty, errors) {
+    let html = '';
+    
+    balanceResults.forEach((result, index) => {
+        const address = result.address;
+        const networks = result.networks;
+        const hasBalance = result.hasBalance;
+        
+        html += `
+            <div class="balance-item" style="border-right: 4px solid ${hasBalance ? '#34d399' : '#ef4444'};">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;width:100%;">
+                    <span class="index">#${index + 1}</span>
+                    <span class="address">${address}</span>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;">
+        `;
+        
+        for (const [id, data] of Object.entries(networks)) {
+            if (data.error) {
+                html += `<span class="network-tag ${data.tag}">❌ ${data.symbol}</span> `;
+            } else if (data.balance > 0) {
+                html += `
+                    <span class="network-tag ${data.tag}">${data.symbol}</span>
+                    <span class="amount">${data.balance.toFixed(6)}</span>
+                `;
+            } else {
+                html += `
+                    <span class="network-tag ${data.tag}">${data.symbol}</span>
+                    <span class="empty">0</span>
+                `;
+            }
+            html += ' ';
+        }
+        
+        html += `</div></div>`;
+    });
+    
+    balanceList.innerHTML = html;
+    resultBox.style.display = 'block';
+    
+    // نمایش جمع کل
+    totalBox.style.display = 'block';
+    totalAmount.textContent = totalEth.toFixed(6);
+    
+    // آمار
+    statTotal.textContent = addresses.length;
+    statWithBalance.textContent = withBalance;
+    statEmpty.textContent = empty;
+    statErrors.textContent = errors;
+    statsDiv.style.display = 'flex';
+    
+    statusDiv.className = 'status success';
+    statusDiv.textContent = `✅ بررسی کامل شد! ${withBalance} آدرس با موجودی (${Math.round((withBalance/addresses.length)*100)}%)`;
+    statusDiv.style.display = 'block';
+}
+
+// ==================== کپی نتایج ====================
+function copyResults() {
+    let text = '📊 نتایج بررسی موجودی\n';
+    text += `تاریخ: ${new Date().toLocaleDateString('fa-IR')}\n`;
+    text += `کل آدرس‌ها: ${addresses.length}\n`;
+    text += `آدرس‌های با موجودی: ${statWithBalance.textContent}\n`;
+    text += `آدرس‌های بدون موجودی: ${statEmpty.textContent}\n`;
+    text += `جمع کل (ETH): ${totalAmount.textContent}\n\n`;
+    
+    balanceResults.forEach((result, index) => {
+        const address = result.address;
+        const networks = result.networks;
+        
+        text += `#${index + 1} ${address}\n`;
+        for (const [id, data] of Object.entries(networks)) {
+            if (data.error) {
+                text += `  ${data.name} (${data.symbol}): ❌ خطا\n`;
+            } else {
+                text += `  ${data.name} (${data.symbol}): ${data.balance.toFixed(6)}\n`;
+            }
+        }
+        text += '\n';
+    });
+    
+    navigator.clipboard.writeText(text).then(() => {
+        const original = copyBtn.textContent;
+        copyBtn.textContent = '✅ کپی شد!';
+        setTimeout(() => {
+            copyBtn.textContent = original;
+        }, 2000);
+    }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('✅ نتایج کپی شد!');
+    });
+}
+
+// ==================== رویدادها ====================
+addressInput.addEventListener('input', () => {
+    const lines = addressInput.value.split(/\r?\n/).filter(line => line.trim() !== '');
+    const valid = lines.filter(line => /^0x[a-fA-F0-9]{40}$/.test(line.trim()));
+    addressCount.textContent = `تعداد آدرس‌ها: ${valid.length} (از ${lines.length} خط)`;
+});
+
+// بارگذاری اولیه
+statusDiv.style.display = 'block';
+statusDiv.className = 'status info';
+statusDiv.textContent = '📋 آدرس‌ها را وارد کنید و دکمه "تجزیه آدرس‌ها" را بزنید';
+
+console.log('✅ کد آماده است! بررسی همزمان موجودی لیست آدرس‌ها');
+console.log(`🌐 ${NETWORKS.length} شبکه پشتیبانی می‌شود`);
+</script>
+
+</body>
+      </html>
