@@ -16,11 +16,12 @@
         .btn-danger { background: #ff4444; }
         .btn-warning { background: #ff9800; }
         .btn-small { padding: 8px; font-size: 12px; width: auto; display: inline-block; margin: 5px; }
+        .btn-polygon { background: #8247E5; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h2>🔐 کیف پول واقعی اتریوم (Mainnet)</h2>
+    <h2>🔐 کیف پول واقعی (Polygon Mainnet)</h2>
     <div class="warning">
         ⚠️ فقط برای تست با مبلغ بسیار کم (حداکثر ۱۰ دلار)<br>
         هرگز کلید خصوصی را به کسی ندهید
@@ -32,17 +33,17 @@
     <button class="btn-warning" onclick="generateRandomPhrase()">🎲 تولید تصادفی</button>
     
     <div id="result" style="display:none;">
-        <h3>🔐 اطلاعات کیف پول (Mainnet):</h3>
+        <h3>🔐 اطلاعات کیف پول (Polygon):</h3>
         <div class="output"><strong>عبارت:</strong> <span id="phraseDisplay"></span></div>
         <div class="output"><strong>آدرس:</strong> <span id="addressDisplay" style="color: #4CAF50;"></span></div>
         <div class="output"><strong>کلید خصوصی (🔒 محرمانه):</strong> <span id="privateKeyDisplay" style="color:#ffa500;"></span></div>
         
-        <button class="btn-small" onclick="checkBalance()">💰 بررسی موجودی</button>
+        <button class="btn-small" onclick="checkBalance()">💰 بررسی موجودی (Polygon)</button>
         <div id="balanceDisplay" class="output" style="display:none;"></div>
         
-        <h3>📥 انتقال (Mainnet):</h3>
-        <input type="text" id="toAddress" placeholder="آدرس مقصد (شبکه اصلی)">
-        <input type="text" id="amount" placeholder="مقدار به ETH">
+        <h3>📥 انتقال (Polygon Mainnet):</h3>
+        <input type="text" id="toAddress" placeholder="آدرس مقصد (شبکه پالیگان)">
+        <input type="text" id="amount" placeholder="مقدار به MATIC">
         <button onclick="sendTransaction()">💸 ارسال تراکنش</button>
         <div id="txStatus" class="output" style="display:none;"></div>
         
@@ -51,13 +52,16 @@
 </div>
 
 <script>
-    // ⚠️ از یک RPC شخصی و امن استفاده کنید
-    const PROVIDER_URL = "https://mainnet.infura.io/v3/934a2ae012c840dea039c5c2571bce16"; // عمومی - برای تست
+    // شبکه پالیگان (Polygon Mainnet)
+    const PROVIDER_URL = "https://polygon-mainnet.infura.io/v3/934a2ae012c840dea039c5c2571bce16";
+    const CHAIN_ID = 137;
+    const CURRENCY_SYMBOL = "MATIC";
+    const BLOCK_EXPLORER = "https://polygonscan.com";
+    
     let wallet = null;
     let provider = null;
 
     function generateRandomPhrase() {
-        // تولید ۶ کلمه تصادفی (فقط برای تست)
         const wordList = ["abandon", "ability", "able", "about", "above", "absent", "absorb", "abstract", "absurd", "abuse", 
                          "access", "accident", "account", "accuse", "achieve", "acid", "acoustic", "acquire", "across", "act", 
                          "action", "actor", "actress", "actual", "adapt", "add", "addict", "address", "adjust", "admit", 
@@ -325,12 +329,7 @@
             return;
         }
 
-        // بررسی کلمات (اختیاری - برای اطمینان از وجود در لیست BIP-39)
-        // در این نسخه ساده، بررسی نمی‌کنیم
-
         try {
-            // ⚠️ روش غیراستاندارد: استفاده از Keccak-256 به جای PBKDF2
-            // این روش برای تست سریع است، اما امنیت استاندارد را ندارد
             const seed = ethers.keccak256(ethers.toUtf8Bytes(phrase));
             const privateKey = seed;
             
@@ -344,7 +343,6 @@
             document.getElementById('txStatus').style.display = 'none';
             document.getElementById('balanceDisplay').style.display = 'none';
             
-            // بررسی خودکار موجودی
             setTimeout(checkBalance, 1000);
             
         } catch(e) {
@@ -360,10 +358,10 @@
 
         try {
             const balance = await provider.getBalance(wallet.address);
-            const ethBalance = ethers.formatEther(balance);
+            const maticBalance = ethers.formatEther(balance);
             
             document.getElementById('balanceDisplay').style.display = 'block';
-            document.getElementById('balanceDisplay').innerHTML = `💰 موجودی: <strong>${ethBalance} ETH</strong>`;
+            document.getElementById('balanceDisplay').innerHTML = `💰 موجودی: <strong>${maticBalance} MATIC</strong>`;
         } catch(e) {
             document.getElementById('balanceDisplay').style.display = 'block';
             document.getElementById('balanceDisplay').innerHTML = `❌ خطا در دریافت موجودی: ${e.message}`;
@@ -389,31 +387,28 @@
             return;
         }
 
-        // تأیید کاربر برای ارسال با پول واقعی
-        if (!confirm(`⚠️ آیا مطمئن هستید که می‌خواهید ${amount} ETH واقعی به آدرس ${to.substring(0, 10)}... ارسال کنید؟\nاین تراکنش قابل بازگشت نیست!`)) {
+        if (!confirm(`⚠️ آیا مطمئن هستید که می‌خواهید ${amount} MATIC واقعی به آدرس ${to.substring(0, 10)}... ارسال کنید؟\nاین تراکنش قابل بازگشت نیست!`)) {
             return;
         }
 
         try {
             const signer = wallet.connect(provider);
             
-            // بررسی موجودی
             const balance = await provider.getBalance(wallet.address);
             const requiredAmount = ethers.parseEther(amount);
             
             if (balance < requiredAmount) {
-                alert(`موجودی کافی نیست! موجودی: ${ethers.formatEther(balance)} ETH`);
+                alert(`موجودی کافی نیست! موجودی: ${ethers.formatEther(balance)} MATIC`);
                 return;
             }
             
-            // محاسبه هزینه گس (تخمینی)
             const feeData = await provider.getFeeData();
             const gasPrice = feeData.gasPrice;
             const gasLimit = 21000n;
             const estimatedFee = gasPrice * gasLimit;
             
             if (balance < requiredAmount + estimatedFee) {
-                alert(`موجودی برای پوشش گس کافی نیست! نیاز: ${ethers.formatEther(requiredAmount + estimatedFee)} ETH`);
+                alert(`موجودی برای پوشش گس کافی نیست! نیاز: ${ethers.formatEther(requiredAmount + estimatedFee)} MATIC`);
                 return;
             }
             
@@ -429,10 +424,9 @@
             
             document.getElementById('txStatus').innerHTML = `⏳ در حال ارسال... هش: ${tx.hash}`;
             
-            const receipt = await tx.wait();
-            document.getElementById('txStatus').innerHTML = `✅ تراکنش موفق! <a href="https://etherscan.io/tx/${tx.hash}" target="_blank">مشاهده در Etherscan</a>`;
+            await tx.wait();
+            document.getElementById('txStatus').innerHTML = `✅ تراکنش موفق! <a href="https://polygonscan.com/tx/${tx.hash}" target="_blank">مشاهده در Polygonscan</a>`;
             
-            // بروزرسانی موجودی
             setTimeout(checkBalance, 5000);
             
         } catch(e) {
@@ -453,4 +447,4 @@
     }
 </script>
 </body>
-                                                      </html>
+                                                                    </html>
