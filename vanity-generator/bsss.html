@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Multichain Wallet Balance Scanner</title>
+
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.15.0/dist/ethers.umd.min.js"></script>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    padding:25px 12px;
+    background:#0b1120;
+    color:#fff;
+    font-family:Arial,sans-serif;
+}
+
+.container{
+    width:100%;
+    max-width:1000px;
+    margin:auto;
+    background:#111827;
+    border:1px solid #263244;
+    border-radius:20px;
+    padding:22px;
+    box-shadow:0 15px 50px rgba(0,0,0,.35);
+}
+
+h1{
+    text-align:center;
+    margin:0 0 6px;
+    color:#60a5fa;
+    font-size:25px;
+}
+
+.subtitle{
+    text-align:center;
+    color:#9ca3af;
+    font-size:13px;
+    margin-bottom:20px;
+}
+
+textarea{
+    width:100%;
+    min-height:190px;
+    resize:vertical;
+    background:#080d18;
+    color:#fff;
+    border:1px solid #374151;
+    border-radius:14px;
+    padding:15px;
+    font-family:monospace;
+    font-size:14px;
+    direction:ltr;
+    text-align:left;
+    outline:none;
+}
+
+textarea:focus{
+    border-color:#3b82f6;
+}
+
+.address-count{
+    text-align:center;
+    color:#9ca3af;
+    margin-top:8px;
+    font-size:13px;
+}
+
+.buttons{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+    flex-wrap:wrap;
+}
+
+button{
+    flex:1;
+    min-width:140px;
+    border:0;
+    border-radius:12px;
+    padding:13px;
+    color:#fff;
+    font-size:15px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+button:disabled{
+    opacity:.4;
+    cursor:not-allowed;
+}
+
+.btn-parse{
+    background:#2563eb;
+}
+
+.btn-check{
+    background:#059669;
+}
+
+.btn-copy{
+    background:#7c3aed;
+}
+
+.btn-clear{
+    background:#374151;
+}
+
+.status{
+    display:none;
+    margin:15px 0;
+    padding:12px;
+    border-radius:10px;
+    text-align:center;
+    font-size:14px;
+}
+
+.status.info{
+    display:block;
+    background:#172554;
+    color:#93c5fd;
+}
+
+.status.loading{
+    display:block;
+    background:#172554;
+    color:#60a5fa;
+}
+
+.status.success{
+    display:block;
+    background:#052e16;
+    color:#4ade80;
+}
+
+.status.error{
+    display:block;
+    background:#450a0a;
+    color:#f87171;
+}
+
+.error-list{
+    color:#f87171;
+    font-size:13px;
+    margin-top:10px;
+    line-height:1.8;
+}
+
+.progress{
+    display:none;
+    margin-top:12px;
+    background:#1f2937;
+    border-radius:10px;
+    overflow:hidden;
+    height:9px;
+}
+
+.progress-fill{
+    width:0%;
+    height:100%;
+    background:#10b981;
+    transition:.25s;
+}
+
+.stats{
+    display:none;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+    margin-top:15px;
+}
+
+.stat{
+    background:#0b1324;
+    border:1px solid #263244;
+    border-radius:12px;
+    padding:12px;
+    text-align:center;
+}
+
+.stat-number{
+    font-size:21px;
+    font-weight:bold;
+    color:#fbbf24;
+}
+
+.stat-label{
+    color:#9ca3af;
+    font-size:12px;
+    margin-top:4px;
+}
+
+.results{
+    margin-top:18px;
+}
+
+.wallet{
+    background:#0b1324;
+    border:1px solid #263244;
+    border-radius:15px;
+    margin-bottom:14px;
+    overflow:hidden;
+}
+
+.wallet-head{
+    padding:13px;
+    background:#111c30;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+.wallet-number{
+    color:#f59e0b;
+    font-weight:bold;
+}
+
+.wallet-address{
+    color:#60a5fa;
+    font-family:monospace;
+    word-break:break-all;
+    direction:ltr;
+}
+
+.wallet-status{
+    margin-right:auto;
+    font-size:12px;
+}
+
+.wallet-status.has{
+    color:#34d399;
+}
+
+.wallet-status.empty{
+    color:#9ca3af;
+}
+
+.network-grid{
+    padding:10px;
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:8px;
+}
+
+.network{
+    background:#111827;
+    border:1px solid #293548;
+    border-radius:10px;
+    padding:10px;
+    min-height:75px;
+}
+
+.network-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:5px;
+}
+
+.network-name{
+    font-size:13px;
+    font-weight:bold;
+}
+
+.symbol{
+    font-size:11px;
+    color:#9ca3af;
+}
+
+.balance{
+    margin-top:8px;
+    font-family:monospace;
+    font-size:15px;
+    color:#fbbf24;
+    direction:ltr;
+    text-align:left;
+    word-break:break-all;
+}
+
+.zero{
+    color:#6b7280;
+}
+
+.retry{
+    color:#fbbf24;
+    font-size:12px;
+}
+
+.failed{
+    color:#f87171;
+    font-size:12px;
+}
+
+.total-assets{
+    margin-top:10px;
+    padding:15px;
+    background:#052e16;
+    border:1px solid #166534;
+    border-radius:12px;
+}
+
+.total-title{
+    color:#86efac;
+    font-weight:bold;
+    margin-bottom:8px;
+}
+
+.total-row{
+    display:flex;
+    justify-content:space-between;
+    padding:6px 0;
+    border-bottom:1px solid rgba(255,255,255,.05);
+}
+
+.total-row:last-child{
+    border-bottom:0;
+}
+
+.total-symbol{
+    color:#9ca3af;
+}
+
+.total-value{
+    color:#fbbf24;
+    font-family:monospace;
+}
+
+.network-info{
+    margin-top:20px;
+    padding:13px;
+    background:#0b1324;
+    border:1px solid #263244;
+    border-radius:12px;
+    color:#9ca3af;
+    font-size:12px;
+    line-height:1.8;
+}
+
+.spinner{
+    display:inline-block;
+    width:15px;
+    height:15px;
+    border:2px solid #60a5fa;
+    border-top-color:transparent;
+    border-radius:50%;
+    animation:spin .7s linear infinite;
+    vertical-align:middle;
+    margin-left:6px;
+}
+
+@keyframes spin{
+    to{
+        transform:rotate(360deg);
+    }
+}
+
+@media(max-width:700px){
+
+    .container{
+        padding:15px;
+    }
+
+    h1{
+        font-size:21px;
+    }
+
+    .network-grid{
+        grid-template-columns:1fr;
+    }
+
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    button{
+        min-width:100%;
+    }
+
+}
+
+@media(min-width:701px){
+
+    .network-grid{
+        grid-template-columns:repeat(3,1fr);
+    }
+
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>💰 Multichain Wallet Scanner</h1>
+
+<div class="subtitle">
+بررسی موجودی کیف پول‌ها در شبکه‌های اصلی EVM
+</div>
+
+<div id="status" class="status info">
+📋 آدرس‌ها را وارد کنید و دکمه بررسی موجودی را بزنید
+</div>
+
+<textarea
+id="addressInput"
+placeholder="هر آدرس را در یک خط وارد کنید
+
+مثال:
+0x0000000000000000000000000000000000000000
+0x1111111111111111111111111111111111111111
+0x2222222222222222222222222222222222222222"></textarea>
+
+<div class="address-count" id="addressCount">
+تعداد آدرس‌ها: 0
+</div>
+
+<div class="buttons">
+
+<button class="btn-parse" id="parseBtn">
+📋 بررسی آدرس‌ها
+</button>
+
+<button class="btn-check" id="checkBtn" disabled>
+💰 استعلام موجودی
+</button>
+
+<button class="btn-copy" id="copyBtn" disabled>
+📋 کپی نتایج
+</button>
+
+<button class="btn-clear" id="clearBtn">
+🗑 پاک کردن
+</button>
+
+</div>
+
+<div id="errorList" class="error-list"></div>
+
+<div class="progress" id="progress">
+<div class="progress-fill" id="progressFill"></div>
+</div>
+
+<div class="stats" id="stats">
+
+<div class="stat">
+<div class="stat-number" id="statAddresses">0</div>
+<div class="stat-label">آدرس‌ها</div>
+</div>
+
+<div class="stat">
+<div class="stat-number" id="statBalance">0</div>
+<div class="stat-label">دارای موجودی</div>
+</div>
+
+<div class="stat">
+<div class="stat-number" id="statEmpty">0</div>
+<div class="stat-label">بدون موجودی</div>
+</div>
+
+<div class="stat">
+<div class="stat-number" id="statErrors">0</div>
+<div class="stat-label">خطا</div>
+</div>
+
+</div>
+
+<div id="results" class="results"></div>
+
+<div class="network-info">
+
+<b>🌐 شبکه‌های بررسی‌شده:</b><br>
+
+Ethereum • BNB Chain • Polygon • Arbitrum One • Optimism • Base • Avalanche • Fantom • Gnosis • Celo • zkSync Era • Linea • Scroll • Mantle • Blast
+
+<br><br>
+
+<b>🔄 سیستم Retry:</b>
+اگر RPC یک شبکه پاسخ ندهد، سیستم به‌صورت خودکار چند بار دیگر درخواست را ارسال می‌کند.
+
+<br>
+
+<b>⚠️ نکته:</b>
+موجودی Native شبکه‌ها بررسی می‌شود؛ مانند ETH، BNB، POL، AVAX و غیره.
+موجودی توکن‌های ERC-20/BEP-20 در این نسخه بررسی نمی‌شود.
+
+</div>
+
+</div>
+
+<script>
+
+if(typeof ethers === "undefined"){
+    document.getElementById("status").className = "status error";
+    document.getElementById("status").textContent =
+        "❌ کتابخانه Ethers بارگذاری نشد.";
+}
+
+/* =========================================================
+   NETWORKS
+========================================================= */
+
+const NETWORKS = [
+
+{
+    id:"ethereum",
+    name:"Ethereum",
+    symbol:"ETH",
+    rpc:"https://ethereum-rpc.publicnode.com"
+},
+
+{
+    id:"bsc",
+    name:"BNB Chain",
+    symbol:"BNB",
+    rpc:"https://bsc-rpc.publicnode.com"
+},
+
+{
+    id:"polygon",
+    name:"Polygon",
+    symbol:"POL",
+    rpc:"https://polygon-bor-rpc.publicnode.com"
+},
+
+{
+    id:"arbitrum",
+    name:"Arbitrum One",
+    symbol:"ETH",
+    rpc:"https://arbitrum-one-rpc.publicnode.com"
+},
+
+{
+    id:"optimism",
+    name:"Optimism",
+    symbol:"ETH",
+    rpc:"https://optimism-rpc.publicnode.com"
+},
+
+{
+    id:"base",
+    name:"Base",
+    symbol:"ETH",
+    rpc:"https://base-rpc.publicnode.com"
+},
+
+{
+    id:"avalanche",
+    name:"Avalanche",
+    symbol:"AVAX",
+    rpc:"https://avalanche-c-chain-rpc.publicnode.com"
+},
+
+{
+    id:"fantom",
+    name:"Fantom",
+    symbol:"FTM",
+    rpc:"https://fantom-rpc.publicnode.com"
+},
+
+{
+    id:"gnosis",
+    name:"Gnosis",
+    symbol:"xDAI",
+    rpc:"https://gnosis-rpc.publicnode.com"
+},
+
+{
+    id:"celo",
+    name:"Celo",
+    symbol:"CELO",
+    rpc:"https://celo-rpc.publicnode.com"
+},
+
+{
+    id:"zksync",
+    name:"zkSync Era",
+    symbol:"ETH",
+    rpc:"https://zksync-era-rpc.publicnode.com"
+},
+
+{
+    id:"linea",
+    name:"Linea",
+    symbol:"ETH",
+    rpc:"https://linea-rpc.publicnode.com"
+},
+
+{
+    id:"scroll",
+    name:"Scroll",
+    symbol:"ETH",
+    rpc:"https://scroll-rpc.publicnode.com"
+},
+
+{
+    id:"mantle",
+    name:"Mantle",
+    symbol:"MNT",
+    rpc:"https://mantle-rpc.publicnode.com"
+},
+
+{
+    id:"blast",
+    name:"Blast",
+    symbol:"ETH",
+    rpc:"https://blast-rpc.publicnode.com"
+}
+
+];
+
+
+/* =========================================================
+   SETTINGS
+========================================================= */
+
+const MAX_RETRIES = 3;
+
+/*
+   تعداد درخواست‌های هم‌زمان.
+   زیاد کردن این مقدار ممکن است باعث Rate Limit شود.
+*/
+const MAX_CONCURRENT = 6;
+
+
+/* =========================================================
+   VARIABLES
+========================================================= */
+
+let addresses = [];
+let results = [];
+
+const addressInput =
+    document.getElementById("addressInput");
+
+const addressCount =
+    document.getElementById("addressCount");
+
+const parseBtn =
+    document.getElementById("parseBtn");
+
+const checkBtn =
+    document.getElementById("checkBtn");
+
+const copyBtn =
+    document.getElementById("copyBtn");
+
+const clearBtn =
+    document.getElementById("clearBtn");
+
+const statusDiv =
+    document.getElementById("status");
+
+const errorList =
+    document.getElementById("errorList");
+
+const progress =
+    document.getElementById("progress");
+
+const progressFill =
+    document.getElementById("progressFill");
+
+const resultsDiv =
+    document.getElementById("results");
+
+const stats =
+    document.getElementById("stats");
+
+
+/* =========================================================
+   UPDATE ADDRESS COUNT
+========================================================= */
+
+addressInput.addEventListener("input", function(){
+
+    const lines =
+        addressInput.value
+        .split(/\r?\n/)
+        .filter(x => x.trim());
+
+    let valid = 0;
+
+    lines.forEach(line => {
+
+        if(
+            /^0x[a-fA-F0-9]{40}$/
+            .test(line.trim())
+        ){
+            valid++;
+        }
+
+    });
+
+    addressCount.textContent =
+        `تعداد آدرس‌های معتبر: ${valid} | کل خطوط: ${lines.length}`;
+
+});
+
+
+/* =========================================================
+   PARSE ADDRESSES
+========================================================= */
+
+parseBtn.addEventListener("click", function(){
+
+    const lines =
+        addressInput.value
+        .split(/\r?\n/)
+        .map(x => x.trim())
+        .filter(x => x);
+
+    addresses = [];
+    const errors = [];
+
+    lines.forEach((address,index)=>{
+
+        if(
+            /^0x[a-fA-F0-9]{40}$/
+            .test(address)
+        ){
+
+            if(
+                !addresses.some(
+                    x => x.toLowerCase() === address.toLowerCase()
+                )
+            ){
+                addresses.push(address);
+            }
+
+        }else{
+
+            errors.push(
+                `خط ${index+1}: آدرس نامعتبر`
+            );
+
+        }
+
+    });
+
+    errorList.innerHTML =
+        errors.join("<br>");
+
+    addressCount.textContent =
+        `تعداد آدرس‌های معتبر: ${addresses.length}`;
+
+    resultsDiv.innerHTML = "";
+
+    copyBtn.disabled = true;
+
+    stats.style.display = "none";
+
+    if(addresses.length === 0){
+
+        checkBtn.disabled = true;
+
+        setStatus(
+            "error",
+            "❌ هیچ آدرس معتبر EVM پیدا نشد."
+        );
+
+        return;
+    }
+
+    checkBtn.disabled = false;
+
+    setStatus(
+        "success",
+        `✅ ${addresses.length} آدرس معتبر آماده است.`
+    );
+
+});
+
+
+/* =========================================================
+   RETRY FUNCTION
+========================================================= */
+
+async function getBalanceWithRetry(
+    provider,
+    address,
+    network
+){
+
+    let lastError = null;
+
+    for(
+        let attempt = 1;
+        attempt <= MAX_RETRIES;
+        attempt++
+    ){
+
+        try{
+
+            const balance =
+                await provider.getBalance(address);
+
+            return {
+
+                success:true,
+
+                balance:balance,
+
+                attempt:attempt
+
+            };
+
+        }catch(error){
+
+            lastError = error;
+
+            /*
+                اگر خطا شد و هنوز Retry باقی مانده
+            */
+
+            if(attempt < MAX_RETRIES){
+
+                await sleep(
+                    700 * attempt
+                );
+
+            }
+
+        }
+
+    }
+
+    return {
+
+        success:false,
+
+        error:lastError,
+
+        attempt:MAX_RETRIES
+
+    };
+
+}
+
+
+/* =========================================================
+   SLEEP
+========================================================= */
+
+function sleep(ms){
+
+    return new Promise(
+        resolve => setTimeout(resolve,ms)
+    );
+
+}
+
+
+/* =========================================================
+   CONCURRENT WORKER
+========================================================= */
+
+async function runQueue(tasks, workerCount){
+
+    let index = 0;
+
+    const workers = [];
+
+    async function worker(){
+
+        while(true){
+
+            const current =
+                index++;
+
+            if(current >= tasks.length){
+                return;
+            }
+
+            await tasks[current]();
+
+        }
+
+    }
+
+    for(
+        let i=0;
+        i<Math.min(workerCount,tasks.length);
+        i++
+    ){
+
+        workers.push(
+            worker()
+        );
+
+    }
+
+    await Promise.all(workers);
+
+}
+
+
+/* =========================================================
+   CHECK ALL BALANCES
+========================================================= */
+
+checkBtn.addEventListener(
+    "click",
+    checkAllBalances
+);
+
+
+async function checkAllBalances(){
+
+    if(addresses.length === 0){
+
+        setStatus(
+            "error",
+            "❌ ابتدا آدرس‌ها را وارد کنید."
+        );
+
+        return;
+    }
+
+    checkBtn.disabled = true;
+    parseBtn.disabled = true;
+    copyBtn.disabled = true;
+
+    resultsDiv.innerHTML = "";
+
+    stats.style.display = "none";
+
+    progress.style.display = "block";
+    progressFill.style.width = "0%";
+
+    results = [];
+
+    const totalTasks =
+        addresses.length * NETWORKS.length;
+
+    let completed = 0;
+
+    /*
+       ساخت Providerها
+    */
+
+    const providers = {};
+
+    NETWORKS.forEach(network=>{
+
+        try{
+
+            providers[network.id] =
+                new ethers.JsonRpcProvider(
+                    network.rpc,
+                    undefined,
+                    {
+                        staticNetwork:true
+                    }
+                );
+
+        }catch(error){
+
+            console.error(
+                "Provider error:",
+                network.name,
+                error
+            );
+
+        }
+
+    });
+
+
+    /*
+       ساخت ساختار اولیه نتایج
+    */
+
+    addresses.forEach(
+        (address,index)=>{
+
+            results[index] = {
+
+                address:address,
+
+                networks:{},
+
+                hasBalance:false
+
+            };
+
+            NETWORKS.forEach(network=>{
+
+                results[index]
+                    .networks[network.id] = {
+
+                        network:network,
+
+                        success:false,
+
+                        balance:null,
+
+                        retry:0,
+
+                        error:null
+
+                    };
+
+            });
+
+        }
+    );
+
+
+    /*
+       ساخت Task برای هر آدرس + شبکه
+    */
+
+    const tasks = [];
+
+
+    addresses.forEach(
+        (address,addressIndex)=>{
+
+            NETWORKS.forEach(
+                network=>{
+
+                    tasks.push(
+                        async ()=>{
+
+                            const provider =
+                                providers[network.id];
+
+                            const item =
+                                results[addressIndex]
+                                .networks[network.id];
+
+
+                            if(!provider){
+
+                                item.error =
+                                    "Provider unavailable";
+
+                            }else{
+
+                                setStatus(
+                                    "loading",
+                                    `<span class="spinner"></span>
+                                    در حال بررسی:
+                                    ${addressIndex+1}/${addresses.length}
+                                    — ${network.name}`
+                                );
+
+
+                                const response =
+                                    await getBalanceWithRetry(
+                                        provider,
+                                        address,
+                                        network
+                                    );
+
+
+                                if(response.success){
+
+                                    item.success = true;
+
+                                    item.balance =
+                                        response.balance;
+
+                                    item.retry =
+                                        response.attempt;
+
+                                    if(
+                                        response.balance > 0n
+                                    ){
+
+                                        results[addressIndex]
+                                            .hasBalance = true;
+
+                                    }
+
+                                }else{
+
+                                    item.error =
+                                        response.error
+                                        ? (
+                                            response.error.shortMessage ||
+                                            response.error.message ||
+                                            "RPC Error"
+                                        )
+                                        : "Unknown error";
+
+                                    item.retry =
+                                        response.attempt;
+
+                                }
+
+                            }
+
+
+                            completed++;
+
+                            const percent =
+                                (
+                                    completed /
+                                    totalTasks
+                                ) * 100;
+
+                            progressFill.style.width =
+                                `${percent}%`;
+
+                        }
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+    /*
+       اجرای کنترل‌شده
+    */
+
+    await runQueue(
+        tasks,
+        MAX_CONCURRENT
+    );
+
+
+    /*
+       نمایش
+    */
+
+    displayResults();
+
+    checkBtn.disabled = false;
+    parseBtn.disabled = false;
+    copyBtn.disabled = false;
+
+    progressFill.style.width = "100%";
+
+    setTimeout(()=>{
+        progress.style.display = "none";
+    },800);
+
+}
+
+
+/* =========================================================
+   FORMAT BALANCE
+========================================================= */
+
+function formatBalance(balance){
+
+    if(balance === null){
+        return "-";
+    }
+
+    try{
+
+        const value =
+            Number(
+                ethers.formatEther(balance)
+            );
+
+        if(value === 0){
+            return "0";
+        }
+
+        if(value < 0.000001){
+            return value.toExponential(6);
+        }
+
+        if(value < 1){
+            return value.toFixed(8);
+        }
+
+        return value.toFixed(6);
+
+    }catch{
+
+        return "-";
+
+    }
+
+}
+
+
+/* =========================================================
+   DISPLAY RESULTS
+========================================================= */
+
+function displayResults(){
+
+    let html = "";
+
+    let withBalance = 0;
+    let empty = 0;
+    let errors = 0;
+
+
+    /*
+       مجموع هر Symbol
+    */
+
+    const totals = {};
+
+
+    results.forEach(
+        (wallet,index)=>{
+
+            if(wallet.hasBalance){
+                withBalance++;
+            }else{
+                empty++;
+            }
+
+
+            let networkHtml = "";
+
+
+            NETWORKS.forEach(network=>{
+
+                const data =
+                    wallet.networks[network.id];
+
+
+                if(!data.success){
+
+                    errors++;
+
+                    networkHtml += `
+
+                    <div class="network">
+
+                        <div class="network-top">
+
+                            <span class="network-name">
+                                ${network.name}
+                            </span>
+
+                            <span class="symbol">
+                                ${network.symbol}
+                            </span>
+
+                        </div>
+
+                        <div class="failed">
+                            ❌ خطا بعد از
+                            ${data.retry}
+                            تلاش
+                        </div>
+
+                    </div>
+
+                    `;
+
+                    return;
+                }
+
+
+                const formatted =
+                    formatBalance(data.balance);
+
+
+                const numeric =
+                    Number(
+                        ethers.formatEther(
+                            data.balance
+                        )
+                    );
+
+
+                if(numeric > 0){
+
+                    if(!totals[network.symbol]){
+                        totals[network.symbol] = 0;
+                    }
+
+                    totals[network.symbol] +=
+                        numeric;
+
+                }
+
+
+                networkHtml += `
+
+                <div class="network">
+
+                    <div class="network-top">
+
+                        <span class="network-name">
+                            ${network.name}
+                        </span>
+
+                        <span class="symbol">
+                            ${network.symbol}
+                        </span>
+
+                    </div>
+
+                    <div class="balance ${
+                        numeric === 0 ? "zero" : ""
+                    }">
+
+                        ${formatted}
+
+                    </div>
+
+                </div>
+
+                `;
+
+            });
+
+
+            html += `
+
+            <div class="wallet">
+
+                <div class="wallet-head">
+
+                    <span class="wallet-number">
+                        #${index+1}
+                    </span>
+
+                    <span class="wallet-address">
+                        ${wallet.address}
+                    </span>
+
+                    <span class="wallet-status ${
+                        wallet.hasBalance
+                        ? "has"
+                        : "empty"
+                    }">
+
+                        ${
+                            wallet.hasBalance
+                            ? "● دارای موجودی"
+                            : "○ بدون موجودی"
+                        }
+
+                    </span>
+
+                </div>
+
+                <div class="network-grid">
+
+                    ${networkHtml}
+
+                </div>
+
+            </div>
+
+            `;
+
+        }
+    );
+
+
+    /*
+       جمع موجودی‌ها
+    */
+
+    let totalsHtml = "";
+
+    Object.keys(totals)
+        .sort()
+        .forEach(symbol=>{
+
+            totalsHtml += `
+
+            <div class="total-row">
+
+                <span class="total-symbol">
+                    ${symbol}
+                </span>
+
+                <span class="total-value">
+                    ${formatNumber(totals[symbol])}
+                </span>
+
+            </div>
+
+            `;
+
+        });
+
+
+    if(totalsHtml === ""){
+
+        totalsHtml = `
+
+        <div class="total-row">
+            <span class="total-symbol">
+                هیچ موجودی پیدا نشد
+            </span>
+        </div>
+
+        `;
+
+    }
+
+
+    html += `
+
+    <div class="total-assets">
+
+        <div class="total-title">
+            📊 جمع موجودی بر اساس ارز
+        </div>
+
+        ${totalsHtml}
+
+    </div>
+
+    `;
+
+
+    resultsDiv.innerHTML = html;
+
+
+    /*
+       Stats
+    */
+
+    document.getElementById(
+        "statAddresses"
+    ).textContent =
+        addresses.length;
+
+    document.getElementById(
+        "statBalance"
+    ).textContent =
+        withBalance;
+
+    document.getElementById(
+        "statEmpty"
+    ).textContent =
+        empty;
+
+    document.getElementById(
+        "statErrors"
+    ).textContent =
+        errors;
+
+
+    stats.style.display =
+        "grid";
+
+
+    setStatus(
+        "success",
+        `✅ بررسی کامل شد — ${addresses.length} آدرس در ${NETWORKS.length} شبکه بررسی شد.`
+    );
+
+}
+
+
+/* =========================================================
+   FORMAT NUMBER
+========================================================= */
+
+function formatNumber(number){
+
+    if(number === 0){
+        return "0";
+    }
+
+    if(number < 0.000001){
+        return number.toExponential(8);
+    }
+
+    if(number < 1){
+        return number.toFixed(8);
+    }
+
+    return number.toLocaleString(
+        "en-US",
+        {
+            maximumFractionDigits:8
+        }
+    );
+
+}
+
+
+/* =========================================================
+   COPY RESULTS
+========================================================= */
+
+copyBtn.addEventListener(
+    "click",
+    copyResults
+);
+
+
+function copyResults(){
+
+    if(results.length === 0){
+        return;
+    }
+
+
+    let text =
+        "MULTICHAIN WALLET BALANCE REPORT\n";
+
+    text +=
+        "================================\n\n";
+
+
+    results.forEach(
+        (wallet,index)=>{
+
+            text +=
+                `#${index+1} ${wallet.address}\n`;
+
+
+            NETWORKS.forEach(network=>{
+
+                const data =
+                    wallet.networks[network.id];
+
+
+                if(data.success){
+
+                    text +=
+                        `${network.name} (${network.symbol}): ` +
+                        `${formatBalance(data.balance)}\n`;
+
+                }else{
+
+                    text +=
+                        `${network.name} (${network.symbol}): ERROR\n`;
+
+                }
+
+            });
+
+
+            text += "\n";
+
+        }
+    );
+
+
+    navigator.clipboard
+        .writeText(text)
+        .then(()=>{
+
+            const old =
+                copyBtn.textContent;
+
+            copyBtn.textContent =
+                "✅ کپی شد";
+
+            setTimeout(()=>{
+
+                copyBtn.textContent =
+                    old;
+
+            },2000);
+
+        })
+        .catch(()=>{
+
+            const temp =
+                document.createElement("textarea");
+
+            temp.value = text;
+
+            document.body.appendChild(temp);
+
+            temp.select();
+
+            document.execCommand("copy");
+
+            temp.remove();
+
+            alert("✅ نتایج کپی شد");
+
+        });
+
+}
+
+
+/* =========================================================
+   CLEAR
+========================================================= */
+
+clearBtn.addEventListener(
+    "click",
+    function(){
+
+        addressInput.value = "";
+
+        addresses = [];
+
+        results = [];
+
+        addressCount.textContent =
+            "تعداد آدرس‌ها: 0";
+
+        resultsDiv.innerHTML = "";
+
+        errorList.innerHTML = "";
+
+        stats.style.display =
+            "none";
+
+        progress.style.display =
+            "none";
+
+        checkBtn.disabled = true;
+
+        copyBtn.disabled = true;
+
+        setStatus(
+            "info",
+            "📋 آدرس‌ها را وارد کنید."
+        );
+
+    }
+);
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+function setStatus(type,message){
+
+    statusDiv.className =
+        "status " + type;
+
+    statusDiv.innerHTML =
+        message;
+
+    statusDiv.style.display =
+        "block";
+
+}
+
+
+/* =========================================================
+   INITIAL
+========================================================= */
+
+setStatus(
+    "info",
+    "📋 آدرس‌ها را وارد کنید و دکمه «بررسی آدرس‌ها» را بزنید."
+);
+
+console.log(
+    "Multichain Wallet Scanner loaded"
+);
+
+console.log(
+    "Networks:",
+    NETWORKS.length
+);
+
+</script>
+
+</body>
+  </html>
