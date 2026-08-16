@@ -16,6 +16,10 @@
         .btn-danger { background: #ff4444; }
         .btn-warning { background: #ff9800; }
         .btn-small { padding: 8px; font-size: 12px; width: auto; display: inline-block; margin: 5px; }
+        .tx-info { background: #2a2a2a; padding: 10px; border-radius: 8px; margin: 10px 0; border-right: 3px solid #4CAF50; }
+        .pending { color: #ff9800; }
+        .success-text { color: #4CAF50; }
+        .error-text { color: #ff6b6b; }
     </style>
 </head>
 <body>
@@ -416,7 +420,17 @@
             }
             
             document.getElementById('txStatus').style.display = 'block';
-            document.getElementById('txStatus').innerHTML = `⏳ در حال آماده‌سازی تراکنش...`;
+            document.getElementById('txStatus').innerHTML = `
+                <div class="tx-info">
+                    <strong>📊 جزئیات تراکنش:</strong><br>
+                    مبلغ: ${amount} MATIC<br>
+                    کارمزد گس: ${ethers.formatEther(estimatedFee)} MATIC<br>
+                    جمعاً: ${ethers.formatEther(requiredAmount + estimatedFee)} MATIC<br>
+                    قیمت گس: ${ethers.formatUnits(gasPrice, 'gwei')} Gwei
+                </div>
+                ⏳ در حال ارسال تراکنش... هش: <span class="pending">${tx.hash}</span><br>
+                <small>⏱️ در انتظار تایید در شبکه (معمولاً ۳۰ ثانیه تا ۲ دقیقه)</small>
+            `;
             
             const tx = await signer.sendTransaction({
                 to: to,
@@ -425,10 +439,33 @@
                 gasPrice: gasPrice
             });
             
-            document.getElementById('txStatus').innerHTML = `⏳ در حال ارسال... هش: ${tx.hash}`;
+            document.getElementById('txStatus').innerHTML = `
+                <div class="tx-info">
+                    <strong>📊 جزئیات تراکنش:</strong><br>
+                    مبلغ: ${amount} MATIC<br>
+                    کارمزد گس: ${ethers.formatEther(estimatedFee)} MATIC<br>
+                    جمعاً: ${ethers.formatEther(requiredAmount + estimatedFee)} MATIC<br>
+                    قیمت گس: ${ethers.formatUnits(gasPrice, 'gwei')} Gwei
+                </div>
+                ⏳ تراکنش ارسال شد! هش: <span class="pending">${tx.hash}</span><br>
+                <span class="pending">⏳ در انتظار تایید در شبکه (معمولاً ۳۰ ثانیه تا ۲ دقیقه)</span><br>
+                <a href="https://polygonscan.com/tx/${tx.hash}" target="_blank">🔍 مشاهده در Polygonscan</a>
+            `;
             
-            await tx.wait();
-            document.getElementById('txStatus').innerHTML = `✅ تراکنش موفق! <a href="https://polygonscan.com/tx/${tx.hash}" target="_blank">مشاهده در Polygonscan</a>`;
+            const receipt = await tx.wait();
+            
+            document.getElementById('txStatus').innerHTML = `
+                <div class="tx-info">
+                    <strong>📊 جزئیات تراکنش:</strong><br>
+                    مبلغ: ${amount} MATIC<br>
+                    کارمزد گس: ${ethers.formatEther(estimatedFee)} MATIC<br>
+                    جمعاً: ${ethers.formatEther(requiredAmount + estimatedFee)} MATIC<br>
+                    قیمت گس: ${ethers.formatUnits(gasPrice, 'gwei')} Gwei
+                </div>
+                ✅ تراکنش با موفقیت تایید شد! 🎉<br>
+                <span class="success-text">📦 شماره بلاک: ${receipt.blockNumber}</span><br>
+                <a href="https://polygonscan.com/tx/${tx.hash}" target="_blank">🔍 مشاهده در Polygonscan</a>
+            `;
             
             setTimeout(checkBalance, 5000);
             
@@ -446,6 +483,7 @@
         document.getElementById('toAddress').value = '';
         document.getElementById('amount').value = '';
         document.getElementById('balanceDisplay').style.display = 'none';
+        document.getElementById('txStatus').style.display = 'none';
         alert('🔒 اطلاعات پاک شد!');
     }
 </script>
