@@ -16,7 +16,6 @@
         .btn-danger { background: #ff4444; }
         .btn-warning { background: #ff9800; }
         .btn-small { padding: 8px; font-size: 12px; width: auto; display: inline-block; margin: 5px; }
-        .btn-polygon { background: #8247E5; }
     </style>
 </head>
 <body>
@@ -54,9 +53,6 @@
 <script>
     // شبکه پالیگان (Polygon Mainnet)
     const PROVIDER_URL = "https://polygon-mainnet.infura.io/v3/934a2ae012c840dea039c5c2571bce16";
-    const CHAIN_ID = 137;
-    const CURRENCY_SYMBOL = "MATIC";
-    const BLOCK_EXPLORER = "https://polygonscan.com";
     
     let wallet = null;
     let provider = null;
@@ -403,7 +399,14 @@
             }
             
             const feeData = await provider.getFeeData();
-            const gasPrice = BigInt(feeData.gasPrice);
+            
+            let gasPrice;
+            if (feeData.gasPrice === null) {
+                gasPrice = BigInt(30000000000);
+            } else {
+                gasPrice = BigInt(feeData.gasPrice);
+            }
+            
             const gasLimit = BigInt(21000);
             const estimatedFee = gasPrice * gasLimit;
             
