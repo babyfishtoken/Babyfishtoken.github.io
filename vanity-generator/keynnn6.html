@@ -67,11 +67,6 @@ textarea.checking {
     box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
 }
 
-textarea.balance-check {
-    border: 2px solid #60a5fa;
-    box-shadow: 0 0 20px rgba(96, 165, 250, 0.2);
-}
-
 .btn-group {
     display: flex;
     gap: 10px;
@@ -129,6 +124,14 @@ textarea.balance-check {
 }
 .btn-stop:hover:not(:disabled) {
     background: #b91c1c;
+}
+
+.btn-balance {
+    background: #f59e0b;
+    color: #000;
+}
+.btn-balance:hover:not(:disabled) {
+    background: #d97706;
 }
 
 .result {
@@ -234,6 +237,13 @@ textarea.balance-check {
     border: 2px solid #f59e0b;
 }
 
+.status.balance-check {
+    display: block;
+    background: #1e3a5f;
+    color: #60a5fa;
+    border: 2px solid #60a5fa;
+}
+
 @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.7; }
@@ -268,7 +278,6 @@ textarea.balance-check {
     color: #f59e0b;
 }
 
-/* لیست‌ها */
 .lists-container {
     display: flex;
     flex-direction: column;
@@ -389,18 +398,6 @@ textarea.balance-check {
     font-size: 12px;
 }
 
-.spinner {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border: 3px solid #f59e0b;
-    border-top: 3px solid transparent;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin-right: 8px;
-    vertical-align: middle;
-}
-
 .balance-details {
     margin-top: 8px;
     font-size: 13px;
@@ -431,7 +428,7 @@ textarea.balance-check {
 
     <h1>
         🔑 جستجوی خودکار کیف پول
-        <span>⏳ عبارات ۶ کلمه‌ای - بررسی موجودی تمام شبکه‌ها</span>
+        <span>⏳ عبارات ۶ کلمه‌ای - استعلام موجودی از آدرس‌های پیدا شده</span>
     </h1>
 
     <div id="status" class="status loading">⏳ در حال بارگذاری کلمات از فایل key.txt...</div>
@@ -455,6 +452,9 @@ textarea.balance-check {
         <button class="btn-start" id="autoBtn" onclick="toggleAutoFind()" disabled>
             🚀 شروع جستجو
         </button>
+        <button class="btn-balance" id="balanceBtn" onclick="checkAllFoundBalances()" disabled>
+            💰 بررسی موجودی
+        </button>
     </div>
 
     <div id="counter" class="counter"></div>
@@ -469,16 +469,16 @@ textarea.balance-check {
         </div>
     </div>
 
-    <!-- لیست‌های جداگانه -->
     <div class="lists-container">
-        <!-- لیست آدرس‌ها -->
         <div id="addressListBox" class="list-box addresses">
             <div class="title">🔗 لیست آدرس‌ها <span class="count" id="addressCount">(0)</span></div>
             <div id="addressList" class="items"></div>
             <button class="copy-list-btn" onclick="copyAddressList()">📋 کپی همه آدرس‌ها</button>
+            <button class="copy-list-btn" onclick="checkAllFoundBalances()" style="background:#f59e0b;color:#000;margin-top:5px;">
+                💰 بررسی موجودی همه
+            </button>
         </div>
 
-        <!-- لیست عبارات -->
         <div id="mnemonicListBox" class="list-box mnemonics">
             <div class="title">🔑 لیست عبارات ۶ کلمه‌ای <span class="count" id="mnemonicCount">(0)</span></div>
             <div id="mnemonicList" class="items"></div>
@@ -502,7 +502,7 @@ textarea.balance-check {
     </div>
 
     <div class="info">
-        ⏳ هر کیف پول پیدا شده در دو لیست جداگانه ذخیره می‌شود | 🔒 موجودی تمام شبکه‌های مهم
+        ⏳ جستجو فقط آدرس‌ها را ذخیره می‌کند | 🔒 برای بررسی موجودی دکمه 💰 را بزنید
     </div>
 
 </div>
@@ -511,60 +511,15 @@ textarea.balance-check {
 
 // ==================== تنظیمات شبکه‌ها ====================
 const NETWORKS = [
-    {
-        name: 'Ethereum',
-        chainId: 1,
-        symbol: 'ETH',
-        rpc: 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
-    },
-    {
-        name: 'Polygon',
-        chainId: 137,
-        symbol: 'POL',
-        rpc: 'https://polygon-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
-    },
-    {
-        name: 'BNB Smart Chain',
-        chainId: 56,
-        symbol: 'BNB',
-        rpc: 'https://bsc-dataseed.binance.org'
-    },
-    {
-        name: 'Avalanche C-Chain',
-        chainId: 43114,
-        symbol: 'AVAX',
-        rpc: 'https://avalanche-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
-    },
-    {
-        name: 'Arbitrum',
-        chainId: 42161,
-        symbol: 'ETH',
-        rpc: 'https://arbitrum-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
-    },
-    {
-        name: 'Optimism',
-        chainId: 10,
-        symbol: 'ETH',
-        rpc: 'https://optimism-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
-    },
-    {
-        name: 'Fantom',
-        chainId: 250,
-        symbol: 'FTM',
-        rpc: 'https://rpc.ftm.tools'
-    },
-    {
-        name: 'Cronos',
-        chainId: 25,
-        symbol: 'CRO',
-        rpc: 'https://evm.cronos.org'
-    },
-    {
-        name: 'Gnosis',
-        chainId: 100,
-        symbol: 'xDAI',
-        rpc: 'https://rpc.gnosischain.com'
-    }
+    { name: 'Ethereum', chainId: 1, symbol: 'ETH', rpc: 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161' },
+    { name: 'Polygon', chainId: 137, symbol: 'POL', rpc: 'https://polygon-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161' },
+    { name: 'BNB Chain', chainId: 56, symbol: 'BNB', rpc: 'https://bsc-dataseed.binance.org' },
+    { name: 'Avalanche', chainId: 43114, symbol: 'AVAX', rpc: 'https://avalanche-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161' },
+    { name: 'Arbitrum', chainId: 42161, symbol: 'ETH', rpc: 'https://arbitrum-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161' },
+    { name: 'Optimism', chainId: 10, symbol: 'ETH', rpc: 'https://optimism-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161' },
+    { name: 'Fantom', chainId: 250, symbol: 'FTM', rpc: 'https://rpc.ftm.tools' },
+    { name: 'Cronos', chainId: 25, symbol: 'CRO', rpc: 'https://evm.cronos.org' },
+    { name: 'Gnosis', chainId: 100, symbol: 'xDAI', rpc: 'https://rpc.gnosischain.com' }
 ];
 
 // ==================== متغیرهای اصلی ====================
@@ -580,6 +535,7 @@ let isProcessing = false;
 // آرایه‌های جداگانه
 let foundAddresses = [];
 let foundMnemonics = [];
+let addressBalances = {}; // ذخیره موجودی هر آدرس
 
 // کش
 let walletCache = new Map();
@@ -589,6 +545,7 @@ const statusDiv = document.getElementById('status');
 const randomBtn = document.getElementById('randomBtn');
 const copyBtn = document.getElementById('copyBtn');
 const autoBtn = document.getElementById('autoBtn');
+const balanceBtn = document.getElementById('balanceBtn');
 const mnemonicInput = document.getElementById('mnemonic');
 const resultDiv = document.getElementById('result');
 const addressBox = document.getElementById('address');
@@ -636,6 +593,7 @@ async function loadWords() {
         statusDiv.textContent = `✅ ${fileWords.length} کلمه بارگذاری شد!`;
         randomBtn.disabled = false;
         autoBtn.disabled = false;
+        balanceBtn.disabled = false;
         copyBtn.disabled = true;
         autoBtn.textContent = '🚀 شروع جستجو';
 
@@ -649,6 +607,7 @@ async function loadWords() {
         statusDiv.style.display = 'block';
         randomBtn.disabled = true;
         autoBtn.disabled = true;
+        balanceBtn.disabled = true;
         copyBtn.disabled = true;
         console.error('Error loading file:', error);
     }
@@ -672,7 +631,7 @@ function setRandomMnemonic() {
     const words = getRandomWords();
     if (!words) return;
     mnemonicInput.value = words.join(' ');
-    mnemonicInput.classList.remove('found', 'checking', 'balance-check');
+    mnemonicInput.classList.remove('found', 'checking');
     copyBtn.disabled = false;
     errorBox.textContent = '';
     resultDiv.style.display = 'none';
@@ -716,8 +675,13 @@ function tryGenerateAddress(mnemonic) {
     }
 }
 
-// ==================== بررسی موجودی تمام شبکه‌ها ====================
-async function checkAllBalances(address) {
+// ==================== بررسی موجودی یک آدرس در تمام شبکه‌ها ====================
+async function checkAddressBalance(address) {
+    // اگر قبلاً موجودی این آدرس را داریم، برمی‌گردانیم
+    if (addressBalances[address]) {
+        return addressBalances[address];
+    }
+    
     const results = [];
     
     for (const network of NETWORKS) {
@@ -741,8 +705,6 @@ async function checkAllBalances(address) {
                 
             } catch (error) {
                 retryCount++;
-                console.log(`Retry ${retryCount} for ${network.name}: ${error.message}`);
-                
                 if (retryCount === maxRetries) {
                     results.push({
                         network: network.name,
@@ -752,13 +714,14 @@ async function checkAllBalances(address) {
                         error: error.message
                     });
                 } else {
-                    // تأخیر قبل از تلاش مجدد
                     await sleep(500);
                 }
             }
         }
     }
     
+    // ذخیره در کش
+    addressBalances[address] = results;
     return results;
 }
 
@@ -766,44 +729,74 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// ==================== نمایش موجودی ====================
-function displayBalances(balances) {
-    balanceContainer.style.display = 'block';
-    let html = '';
-    let hasBalance = false;
+// ==================== بررسی موجودی همه آدرس‌های پیدا شده ====================
+async function checkAllFoundBalances() {
+    if (foundAddresses.length === 0) {
+        alert('❌ هنوز هیچ آدرسی پیدا نشده است!');
+        return;
+    }
     
-    for (const b of balances) {
-        const amount = parseFloat(b.balance);
-        const className = amount > 0 ? 'balance-amount' : 'balance-zero';
+    statusDiv.className = 'status balance-check';
+    statusDiv.textContent = `⏳ در حال بررسی موجودی ${foundAddresses.length} آدرس...`;
+    statusDiv.style.display = 'block';
+    balanceBtn.disabled = true;
+    
+    let foundWithBalance = 0;
+    let totalChecked = 0;
+    
+    // برای هر آدرس، موجودی را بررسی کن
+    for (const address of foundAddresses) {
+        totalChecked++;
+        statusDiv.textContent = `⏳ در حال بررسی ${totalChecked}/${foundAddresses.length}...`;
         
-        if (amount > 0) hasBalance = true;
+        const balances = await checkAddressBalance(address);
+        const hasBalance = balances.some(b => parseFloat(b.balance) > 0);
         
-        html += `<div>
-            <span class="chain-name">${b.network}:</span>
-            ${b.success ? 
-                `<span class="${className}">${Number(b.balance).toFixed(6)} ${b.symbol}</span>` :
-                `<span class="balance-error">❌ خطا در دریافت</span>`
+        if (hasBalance) {
+            foundWithBalance++;
+            // نمایش در نتیجه
+            addressBox.textContent = address;
+            resultDiv.style.display = "block";
+            
+            // نمایش موجودی
+            balanceContainer.style.display = 'block';
+            let html = '';
+            for (const b of balances) {
+                const amount = parseFloat(b.balance);
+                const className = amount > 0 ? 'balance-amount' : 'balance-zero';
+                html += `<div>
+                    <span class="chain-name">${b.network}:</span>
+                    ${b.success ? 
+                        `<span class="${className}">${Number(b.balance).toFixed(6)} ${b.symbol}</span>` :
+                        `<span class="balance-error">❌ خطا</span>`
+                    }
+                </div>`;
             }
-        </div>`;
+            balanceDetails.innerHTML = html;
+            
+            if (foundWithBalance > 0) {
+                balanceContainer.style.border = '2px solid #4CAF50';
+                balanceContainer.style.boxShadow = '0 0 30px rgba(76, 175, 80, 0.3)';
+            }
+            
+            // توقف برای نمایش
+            await sleep(2000);
+        }
     }
     
-    balanceDetails.innerHTML = html;
+    statusDiv.className = 'status success';
+    statusDiv.textContent = `✅ بررسی کامل شد! ${foundWithBalance} آدرس دارای موجودی هستند.`;
+    balanceBtn.disabled = false;
     
-    // اگر موجودی داشت، هایلایت کن
-    if (hasBalance) {
-        balanceContainer.style.border = '2px solid #4CAF50';
-        balanceContainer.style.boxShadow = '0 0 30px rgba(76, 175, 80, 0.3)';
-    } else {
-        balanceContainer.style.border = '1px solid #333';
-        balanceContainer.style.boxShadow = 'none';
-    }
+    setTimeout(() => {
+        statusDiv.style.display = 'none';
+    }, 5000);
 }
 
-// ==================== تولید آدرس و بررسی موجودی ====================
+// ==================== تولید آدرس ====================
 async function generateAddress() {
     const input = mnemonicInput;
     const result = resultDiv;
-    const errorBox = document.getElementById("error");
 
     result.style.display = "none";
     balanceContainer.style.display = 'none';
@@ -833,17 +826,12 @@ async function generateAddress() {
         result.style.display = "block";
         copyBtn.disabled = false;
         
-        // بررسی موجودی
-        input.classList.add('balance-check');
-        statusDiv.className = 'status checking';
-        statusDiv.textContent = '⏳ در حال بررسی موجودی...';
-        statusDiv.style.display = 'block';
-        
-        const balances = await checkAllBalances(resultObj.address);
-        displayBalances(balances);
-        
-        statusDiv.style.display = 'none';
-        input.classList.remove('balance-check');
+        // اضافه کردن به لیست اگر نبود
+        if (!foundAddresses.includes(resultObj.address)) {
+            foundAddresses.push(resultObj.address);
+            foundMnemonics.push(mnemonic);
+            updateLists();
+        }
         
     } else {
         errorBox.textContent = "❌ " + resultObj.error;
@@ -899,7 +887,7 @@ function copyMnemonicList() {
 }
 
 // ==================== جستجوی خودکار ====================
-async function findAddressAuto() {
+function findAddressAuto() {
     if (isAutoFinding === false || isProcessing) return;
 
     isProcessing = true;
@@ -925,27 +913,15 @@ async function findAddressAuto() {
         if (result.success) {
             const address = result.address;
             
-            // بررسی موجودی
-            const balances = await checkAllBalances(address);
-            
-            // بررسی آیا موجودی دارد
-            let hasBalance = false;
-            for (const b of balances) {
-                if (parseFloat(b.balance) > 0) {
-                    hasBalance = true;
-                    break;
-                }
-            }
-            
-            if (hasBalance) {
-                // پیدا شد با موجودی
+            // فقط آدرس را ذخیره کن، بدون بررسی موجودی
+            if (!foundAddresses.includes(address)) {
                 foundCount++;
                 foundAddresses.push(address);
                 foundMnemonics.push(mnemonic);
 
                 addressBox.textContent = address;
                 resultDiv.style.display = "block";
-                displayBalances(balances);
+                balanceContainer.style.display = 'none';
                 errorBox.textContent = "";
                 copyBtn.disabled = false;
 
@@ -953,24 +929,23 @@ async function findAddressAuto() {
                 mnemonicInput.classList.add('found');
 
                 statusDiv.className = 'status found';
-                statusDiv.textContent = `✅ کیف پول با موجودی پیدا شد! (${foundCount} تا)`;
+                statusDiv.textContent = `✅ کیف پول جدید پیدا شد! (${foundCount} تا)`;
                 statusDiv.style.display = 'block';
                 
                 counterDiv.className = 'counter found';
-                counterDiv.textContent = `✅ ${foundCount} کیف پول با موجودی پیدا شد!`;
+                counterDiv.textContent = `✅ ${foundCount} کیف پول پیدا شد!`;
                 
                 updateLists();
                 statFound.textContent = foundCount;
                 
                 setTimeout(() => {
                     statusDiv.style.display = 'none';
-                }, 3000);
+                }, 2000);
             } else {
-                // بدون موجودی
-                if (attempts % 20 === 0) {
-                    errorBox.textContent = `🔄 ${attempts} تلاش... (بدون موجودی)`;
-                }
                 mnemonicInput.classList.remove('checking');
+                if (attempts % 20 === 0) {
+                    errorBox.textContent = `🔄 ${attempts} تلاش... (تکراری)`;
+                }
             }
         } else {
             if (attempts % 100 === 0) {
@@ -979,7 +954,6 @@ async function findAddressAuto() {
             mnemonicInput.classList.remove('checking');
         }
         
-        // به‌روزرسانی آمار
         if (attempts % 10 === 0) {
             statAttempts.textContent = attempts;
             statsDiv.style.display = 'flex';
@@ -1030,6 +1004,7 @@ function startAutoFind() {
     autoBtn.textContent = '⏹ توقف';
     autoBtn.className = 'btn-stop';
     randomBtn.disabled = true;
+    balanceBtn.disabled = true;
     
     counterDiv.className = 'counter';
     counterDiv.textContent = '⚡ شروع جستجو...';
@@ -1041,9 +1016,8 @@ function startAutoFind() {
     statusDiv.textContent = '⚡ جستجو در حال اجرا...';
     statusDiv.style.display = 'block';
 
-    // با سرعت کمتر برای بررسی موجودی
     findAddressAuto();
-    autoInterval = setInterval(findAddressAuto, 300); // 300ms برای بررسی موجودی
+    autoInterval = setInterval(findAddressAuto, 10);
 }
 
 function stopAutoFind() {
@@ -1058,6 +1032,7 @@ function stopAutoFind() {
     autoBtn.textContent = '🚀 شروع جستجو';
     autoBtn.className = 'btn-start';
     randomBtn.disabled = false;
+    balanceBtn.disabled = false;
     
     if (foundCount === 0) {
         statusDiv.className = 'status info';
@@ -1071,9 +1046,9 @@ function stopAutoFind() {
         }, 3000);
     } else {
         statusDiv.className = 'status success';
-        statusDiv.textContent = `✅ ${foundCount} کیف پول با موجودی پیدا شد!`;
+        statusDiv.textContent = `✅ ${foundCount} کیف پول پیدا شد!`;
         statusDiv.style.display = 'block';
-        counterDiv.textContent = `✅ ${foundCount} کیف پول با موجودی پیدا شد!`;
+        counterDiv.textContent = `✅ ${foundCount} کیف پول پیدا شد!`;
         statFound.textContent = foundCount;
     }
 }
@@ -1103,8 +1078,8 @@ function copyMnemonic() {
 // ==================== بارگذاری اولیه ====================
 window.addEventListener('DOMContentLoaded', loadWords);
 
-console.log('✅ کد آماده است! جستجوی عبارات ۶ کلمه‌ای با بررسی موجودی');
+console.log('✅ کد آماده است! جستجوی عبارات ۶ کلمه‌ای - استعلام از روی آدرس‌ها');
 </script>
 
 </body>
-    </html>
+            </html>
