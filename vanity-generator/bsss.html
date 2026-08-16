@@ -7,6 +7,7 @@
 
 <style>
 *{box-sizing:border-box}
+
 body{
     margin:0;
     padding:15px;
@@ -14,6 +15,7 @@ body{
     color:#fff;
     font-family:Arial,sans-serif;
 }
+
 .container{
     max-width:1000px;
     margin:auto;
@@ -22,18 +24,21 @@ body{
     border-radius:16px;
     padding:16px;
 }
+
 h1{
     text-align:center;
     margin:0 0 5px;
     color:#60a5fa;
     font-size:22px;
 }
+
 .sub{
     text-align:center;
     color:#9ca3af;
     font-size:12px;
     margin-bottom:15px;
 }
+
 textarea{
     width:100%;
     height:150px;
@@ -48,7 +53,10 @@ textarea{
     font:13px monospace;
     outline:none;
 }
-textarea:focus{border-color:#3b82f6}
+
+textarea:focus{
+    border-color:#3b82f6;
+}
 
 .count{
     text-align:center;
@@ -63,6 +71,7 @@ textarea:focus{border-color:#3b82f6}
     margin-top:10px;
     flex-wrap:wrap;
 }
+
 button{
     flex:1;
     min-width:120px;
@@ -73,10 +82,12 @@ button{
     cursor:pointer;
     font-size:14px;
 }
+
 button:disabled{
     opacity:.4;
     cursor:not-allowed;
 }
+
 .parse{background:#2563eb}
 .scan{background:#059669}
 .copy{background:#7c3aed}
@@ -89,10 +100,26 @@ button:disabled{
     text-align:center;
     font-size:13px;
 }
-.info{background:#172554;color:#93c5fd}
-.ok{background:#052e16;color:#4ade80}
-.err{background:#450a0a;color:#f87171}
-.loading{background:#172554;color:#60a5fa}
+
+.info{
+    background:#172554;
+    color:#93c5fd;
+}
+
+.ok{
+    background:#052e16;
+    color:#4ade80;
+}
+
+.err{
+    background:#450a0a;
+    color:#f87171;
+}
+
+.loading{
+    background:#172554;
+    color:#60a5fa;
+}
 
 .progress{
     height:7px;
@@ -101,6 +128,7 @@ button:disabled{
     overflow:hidden;
     display:none;
 }
+
 .progress div{
     height:100%;
     width:0;
@@ -114,6 +142,7 @@ button:disabled{
     gap:6px;
     margin-top:10px;
 }
+
 .stat{
     background:#0b1324;
     border:1px solid #263244;
@@ -121,11 +150,13 @@ button:disabled{
     padding:8px;
     text-align:center;
 }
+
 .stat b{
     display:block;
     color:#fbbf24;
     font-size:17px;
 }
+
 .stat span{
     color:#9ca3af;
     font-size:10px;
@@ -147,10 +178,12 @@ button:disabled{
     gap:7px;
     font-size:12px;
 }
+
 .num{
     color:#f59e0b;
     font-weight:bold;
 }
+
 .addr{
     direction:ltr;
     text-align:left;
@@ -159,6 +192,7 @@ button:disabled{
     word-break:break-all;
     flex:1;
 }
+
 .wstatus{
     font-size:10px;
     white-space:nowrap;
@@ -176,7 +210,10 @@ button:disabled{
     border-bottom:1px solid #1d2737;
     min-height:29px;
 }
-.net:last-child{border-bottom:0}
+
+.net:last-child{
+    border-bottom:0;
+}
 
 .netname{
     width:95px;
@@ -208,27 +245,28 @@ button:disabled{
     direction:ltr;
     white-space:nowrap;
 }
-.token b{color:#fbbf24}
-.token small{color:#9ca3af}
+
+.token b{
+    color:#fbbf24;
+}
+
+.token small{
+    color:#9ca3af;
+}
 
 .nothing{
     color:#4b5563;
     font-size:10px;
 }
+
 .retry{
     color:#fbbf24;
     font-size:10px;
 }
+
 .fail{
     color:#f87171;
     font-size:10px;
-}
-
-.details{
-    color:#60a5fa;
-    font-size:10px;
-    cursor:pointer;
-    white-space:nowrap;
 }
 
 .error-list{
@@ -238,11 +276,26 @@ button:disabled{
 }
 
 @media(max-width:650px){
-    .stats{grid-template-columns:repeat(2,1fr)}
-    .netname{width:80px}
-    .wallet-head{align-items:flex-start}
-    .wstatus{display:none}
-    button{min-width:100%}
+
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .netname{
+        width:80px;
+    }
+
+    .wallet-head{
+        align-items:flex-start;
+    }
+
+    .wstatus{
+        display:none;
+    }
+
+    button{
+        min-width:100%;
+    }
 }
 </style>
 </head>
@@ -261,8 +314,9 @@ button:disabled{
 📋 آدرس‌ها را وارد کنید
 </div>
 
-<textarea id="addresses"
-placeholder="هر آدرس در یک خط:
+<textarea
+id="addresses"
+placeholder="هر آدرس را در یک خط وارد کنید:
 
 0x0000000000000000000000000000000000000000
 0x1111111111111111111111111111111111111111"></textarea>
@@ -272,10 +326,23 @@ placeholder="هر آدرس در یک خط:
 </div>
 
 <div class="buttons">
-<button class="parse" id="parse">📋 بررسی آدرس‌ها</button>
-<button class="scan" id="scan" disabled>🔍 شروع استعلام</button>
-<button class="copy" id="copy" disabled>📋 کپی نتایج</button>
-<button class="clear" id="clear">🗑 پاک کردن</button>
+
+<button class="parse" id="parse">
+📋 بررسی آدرس‌ها
+</button>
+
+<button class="scan" id="scan" disabled>
+🔍 شروع استعلام
+</button>
+
+<button class="copy" id="copy" disabled>
+📋 کپی نتایج
+</button>
+
+<button class="clear" id="clear">
+🗑 پاک کردن
+</button>
+
 </div>
 
 <div class="error-list" id="errors"></div>
@@ -285,22 +352,27 @@ placeholder="هر آدرس در یک خط:
 </div>
 
 <div class="stats" id="stats">
+
 <div class="stat">
 <b id="s1">0</b>
 <span>آدرس</span>
 </div>
+
 <div class="stat">
 <b id="s2">0</b>
 <span>دارای موجودی</span>
 </div>
+
 <div class="stat">
 <b id="s3">0</b>
 <span>توکن</span>
 </div>
+
 <div class="stat">
 <b id="s4">0</b>
 <span>خطا</span>
 </div>
+
 </div>
 
 <div id="results"></div>
@@ -311,8 +383,6 @@ placeholder="هر آدرس در یک خط:
 
 /* =========================================================
    NETWORKS
-   Blockscout public APIs are used where available.
-   RPC is used for native balances.
 ========================================================= */
 
 const NETWORKS = [
@@ -322,6 +392,14 @@ const NETWORKS = [
     name:"Ethereum",
     symbol:"ETH",
     rpc:"https://ethereum-rpc.publicnode.com",
+    explorer:"https://eth.blockscout.com"
+},
+
+{
+    id:"bnb",
+    name:"BNB Chain",
+    symbol:"BNB",
+    rpc:"https://bsc-dataseed.binance.org",
     explorer:"https://eth.blockscout.com"
 },
 
@@ -358,6 +436,14 @@ const NETWORKS = [
 },
 
 {
+    id:"avalanche",
+    name:"Avalanche",
+    symbol:"AVAX",
+    rpc:"https://avalanche-c-chain-rpc.publicnode.com",
+    explorer:null
+},
+
+{
     id:"gnosis",
     name:"Gnosis",
     symbol:"xDAI",
@@ -382,35 +468,19 @@ const NETWORKS = [
 },
 
 {
-    id:"scroll",
-    name:"Scroll",
-    symbol:"ETH",
-    rpc:"https://scroll-rpc.publicnode.com",
-    explorer:"https://scroll.blockscout.com"
-},
-
-{
-    id:"bnb",
-    name:"BNB Chain",
-    symbol:"BNB",
-    rpc:"https://bsc-dataseed.binance.org",
-    explorer:null
-},
-
-{
-    id:"avalanche",
-    name:"Avalanche",
-    symbol:"AVAX",
-    rpc:"https://avalanche-c-chain-rpc.publicnode.com",
-    explorer:null
-},
-
-{
     id:"linea",
     name:"Linea",
     symbol:"ETH",
     rpc:"https://linea-rpc.publicnode.com",
     explorer:null
+},
+
+{
+    id:"scroll",
+    name:"Scroll",
+    symbol:"ETH",
+    rpc:"https://scroll-rpc.publicnode.com",
+    explorer:"https://scroll.blockscout.com"
 },
 
 {
@@ -433,11 +503,28 @@ const NETWORKS = [
 
 
 /* =========================================================
-   SETTINGS
+   SPEED SETTINGS
 ========================================================= */
 
+/*
+   حداکثر 50 استعلام هم‌زمان
+*/
+const CONCURRENT = 50;
+
+/*
+   هر درخواست در صورت خطا حداکثر 3 بار
+*/
 const RETRIES = 3;
-const CONCURRENT = 4;
+
+/*
+   Timeout هر درخواست
+*/
+const TIMEOUT = 12000;
+
+
+/* =========================================================
+   VARIABLES
+========================================================= */
 
 let addresses = [];
 let results = [];
@@ -448,8 +535,10 @@ const addressBox = $("addresses");
 const countBox = $("count");
 const statusBox = $("status");
 const errorsBox = $("errors");
+
 const progress = $("progress");
 const progressFill = $("progressFill");
+
 const resultsBox = $("results");
 const stats = $("stats");
 
@@ -464,40 +553,54 @@ const clearBtn = $("clear");
 ========================================================= */
 
 function sleep(ms){
-    return new Promise(r => setTimeout(r,ms));
+    return new Promise(resolve => setTimeout(resolve,ms));
 }
 
-function shortAddress(a){
-    return a.slice(0,8)+"..."+a.slice(-6);
-}
 
 function escapeHtml(value){
+
     return String(value ?? "")
         .replace(/&/g,"&amp;")
         .replace(/</g,"&lt;")
         .replace(/>/g,"&gt;")
         .replace(/"/g,"&quot;")
         .replace(/'/g,"&#039;");
+
 }
+
+
+function shortAddress(address){
+
+    return address.slice(0,8) +
+        "..." +
+        address.slice(-6);
+
+}
+
 
 function formatUnits(value,decimals){
 
     try{
 
-        let n = Number(value) /
-                Math.pow(10,decimals);
+        const n =
+            Number(value) /
+            Math.pow(10,decimals);
 
-        if(!Number.isFinite(n))
+        if(!Number.isFinite(n)){
             return String(value);
+        }
 
-        if(n === 0)
+        if(n === 0){
             return "0";
+        }
 
-        if(n < 0.000001)
+        if(n < 0.000001){
             return n.toExponential(5);
+        }
 
-        if(n < 1)
+        if(n < 1){
             return n.toFixed(8);
+        }
 
         return n.toLocaleString(
             "en-US",
@@ -507,16 +610,21 @@ function formatUnits(value,decimals){
         );
 
     }catch{
+
         return String(value);
+
     }
+
 }
 
 
 /* =========================================================
-   ADDRESS PARSING
+   ADDRESS COUNT
 ========================================================= */
 
-addressBox.addEventListener("input",()=>{
+addressBox.addEventListener(
+"input",
+()=>{
 
     const lines =
         addressBox.value
@@ -526,7 +634,8 @@ addressBox.addEventListener("input",()=>{
 
     const valid =
         lines.filter(
-            x=>/^0x[a-fA-F0-9]{40}$/.test(x)
+            x =>
+            /^0x[a-fA-F0-9]{40}$/.test(x)
         );
 
     countBox.textContent =
@@ -534,6 +643,10 @@ addressBox.addEventListener("input",()=>{
 
 });
 
+
+/* =========================================================
+   PARSE
+========================================================= */
 
 parseBtn.onclick = ()=>{
 
@@ -544,57 +657,74 @@ parseBtn.onclick = ()=>{
         .filter(Boolean);
 
     addresses = [];
+
     const invalid = [];
 
-    for(let i=0;i<lines.length;i++){
-
-        const a = lines[i];
-
-        if(/^0x[a-fA-F0-9]{40}$/.test(a)){
+    lines.forEach(
+        (address,index)=>{
 
             if(
-                !addresses.some(
-                    x=>x.toLowerCase()===a.toLowerCase()
-                )
+                /^0x[a-fA-F0-9]{40}$/.test(address)
             ){
-                addresses.push(a);
+
+                if(
+                    !addresses.some(
+                        x =>
+                        x.toLowerCase() ===
+                        address.toLowerCase()
+                    )
+                ){
+
+                    addresses.push(address);
+
+                }
+
+            }else{
+
+                invalid.push(
+                    `خط ${index+1}: آدرس نامعتبر`
+                );
+
             }
 
-        }else{
-
-            invalid.push(
-                `خط ${i+1}: آدرس نامعتبر`
-            );
-
         }
+    );
 
-    }
 
     errorsBox.innerHTML =
         invalid.join("<br>");
 
+
     countBox.textContent =
         `تعداد آدرس‌های معتبر: ${addresses.length}`;
+
 
     resultsBox.innerHTML="";
     stats.style.display="none";
     copyBtn.disabled=true;
 
+
     if(!addresses.length){
 
         scanBtn.disabled=true;
 
-        statusBox.className="status err";
-        statusBox.textContent=
+        statusBox.className =
+            "status err";
+
+        statusBox.textContent =
             "❌ هیچ آدرس معتبر پیدا نشد.";
 
         return;
+
     }
+
 
     scanBtn.disabled=false;
 
-    statusBox.className="status ok";
-    statusBox.textContent=
+    statusBox.className =
+        "status ok";
+
+    statusBox.textContent =
         `✅ ${addresses.length} آدرس آماده است.`;
 
 };
@@ -609,54 +739,78 @@ async function fetchRetry(
     options={}
 ){
 
-    let lastError;
+    let lastError = null;
 
-    for(let attempt=1;attempt<=RETRIES;attempt++){
+    for(
+        let attempt=1;
+        attempt<=RETRIES;
+        attempt++
+    ){
+
+        let controller;
+        let timer;
 
         try{
 
-            const controller =
+            controller =
                 new AbortController();
 
-            const timer =
+            timer =
                 setTimeout(
-                    ()=>controller.abort(),
-                    15000
+                    ()=>{
+                        controller.abort();
+                    },
+                    TIMEOUT
                 );
+
 
             const response =
                 await fetch(
                     url,
                     {
                         ...options,
-                        signal:controller.signal
+                        signal:
+                            controller.signal
                     }
                 );
 
+
             clearTimeout(timer);
+
 
             if(!response.ok){
 
                 throw new Error(
-                    "HTTP "+response.status
+                    "HTTP " +
+                    response.status
                 );
 
             }
 
+
+            const data =
+                await response.json();
+
+
             return {
                 ok:true,
-                data:await response.json(),
-                attempt
+                data:data,
+                attempt:attempt
             };
+
 
         }catch(error){
 
+            clearTimeout(timer);
+
             lastError=error;
 
-            if(attempt<RETRIES){
+            if(
+                attempt < RETRIES
+            ){
 
                 await sleep(
-                    500 * attempt
+                    300 * attempt
                 );
 
             }
@@ -664,6 +818,7 @@ async function fetchRetry(
         }
 
     }
+
 
     return {
         ok:false,
@@ -686,8 +841,11 @@ async function getNative(
     const body = {
 
         jsonrpc:"2.0",
-        id:1,
+
+        id:Date.now(),
+
         method:"eth_getBalance",
+
         params:[
             address,
             "latest"
@@ -695,41 +853,56 @@ async function getNative(
 
     };
 
+
     const result =
         await fetchRetry(
             network.rpc,
             {
                 method:"POST",
+
                 headers:{
                     "Content-Type":
                     "application/json"
                 },
-                body:JSON.stringify(body)
+
+                body:
+                    JSON.stringify(body)
             }
         );
 
-    if(!result.ok)
+
+    if(!result.ok){
+
         throw result.error;
 
-    if(result.data.error)
+    }
+
+
+    if(result.data.error){
+
         throw new Error(
             result.data.error.message ||
             "RPC error"
         );
 
-    const wei =
-        BigInt(result.data.result);
+    }
+
 
     return {
-        wei,
-        attempt:result.attempt
+
+        wei:
+            BigInt(result.data.result),
+
+        attempt:
+            result.attempt
+
     };
 
 }
 
 
 /* =========================================================
-   BLOCKSCOUT TOKEN BALANCES
+   TOKEN BALANCES
 ========================================================= */
 
 async function getTokens(
@@ -746,17 +919,24 @@ async function getTokens(
 
     }
 
+
     const url =
         network.explorer +
         "/api/v2/addresses/" +
         encodeURIComponent(address) +
         "/token-balances";
 
+
     const result =
         await fetchRetry(url);
 
-    if(!result.ok)
+
+    if(!result.ok){
+
         throw result.error;
+
+    }
+
 
     const raw =
         Array.isArray(result.data)
@@ -767,20 +947,16 @@ async function getTokens(
             []
         );
 
-    const tokens = [];
+
+    const tokens=[];
+
 
     for(const item of raw){
-
-        /*
-          Blockscout response format can contain:
-          token
-          value
-          token_instance
-        */
 
         const token =
             item.token ||
             item;
+
 
         const type =
             String(
@@ -789,22 +965,44 @@ async function getTokens(
                 ""
             ).toUpperCase();
 
-        /*
-          فقط ERC-20
-        */
 
         if(
             type &&
             !type.includes("ERC-20")
         ){
+
             continue;
+
         }
+
 
         const value =
             item.value ??
             item.balance ??
             token.balance ??
             "0";
+
+
+        let balance;
+
+        try{
+
+            balance =
+                BigInt(String(value));
+
+        }catch{
+
+            continue;
+
+        }
+
+
+        if(balance === 0n){
+
+            continue;
+
+        }
+
 
         const decimals =
             Number(
@@ -813,84 +1011,96 @@ async function getTokens(
                 18
             );
 
-        let numeric;
-
-        try{
-            numeric =
-                BigInt(String(value));
-        }catch{
-            continue;
-        }
-
-        /*
-          توکن صفر را حذف کن
-        */
-
-        if(numeric === 0n)
-            continue;
 
         const symbol =
             token.symbol ||
             item.symbol ||
             "TOKEN";
 
+
         const name =
             token.name ||
             item.name ||
             symbol;
 
-        const addressHash =
+
+        const contract =
             token.address_hash ||
             token.contract_address ||
             item.token_address ||
             "";
 
+
         tokens.push({
 
-            name,
-            symbol,
-            decimals,
+            name:name,
+
+            symbol:symbol,
+
+            decimals:decimals,
+
             value:String(value),
-            address:addressHash
+
+            address:contract
 
         });
 
     }
 
+
     return {
+
         supported:true,
-        tokens,
+
+        tokens:tokens,
+
         attempt:result.attempt
+
     };
 
 }
 
 
 /* =========================================================
-   CREATE EMPTY WALLET RESULT
+   WALLET OBJECT
 ========================================================= */
 
 function createWallet(address){
 
     const wallet={
-        address,
+        address:address,
         networks:{}
     };
 
-    for(const n of NETWORKS){
 
-        wallet.networks[n.id]={
-            network:n,
+    for(
+        const network of NETWORKS
+    ){
+
+        wallet.networks[
+            network.id
+        ]={
+
+            network:network,
+
             native:null,
+
             tokens:[],
+
             nativeError:null,
+
             tokenError:null,
+
             nativeRetry:0,
+
             tokenRetry:0,
+
             tokenSupported:false
+
         };
 
     }
+
 
     return wallet;
 
@@ -898,7 +1108,7 @@ function createWallet(address){
 
 
 /* =========================================================
-   RENDER WALLET IMMEDIATELY
+   CREATE WALLET UI
 ========================================================= */
 
 function createWalletElement(
@@ -911,10 +1121,11 @@ function createWalletElement(
 
     div.className="wallet";
 
-    div.id=
-        "wallet-"+index;
+    div.id =
+        "wallet-" + index;
 
-    div.innerHTML=`
+
+    div.innerHTML = `
 
         <div class="wallet-head">
 
@@ -923,7 +1134,9 @@ function createWalletElement(
             </span>
 
             <span class="addr">
-                ${escapeHtml(wallet.address)}
+                ${escapeHtml(
+                    wallet.address
+                )}
             </span>
 
             <span class="wstatus">
@@ -935,7 +1148,9 @@ function createWalletElement(
         <div class="networks"></div>
     `;
 
+
     resultsBox.appendChild(div);
+
 
     return div;
 
@@ -943,7 +1158,7 @@ function createWalletElement(
 
 
 /* =========================================================
-   RENDER ONE NETWORK
+   RENDER NETWORK
 ========================================================= */
 
 function renderNetwork(
@@ -954,15 +1169,18 @@ function renderNetwork(
     const network =
         data.network;
 
+
     const networksBox =
         walletElement.querySelector(
             ".networks"
         );
 
+
     let row =
         networksBox.querySelector(
             `[data-network="${network.id}"]`
         );
+
 
     if(!row){
 
@@ -978,100 +1196,110 @@ function renderNetwork(
 
     }
 
-    let nativeHtml="";
+
+    let nativeHtml;
+
 
     if(data.nativeError){
 
-        nativeHtml=
+        nativeHtml =
             `<span class="fail">
-                ❌ ${escapeHtml(
-                    data.nativeError
-                )}
-             </span>`;
+                ❌
+            </span>`;
 
-    }else if(data.native !== null){
+    }
+    else if(data.native !== null){
 
-        nativeHtml=
+        nativeHtml =
             `<span class="native">
                 ${formatUnits(
                     data.native,
                     18
                 )}
                 ${network.symbol}
-             </span>`;
+            </span>`;
 
-    }else{
+    }
+    else{
 
-        nativeHtml=
+        nativeHtml =
             `<span class="retry">
                 ⏳
-             </span>`;
+            </span>`;
 
     }
 
 
     let tokenHtml="";
 
+
     if(data.tokenError){
 
-        tokenHtml=
+        tokenHtml =
             `<span class="fail">
-                توکن: ❌
-             </span>`;
+                Token ❌
+            </span>`;
 
-    }else if(
+    }
+    else if(
         data.tokenSupported &&
         data.tokens.length
     ){
 
         tokenHtml =
-            data.tokens.map(t=>`
+            data.tokens
+            .map(token=>`
 
                 <span
                     class="token"
                     title="${escapeHtml(
-                        t.name+
-                        " | "+
-                        t.address
+                        token.name +
+                        " | " +
+                        token.address
                     )}"
                 >
 
-                    ${escapeHtml(t.symbol)}
+                    ${escapeHtml(
+                        token.symbol
+                    )}
 
                     <b>
                         ${formatUnits(
-                            t.value,
-                            t.decimals
+                            token.value,
+                            token.decimals
                         )}
                     </b>
 
                 </span>
 
-            `).join("");
+            `)
+            .join("");
 
-    }else if(
-        data.tokenSupported
-    ){
+    }
+    else if(data.tokenSupported){
 
         tokenHtml =
             `<span class="nothing">
                 بدون توکن
-             </span>`;
+            </span>`;
 
-    }else{
+    }
+    else{
 
         tokenHtml =
             `<span class="nothing">
                 Token API ندارد
-             </span>`;
+            </span>`;
 
     }
 
 
-    row.innerHTML=`
+    row.innerHTML = `
 
         <span class="netname">
-            ${escapeHtml(network.name)}
+            ${escapeHtml(
+                network.name
+            )}
         </span>
 
         ${nativeHtml}
@@ -1098,64 +1326,94 @@ function updateWalletStatus(
     let errors=0;
     let has=false;
 
-    for(const id in wallet.networks){
 
-        const d =
+    for(
+        const id in wallet.networks
+    ){
+
+        const data =
             wallet.networks[id];
 
+
         if(
-            d.native !== null ||
-            d.nativeError
+            data.native !== null ||
+            data.nativeError
         ){
+
             done++;
+
         }
 
+
         if(
-            d.nativeError ||
-            d.tokenError
+            data.nativeError ||
+            data.tokenError
         ){
+
             errors++;
+
         }
+
 
         if(
-            d.native &&
-            d.native !== 0n
+            data.native &&
+            data.native !== 0n
         ){
+
             has=true;
+
         }
 
-        if(d.tokens.length){
+
+        if(data.tokens.length){
+
             has=true;
+
         }
 
     }
+
 
     const status =
         element.querySelector(
             ".wstatus"
         );
 
-    if(done === NETWORKS.length){
 
-        status.textContent =
-            errors
-            ? `⚠️ ${errors} خطا`
-            : (
-                has
-                ? "● دارای موجودی"
-                : "○ بدون موجودی"
-            );
+    if(
+        done === NETWORKS.length
+    ){
 
-        status.style.color =
-            errors
-            ? "#fbbf24"
-            : (
-                has
-                ? "#34d399"
-                : "#9ca3af"
-            );
+        if(errors){
 
-    }else{
+            status.textContent =
+                `⚠️ ${errors} خطا`;
+
+            status.style.color =
+                "#fbbf24";
+
+        }
+        else if(has){
+
+            status.textContent =
+                "● دارای موجودی";
+
+            status.style.color =
+                "#34d399";
+
+        }
+        else{
+
+            status.textContent =
+                "○ بدون موجودی";
+
+            status.style.color =
+                "#9ca3af";
+
+        }
+
+    }
+    else{
 
         status.textContent =
             `${done}/${NETWORKS.length}`;
@@ -1175,32 +1433,46 @@ async function(){
     if(!addresses.length)
         return;
 
+
     scanBtn.disabled=true;
     parseBtn.disabled=true;
     copyBtn.disabled=true;
 
+
     resultsBox.innerHTML="";
     results=[];
 
-    progress.style.display="block";
-    progressFill.style.width="0%";
 
-    stats.style.display="grid";
+    progress.style.display =
+        "block";
 
-    $("s1").textContent=
+    progressFill.style.width =
+        "0%";
+
+
+    stats.style.display =
+        "grid";
+
+
+    $("s1").textContent =
         addresses.length;
 
-    $("s2").textContent="0";
-    $("s3").textContent="0";
-    $("s4").textContent="0";
+    $("s2").textContent =
+        "0";
+
+    $("s3").textContent =
+        "0";
+
+    $("s4").textContent =
+        "0";
 
 
     /*
-       اول کارت کیف پول‌ها را فوراً بساز
-       تا نتایج به‌صورت زنده داخل آن‌ها بیاید.
+       ساخت کارت‌ها بلافاصله
     */
 
     const elements=[];
+
 
     addresses.forEach(
         (address,index)=>{
@@ -1209,6 +1481,7 @@ async function(){
                 createWallet(address);
 
             results.push(wallet);
+
 
             elements.push(
                 createWalletElement(
@@ -1221,7 +1494,13 @@ async function(){
     );
 
 
+    /*
+       هر آدرس × هر شبکه
+       = یک Task مستقل
+    */
+
     const tasks=[];
+
 
     for(
         let i=0;
@@ -1229,11 +1508,16 @@ async function(){
         i++
     ){
 
-        const wallet=results[i];
+        const wallet =
+            results[i];
 
-        for(const network of NETWORKS){
+
+        for(
+            const network of NETWORKS
+        ){
 
             tasks.push(
+
                 async()=>{
 
                     const data =
@@ -1241,82 +1525,87 @@ async function(){
                             network.id
                         ];
 
-                    statusBox.className=
+
+                    statusBox.className =
                         "status loading";
 
-                    statusBox.textContent=
+                    statusBox.textContent =
                         `⏳ ${network.name} — ${shortAddress(wallet.address)}`;
 
 
                     /*
-                       Native
+                       Native و Token
+                       هم‌زمان درخواست می‌شوند
                     */
 
-                    try{
+                    const nativePromise =
+                        getNative(
+                            network,
+                            wallet.address
+                        )
+                        .then(result=>{
 
-                        const native =
-                            await getNative(
-                                network,
-                                wallet.address
-                            );
+                            data.native =
+                                result.wei;
 
-                        data.native =
-                            native.wei;
+                            data.nativeRetry =
+                                result.attempt;
 
-                        data.nativeRetry =
-                            native.attempt;
+                        })
+                        .catch(error=>{
 
-                    }catch(error){
+                            data.nativeError =
+                                error?.message ||
+                                "RPC Error";
 
-                        data.nativeError =
-                            error?.message ||
-                            "RPC Error";
-
-                    }
+                        });
 
 
-                    renderNetwork(
-                        elements[i],
-                        data
-                    );
+                    const tokenPromise =
+                        getTokens(
+                            network,
+                            wallet.address
+                        )
+                        .then(result=>{
+
+                            data.tokenSupported =
+                                result.supported;
+
+                            data.tokens =
+                                result.tokens || [];
+
+                            data.tokenRetry =
+                                result.attempt || 0;
+
+                        })
+                        .catch(error=>{
+
+                            data.tokenError =
+                                error?.message ||
+                                "Token API Error";
+
+                        });
 
 
                     /*
-                       Token balances
+                       هر دو با هم
                     */
 
-                    try{
+                    await Promise.all([
+                        nativePromise,
+                        tokenPromise
+                    ]);
 
-                        const tokenResult =
-                            await getTokens(
-                                network,
-                                wallet.address
-                            );
 
-                        data.tokenSupported =
-                            tokenResult.supported;
-
-                        data.tokens =
-                            tokenResult.tokens ||
-                            [];
-
-                        data.tokenRetry =
-                            tokenResult.attempt ||
-                            0;
-
-                    }catch(error){
-
-                        data.tokenError =
-                            error?.message ||
-                            "Token API Error";
-
-                    }
-
+                    /*
+                       نمایش فوری
+                    */
 
                     renderNetwork(
                         elements[i],
                         data
                     );
+
 
                     updateWalletStatus(
                         wallet,
@@ -1327,6 +1616,7 @@ async function(){
                     updateStats();
 
                 }
+
             );
 
         }
@@ -1335,35 +1625,54 @@ async function(){
 
 
     /*
-       اجرای هم‌زمان کنترل‌شده
+       50 Worker هم‌زمان
     */
 
     let pointer=0;
     let completed=0;
 
+
     async function worker(){
 
         while(true){
 
-            const i=pointer++;
+            const taskIndex =
+                pointer++;
 
-            if(i>=tasks.length)
+
+            if(
+                taskIndex >= tasks.length
+            ){
+
                 return;
 
-            try{
-                await tasks[i]();
-            }catch(error){
-                console.error(error);
             }
 
+
+            try{
+
+                await tasks[
+                    taskIndex
+                ]();
+
+            }catch(error){
+
+                console.error(
+                    error
+                );
+
+            }
+
+
             completed++;
+
 
             progressFill.style.width =
                 (
                     completed /
                     tasks.length *
                     100
-                )+"%";
+                ) + "%";
 
         }
 
@@ -1372,31 +1681,43 @@ async function(){
 
     const workers=[];
 
+
     for(
         let i=0;
-        i<Math.min(
+        i<
+        Math.min(
             CONCURRENT,
             tasks.length
         );
         i++
     ){
-        workers.push(worker());
+
+        workers.push(
+            worker()
+        );
+
     }
 
-    await Promise.all(workers);
+
+    await Promise.all(
+        workers
+    );
 
 
-    progressFill.style.width="100%";
+    progressFill.style.width =
+        "100%";
+
 
     scanBtn.disabled=false;
     parseBtn.disabled=false;
     copyBtn.disabled=false;
 
-    statusBox.className=
+
+    statusBox.className =
         "status ok";
 
-    statusBox.textContent=
-        `✅ استعلام کامل شد — ${addresses.length} آدرس بررسی شد.`;
+    statusBox.textContent =
+        `✅ بررسی کامل شد — ${addresses.length} آدرس در ${NETWORKS.length} شبکه بررسی شد.`;
 
 };
 
@@ -1411,46 +1732,64 @@ function updateStats(){
     let tokenCount=0;
     let errors=0;
 
-    for(const wallet of results){
+
+    for(
+        const wallet of results
+    ){
 
         let has=false;
 
-        for(const id in wallet.networks){
 
-            const d =
+        for(
+            const id in wallet.networks
+        ){
+
+            const data =
                 wallet.networks[id];
 
+
             if(
-                d.native &&
-                d.native !== 0n
+                data.native !== null &&
+                data.native !== 0n
             ){
+
                 has=true;
+
             }
 
+
             tokenCount +=
-                d.tokens.length;
+                data.tokens.length;
+
 
             if(
-                d.nativeError ||
-                d.tokenError
+                data.nativeError ||
+                data.tokenError
             ){
+
                 errors++;
+
             }
 
         }
 
-        if(has)
+
+        if(has){
+
             walletsWithBalance++;
+
+        }
 
     }
 
-    $("s2").textContent=
+
+    $("s2").textContent =
         walletsWithBalance;
 
-    $("s3").textContent=
+    $("s3").textContent =
         tokenCount;
 
-    $("s4").textContent=
+    $("s4").textContent =
         errors;
 
 }
@@ -1460,37 +1799,49 @@ function updateStats(){
    COPY
 ========================================================= */
 
-copyBtn.onclick=()=>{
+copyBtn.onclick = ()=>{
 
-    let text=
-        "MULTICHAIN WALLET REPORT\n"+
+    let text =
+        "MULTICHAIN WALLET REPORT\n";
+
+    text +=
         "========================\n\n";
 
-    for(const wallet of results){
 
-        text+=
-            wallet.address+"\n";
+    for(
+        const wallet of results
+    ){
 
-        for(const network of NETWORKS){
+        text +=
+            wallet.address +
+            "\n";
 
-            const d =
+
+        for(
+            const network of NETWORKS
+        ){
+
+            const data =
                 wallet.networks[
                     network.id
                 ];
 
+
             if(
-                d.native !== null &&
-                !d.nativeError
+                data.native !== null &&
+                !data.nativeError
             ){
 
                 text +=
-                    `${network.name}: `+
+                    `${network.name}: ` +
                     `${formatUnits(
-                        d.native,
+                        data.native,
                         18
-                    )} ${network.symbol}\n`;
+                    )} ` +
+                    `${network.symbol}\n`;
 
-            }else{
+            }
+            else{
 
                 text +=
                     `${network.name}: ERROR\n`;
@@ -1498,36 +1849,43 @@ copyBtn.onclick=()=>{
             }
 
 
-            for(const t of d.tokens){
+            for(
+                const token of data.tokens
+            ){
 
                 text +=
-                    `  ${t.symbol}: `+
+                    `  ${token.symbol}: ` +
                     `${formatUnits(
-                        t.value,
-                        t.decimals
-                    )}`+
-                    ` | ${t.address}\n`;
+                        token.value,
+                        token.decimals
+                    )}` +
+                    ` | ${token.address}\n`;
 
             }
 
         }
 
-        text+="\n";
+
+        text += "\n";
 
     }
+
 
     navigator.clipboard
         .writeText(text)
         .then(()=>{
 
-            const old=
+            const old =
                 copyBtn.textContent;
 
-            copyBtn.textContent=
+            copyBtn.textContent =
                 "✅ کپی شد";
 
             setTimeout(
-                ()=>copyBtn.textContent=old,
+                ()=>{
+                    copyBtn.textContent =
+                        old;
+                },
                 1800
             );
 
@@ -1540,28 +1898,35 @@ copyBtn.onclick=()=>{
    CLEAR
 ========================================================= */
 
-clearBtn.onclick=()=>{
+clearBtn.onclick = ()=>{
 
     addressBox.value="";
+
     addresses=[];
+
     results=[];
 
-    countBox.textContent=
+    countBox.textContent =
         "تعداد آدرس‌ها: 0";
 
     resultsBox.innerHTML="";
-    errorsBox.innerHTML="";
-    stats.style.display="none";
 
-    progress.style.display="none";
+    errorsBox.innerHTML="";
+
+    stats.style.display =
+        "none";
+
+    progress.style.display =
+        "none";
 
     scanBtn.disabled=true;
+
     copyBtn.disabled=true;
 
-    statusBox.className=
+    statusBox.className =
         "status info";
 
-    statusBox.textContent=
+    statusBox.textContent =
         "📋 آدرس‌ها را وارد کنید";
 
 };
