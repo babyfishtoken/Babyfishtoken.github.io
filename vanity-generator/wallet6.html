@@ -1,279 +1,933 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <title>کیف پول واقعی پالیگان (۶ کلمه)</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-    <style>
-        body { font-family: Vazir, sans-serif; direction: rtl; padding: 20px; background: #0a0a0a; color: #eee; }
-        .container { max-width: 650px; margin: auto; background: #1a1a1a; padding: 25px; border-radius: 15px; }
-        input, button { width: 100%; padding: 12px; margin: 8px 0; border: none; border-radius: 8px; font-size: 14px; }
-        input { background: #333; color: #fff; }
-        button { background: #4CAF50; color: #fff; cursor: pointer; font-weight: bold; }
-        .output { background: #222; padding: 12px; border-radius: 8px; margin: 10px 0; word-break: break-all; }
-        .warning { color: #ff6b6b; border: 2px solid #ff6b6b; padding: 12px; border-radius: 8px; margin: 10px 0; text-align: center; }
-        .btn-danger { background: #ff4444; }
-        .btn-warning { background: #ff9800; }
-        .btn-small { padding: 8px; font-size: 12px; width: auto; display: inline-block; margin: 5px; }
-        .tx-info { background: #2a2a2a; padding: 10px; border-radius: 8px; margin: 10px 0; border-right: 3px solid #4CAF50; }
-        .pending { color: #ff9800; }
-        .success-text { color: #4CAF50; }
-        .loading { color: #ff9800; font-style: italic; }
-        .btn-disabled { background: #666; cursor: not-allowed; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>کیف پول Polygon - ۶ کلمه</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    background:#0a0a0a;
+    color:#eee;
+    padding:20px;
+}
+
+.container{
+    max-width:650px;
+    margin:auto;
+    background:#1a1a1a;
+    padding:25px;
+    border-radius:15px;
+}
+
+input,button{
+    width:100%;
+    padding:12px;
+    margin:8px 0;
+    border:0;
+    border-radius:8px;
+    font-size:14px;
+    box-sizing:border-box;
+}
+
+input{
+    background:#333;
+    color:#fff;
+}
+
+button{
+    background:#4CAF50;
+    color:#fff;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+button:disabled{
+    background:#666;
+    cursor:not-allowed;
+}
+
+.btn-danger{
+    background:#ff4444;
+}
+
+.btn-warning{
+    background:#ff9800;
+}
+
+.output{
+    background:#222;
+    padding:12px;
+    border-radius:8px;
+    margin:10px 0;
+    word-break:break-all;
+}
+
+.tx-info{
+    background:#2a2a2a;
+    padding:12px;
+    border-radius:8px;
+    margin:10px 0;
+    border-right:3px solid #4CAF50;
+    line-height:1.9;
+}
+
+.pending{
+    color:#ff9800;
+}
+
+.success-text{
+    color:#4CAF50;
+}
+
+.error-text{
+    color:#ff5555;
+}
+</style>
 </head>
+
 <body>
+
 <div class="container">
-    <h2>🔐 کیف پول واقعی (Polygon Mainnet)</h2>
-    <div class="warning">
-        ⚠️ فقط برای تست با مبلغ بسیار کم (حداکثر ۱۰ دلار)<br>
-        هرگز کلید خصوصی را به کسی ندهید
-    </div>
-    
-    <label>عبارت ۶ کلمه‌ای (با فاصله جدا کنید):</label>
-    <input type="text" id="phraseInput" placeholder="مثال: test test test test test test">
-    <button onclick="createWallet()">🔑 ساخت کیف پول</button>
-    <button class="btn-warning" onclick="generateRandomPhrase()" id="randomBtn">🎲 تولید تصادفی</button>
-    
-    <div id="result" style="display:none;">
-        <h3>🔐 اطلاعات کیف پول (Polygon):</h3>
-        <div class="output"><strong>عبارت:</strong> <span id="phraseDisplay"></span></div>
-        <div class="output"><strong>آدرس:</strong> <span id="addressDisplay" style="color: #4CAF50;"></span></div>
-        <div class="output"><strong>کلید خصوصی (🔒 محرمانه):</strong> <span id="privateKeyDisplay" style="color:#ffa500;"></span></div>
-        
-        <button class="btn-small" onclick="checkBalance()">💰 بررسی موجودی (Polygon)</button>
-        <div id="balanceDisplay" class="output" style="display:none;"></div>
-        
-        <h3>📥 انتقال (Polygon Mainnet):</h3>
-        <input type="text" id="toAddress" placeholder="آدرس مقصد (شبکه پالیگان)">
-        <input type="text" id="amount" placeholder="مقدار به MATIC">
-        <button onclick="sendTransaction()">💸 ارسال تراکنش</button>
-        <div id="txStatus" class="output" style="display:none;"></div>
-        
-        <button class="btn-danger" onclick="clearWallet()">🗑️ پاک کردن اطلاعات</button>
-    </div>
+
+<h2>🔐 کیف پول Polygon — ۶ کلمه</h2>
+
+<label>عبارت ۶ کلمه‌ای:</label>
+
+<input
+    type="text"
+    id="phraseInput"
+    placeholder="کلمه1 کلمه2 کلمه3 کلمه4 کلمه5 کلمه6"
+>
+
+<button onclick="createWallet()">
+🔑 ساخت کیف پول
+</button>
+
+<button
+    class="btn-warning"
+    onclick="generateRandomPhrase()"
+    id="randomBtn"
+    disabled
+>
+🎲 تولید تصادفی
+</button>
+
+<div id="result" style="display:none;">
+
+<h3>🔐 اطلاعات کیف پول</h3>
+
+<div class="output">
+<strong>عبارت:</strong>
+<span id="phraseDisplay"></span>
+</div>
+
+<div class="output">
+<strong>آدرس:</strong>
+<span id="addressDisplay" style="color:#4CAF50;"></span>
+</div>
+
+<div class="output">
+<strong>کلید خصوصی:</strong>
+<span id="privateKeyDisplay" style="color:#ffa500;"></span>
+</div>
+
+<button onclick="checkBalance()">
+💰 بررسی موجودی POL
+</button>
+
+<div
+    id="balanceDisplay"
+    class="output"
+    style="display:none;"
+></div>
+
+<h3>📤 انتقال POL</h3>
+
+<input
+    type="text"
+    id="toAddress"
+    placeholder="آدرس مقصد 0x..."
+>
+
+<input
+    type="text"
+    id="amount"
+    placeholder="مقدار POL مثلا 0.1"
+>
+
+<button
+    onclick="sendTransaction()"
+    id="sendBtn"
+>
+💸 ارسال تراکنش
+</button>
+
+<div
+    id="txStatus"
+    class="output"
+    style="display:none;"
+></div>
+
+<button
+    class="btn-danger"
+    onclick="clearWallet()"
+>
+🗑️ پاک کردن اطلاعات
+</button>
+
+</div>
+
 </div>
 
 <script>
-    const PROVIDER_URL = "https://polygon-mainnet.infura.io/v3/934a2ae012c840dea039c5c2571bce16";
-    
-    let wallet = null;
-    let provider = null;
-    let wordList = [];
-    let isLoaded = false;
 
-    // بارگذاری کلمات از فایل key.txt
-    async function loadWordList() {
-        try {
-            const response = await fetch('key.txt');
-            if (!response.ok) {
-                throw new Error('فایل key.txt پیدا نشد!');
-            }
-            const text = await response.text();
-            wordList = text.split('\n').map(word => word.trim()).filter(word => word.length > 0);
-            
-            if (wordList.length === 0) {
-                throw new Error('فایل key.txt خالی است!');
-            }
-            
-            isLoaded = true;
-            document.getElementById('randomBtn').classList.remove('btn-disabled');
-            document.getElementById('randomBtn').disabled = false;
-            console.log(`✅ ${wordList.length} کلمه بارگذاری شد`);
-            return wordList;
-        } catch(e) {
-            console.error('❌ خطا در بارگذاری key.txt:', e.message);
-            document.getElementById('randomBtn').classList.add('btn-disabled');
-            document.getElementById('randomBtn').disabled = true;
-            alert(`❌ خطا: ${e.message}\nلطفاً فایل key.txt را در کنار این فایل قرار دهید.`);
-            return [];
+const PROVIDER_URL =
+"https://polygon-mainnet.infura.io/v3/934a2ae012c840dea039c5c2571bce16";
+
+let wallet = null;
+let provider = null;
+let wordList = [];
+let isLoaded = false;
+
+
+/* =========================
+   بارگذاری کلمات
+========================= */
+
+async function loadWordList(){
+
+    try{
+
+        const response = await fetch("key.txt");
+
+        if(!response.ok){
+            throw new Error("فایل key.txt پیدا نشد!");
         }
+
+        const text = await response.text();
+
+        wordList = text
+            .split(/\r?\n/)
+            .map(word => word.trim())
+            .filter(word => word.length > 0);
+
+        if(wordList.length === 0){
+            throw new Error("فایل key.txt خالی است!");
+        }
+
+        isLoaded = true;
+
+        const btn =
+            document.getElementById("randomBtn");
+
+        btn.disabled = false;
+
+        console.log(
+            "کلمات بارگذاری شد:",
+            wordList.length
+        );
+
+    }catch(e){
+
+        console.error(e);
+
+        document.getElementById("randomBtn").disabled = true;
+
+        alert(
+            "❌ خطا در بارگذاری key.txt\n\n" +
+            e.message
+        );
+    }
+}
+
+loadWordList();
+
+
+/* =========================
+   تولید عبارت تصادفی
+========================= */
+
+function generateRandomPhrase(){
+
+    if(!isLoaded || wordList.length === 0){
+
+        alert(
+            "⏳ لیست کلمات هنوز بارگذاری نشده است."
+        );
+
+        return;
     }
 
-    // بارگذاری خودکار هنگام باز شدن صفحه
-    loadWordList();
+    const selected = [];
 
-    function generateRandomPhrase() {
-        if (!isLoaded || wordList.length === 0) {
-            alert('⏳ لیست کلمات در حال بارگذاری است، لحظاتی صبر کنید...');
-            return;
-        }
-        
-        const selected = [];
-        for (let i = 0; i < 6; i++) {
-            const randomIndex = Math.floor(Math.random() * wordList.length);
-            selected.push(wordList[randomIndex]);
-        }
-        document.getElementById('phraseInput').value = selected.join(' ');
+    for(let i = 0; i < 6; i++){
+
+        const randomIndex =
+            Math.floor(
+                Math.random() * wordList.length
+            );
+
+        selected.push(
+            wordList[randomIndex]
+        );
     }
 
-    function createWallet() {
-        const phrase = document.getElementById('phraseInput').value.trim();
-        const words = phrase.split(' ');
-        
-        if (words.length !== 6) {
-            alert('لطفاً دقیقاً ۶ کلمه وارد کنید!');
-            return;
-        }
+    document.getElementById("phraseInput").value =
+        selected.join(" ");
+}
 
-        try {
-            const seed = ethers.keccak256(ethers.toUtf8Bytes(phrase));
-            const privateKey = seed;
-            
-            wallet = new ethers.Wallet(privateKey);
-            provider = new ethers.JsonRpcProvider(PROVIDER_URL);
-            
-            document.getElementById('phraseDisplay').textContent = phrase;
-            document.getElementById('addressDisplay').textContent = wallet.address;
-            document.getElementById('privateKeyDisplay').textContent = wallet.privateKey;
-            document.getElementById('result').style.display = 'block';
-            document.getElementById('txStatus').style.display = 'none';
-            document.getElementById('balanceDisplay').style.display = 'none';
-            
-            setTimeout(checkBalance, 1000);
-            
-        } catch(e) {
-            alert('خطا در ساخت کیف پول: ' + e.message);
-        }
+
+/* =========================
+   ساخت کیف پول
+========================= */
+
+function createWallet(){
+
+    const phrase =
+        document
+        .getElementById("phraseInput")
+        .value
+        .trim();
+
+    const words =
+        phrase
+        .split(/\s+/)
+        .filter(Boolean);
+
+    if(words.length !== 6){
+
+        alert(
+            "❌ لطفاً دقیقاً ۶ کلمه وارد کنید."
+        );
+
+        return;
     }
 
-    async function checkBalance() {
-        if (!wallet || !provider) {
-            alert('ابتدا کیف پول را بسازید!');
-            return;
-        }
+    try{
 
-        try {
-            const balance = await provider.getBalance(wallet.address);
-            const maticBalance = ethers.formatEther(balance);
-            
-            document.getElementById('balanceDisplay').style.display = 'block';
-            document.getElementById('balanceDisplay').innerHTML = `💰 موجودی: <strong>${maticBalance} MATIC</strong>`;
-        } catch(e) {
-            document.getElementById('balanceDisplay').style.display = 'block';
-            document.getElementById('balanceDisplay').innerHTML = `❌ خطا در دریافت موجودی: ${e.message}`;
-        }
+        /*
+         * این کیف پول BIP39 نیست.
+         *
+         * کل عبارت ۶ کلمه‌ای مستقیماً
+         * به Keccak256 تبدیل می‌شود
+         * و خروجی به عنوان private key استفاده می‌شود.
+         */
+
+        const privateKey =
+            ethers.keccak256(
+                ethers.toUtf8Bytes(phrase)
+            );
+
+        wallet =
+            new ethers.Wallet(privateKey);
+
+        provider =
+            new ethers.JsonRpcProvider(
+                PROVIDER_URL
+            );
+
+        document.getElementById(
+            "phraseDisplay"
+        ).textContent = phrase;
+
+        document.getElementById(
+            "addressDisplay"
+        ).textContent = wallet.address;
+
+        document.getElementById(
+            "privateKeyDisplay"
+        ).textContent = wallet.privateKey;
+
+        document.getElementById(
+            "result"
+        ).style.display = "block";
+
+        document.getElementById(
+            "txStatus"
+        ).style.display = "none";
+
+        document.getElementById(
+            "balanceDisplay"
+        ).style.display = "none";
+
+        setTimeout(
+            checkBalance,
+            500
+        );
+
+    }catch(e){
+
+        alert(
+            "❌ خطا در ساخت کیف پول:\n" +
+            e.message
+        );
+    }
+}
+
+
+/* =========================
+   بررسی موجودی
+========================= */
+
+async function checkBalance(){
+
+    if(!wallet || !provider){
+
+        alert(
+            "ابتدا کیف پول را بسازید."
+        );
+
+        return;
     }
 
-    async function sendTransaction() {
-        if (!wallet || !provider) {
-            alert('ابتدا کیف پول را بسازید!');
-            return;
+    try{
+
+        const balance =
+            await provider.getBalance(
+                wallet.address
+            );
+
+        const formatted =
+            ethers.formatEther(balance);
+
+        const box =
+            document.getElementById(
+                "balanceDisplay"
+            );
+
+        box.style.display = "block";
+
+        box.innerHTML =
+            `💰 موجودی:
+            <strong>${formatted} POL</strong>`;
+
+    }catch(e){
+
+        const box =
+            document.getElementById(
+                "balanceDisplay"
+            );
+
+        box.style.display = "block";
+
+        box.innerHTML =
+            `<span class="error-text">
+            ❌ خطا: ${e.message}
+            </span>`;
+    }
+}
+
+
+/* =========================
+   ارسال تراکنش
+========================= */
+
+async function sendTransaction(){
+
+    if(!wallet || !provider){
+
+        alert(
+            "ابتدا کیف پول را بسازید."
+        );
+
+        return;
+    }
+
+    const to =
+        document
+        .getElementById("toAddress")
+        .value
+        .trim();
+
+    const amount =
+        document
+        .getElementById("amount")
+        .value
+        .trim();
+
+
+    /* بررسی آدرس */
+
+    if(!ethers.isAddress(to)){
+
+        alert(
+            "❌ آدرس مقصد نامعتبر است."
+        );
+
+        return;
+    }
+
+
+    /* بررسی مقدار */
+
+    let value;
+
+    try{
+
+        if(
+            !amount ||
+            Number(amount) <= 0
+        ){
+            throw new Error(
+                "مقدار باید بیشتر از صفر باشد."
+            );
         }
 
-        const to = document.getElementById('toAddress').value.trim();
-        const amount = document.getElementById('amount').value.trim();
-        
-        if (!ethers.isAddress(to)) {
-            alert('آدرس مقصد نامعتبر است!');
-            return;
-        }
-        
-        if (isNaN(amount) || parseFloat(amount) <= 0) {
-            alert('مقدار معتبر وارد کنید!');
-            return;
+        value =
+            ethers.parseEther(amount);
+
+    }catch(e){
+
+        alert(
+            "❌ مقدار POL نامعتبر است."
+        );
+
+        return;
+    }
+
+
+    /* تایید کاربر */
+
+    if(
+        !confirm(
+            `⚠️ ارسال ${amount} POL\n\n` +
+            `مقصد:\n${to}\n\n` +
+            `این تراکنش قابل برگشت نیست.\n\n` +
+            `آیا مطمئن هستید؟`
+        )
+    ){
+
+        return;
+    }
+
+
+    const sendBtn =
+        document.getElementById(
+            "sendBtn"
+        );
+
+    const status =
+        document.getElementById(
+            "txStatus"
+        );
+
+    try{
+
+        sendBtn.disabled = true;
+
+        status.style.display = "block";
+
+        status.innerHTML =
+            "⏳ در حال بررسی موجودی و کارمزد شبکه...";
+
+
+        /* =========================
+           موجودی
+        ========================= */
+
+        const balance =
+            await provider.getBalance(
+                wallet.address
+            );
+
+
+        /* =========================
+           دریافت Gas Data
+        ========================= */
+
+        const feeData =
+            await provider.getFeeData();
+
+
+        /*
+         * Polygon ممکن است از EIP-1559
+         * استفاده کند.
+         */
+
+        let gasPrice =
+            feeData.gasPrice;
+
+
+        if(
+            gasPrice === null ||
+            gasPrice === undefined
+        ){
+
+            if(
+                feeData.maxFeePerGas !== null &&
+                feeData.maxFeePerGas !== undefined
+            ){
+
+                gasPrice =
+                    feeData.maxFeePerGas;
+
+            }else{
+
+                throw new Error(
+                    "قیمت گس از شبکه دریافت نشد."
+                );
+            }
         }
 
-        if (!confirm(`⚠️ آیا مطمئن هستید که می‌خواهید ${amount} MATIC واقعی به آدرس ${to.substring(0, 10)}... ارسال کنید؟\nاین تراکنش قابل بازگشت نیست!`)) {
-            return;
-        }
 
-        try {
-            const signer = wallet.connect(provider);
-            
-            const balance = await provider.getBalance(wallet.address);
-            const requiredAmount = ethers.parseEther(amount);
-            
-            if (balance < requiredAmount) {
-                alert(`موجودی کافی نیست! موجودی: ${ethers.formatEther(balance)} MATIC`);
-                return;
-            }
-            
-            const feeData = await provider.getFeeData();
-            
-            let gasPrice;
-            if (feeData.gasPrice === null) {
-                gasPrice = BigInt(50000000000);
-            } else {
-                gasPrice = BigInt(feeData.gasPrice) * BigInt(120) / BigInt(100);
-            }
-            
-            const gasLimit = BigInt(21000);
-            const estimatedFee = gasPrice * gasLimit;
-            const totalCost = requiredAmount + estimatedFee;
-            
-            if (balance < totalCost) {
-                alert(`موجودی برای پوشش تراکنش و گس کافی نیست!\nموجودی: ${ethers.formatEther(balance)} MATIC\nنیاز: ${ethers.formatEther(totalCost)} MATIC`);
-                return;
-            }
-            
-            document.getElementById('txStatus').style.display = 'block';
-            document.getElementById('txStatus').innerHTML = `
-                <div class="tx-info">
-                    <strong>📊 جزئیات تراکنش:</strong><br>
-                    مبلغ: ${amount} MATIC<br>
-                    کارمزد گس: ${ethers.formatEther(estimatedFee)} MATIC<br>
-                    جمعاً: ${ethers.formatEther(totalCost)} MATIC<br>
-                    قیمت گس: ${ethers.formatUnits(gasPrice, 'gwei')} Gwei
-                </div>
-                ⏳ در حال ارسال تراکنش...<br>
-                <small>⏱️ در انتظار تایید در شبکه (معمولاً ۳۰ ثانیه تا ۲ دقیقه)</small>
-            `;
-            
-            const tx = await signer.sendTransaction({
+        /* =========================
+           تخمین Gas
+        ========================= */
+
+        const estimatedGas =
+            await provider.estimateGas({
+
+                from: wallet.address,
+
                 to: to,
-                value: requiredAmount,
+
+                value: value
+            });
+
+
+        /*
+         * مقدار کمی حاشیه برای جلوگیری
+         * از خطای تخمین پایین گس
+         */
+
+        const gasLimit =
+            estimatedGas * 110n / 100n;
+
+
+        const estimatedFee =
+            gasLimit * gasPrice;
+
+
+        const totalCost =
+            value + estimatedFee;
+
+
+        /* =========================
+           بررسی موجودی
+        ========================= */
+
+        if(balance < totalCost){
+
+            const currentBalance =
+                ethers.formatEther(balance);
+
+            const required =
+                ethers.formatEther(totalCost);
+
+            const missing =
+                ethers.formatEther(
+                    totalCost - balance
+                );
+
+            status.innerHTML = `
+                <div class="tx-info">
+
+                ❌ <strong>
+                موجودی کافی نیست
+                </strong>
+
+                <br><br>
+
+                💰 موجودی:
+                ${currentBalance} POL
+
+                <br>
+
+                💸 مبلغ:
+                ${amount} POL
+
+                <br>
+
+                ⛽ کارمزد تقریبی:
+                ${ethers.formatEther(estimatedFee)}
+                POL
+
+                <br>
+
+                💰 مجموع مورد نیاز:
+                ${required} POL
+
+                <br>
+
+                🔻 کسری:
+                ${missing} POL
+
+                </div>
+            `;
+
+            sendBtn.disabled = false;
+
+            return;
+        }
+
+
+        /* =========================
+           نمایش جزئیات
+        ========================= */
+
+        status.innerHTML = `
+            <div class="tx-info">
+
+            <strong>📊 جزئیات تراکنش</strong>
+
+            <br>
+
+            💸 مبلغ:
+            ${amount} POL
+
+            <br>
+
+            ⛽ Gas Limit:
+            ${gasLimit.toString()}
+
+            <br>
+
+            ⛽ قیمت گس:
+            ${ethers.formatUnits(
+                gasPrice,
+                "gwei"
+            )} Gwei
+
+            <br>
+
+            💰 کارمزد تقریبی:
+            ${ethers.formatEther(
+                estimatedFee
+            )} POL
+
+            <br>
+
+            💰 مجموع:
+            ${ethers.formatEther(
+                totalCost
+            )} POL
+
+            </div>
+
+            ⏳ در حال ارسال تراکنش...
+        `;
+
+
+        /* =========================
+           ساخت Signer
+        ========================= */
+
+        const signer =
+            wallet.connect(provider);
+
+
+        /* =========================
+           ارسال
+        ========================= */
+
+        const tx =
+            await signer.sendTransaction({
+
+                to: to,
+
+                value: value,
+
                 gasLimit: gasLimit,
+
                 gasPrice: gasPrice
             });
-            
-            document.getElementById('txStatus').innerHTML = `
-                <div class="tx-info">
-                    <strong>📊 جزئیات تراکنش:</strong><br>
-                    مبلغ: ${amount} MATIC<br>
-                    کارمزد گس: ${ethers.formatEther(estimatedFee)} MATIC<br>
-                    جمعاً: ${ethers.formatEther(totalCost)} MATIC<br>
-                    قیمت گس: ${ethers.formatUnits(gasPrice, 'gwei')} Gwei
-                </div>
-                ⏳ تراکنش ارسال شد! هش: <span class="pending">${tx.hash}</span><br>
-                <span class="pending">⏳ در انتظار تایید در شبکه (معمولاً ۳۰ ثانیه تا ۲ دقیقه)</span><br>
-                <a href="https://polygonscan.com/tx/${tx.hash}" target="_blank">🔍 مشاهده در Polygonscan</a>
-            `;
-            
-            const receipt = await tx.wait();
-            
-            document.getElementById('txStatus').innerHTML = `
-                <div class="tx-info">
-                    <strong>📊 جزئیات تراکنش:</strong><br>
-                    مبلغ: ${amount} MATIC<br>
-                    کارمزد گس: ${ethers.formatEther(estimatedFee)} MATIC<br>
-                    جمعاً: ${ethers.formatEther(totalCost)} MATIC<br>
-                    قیمت گس: ${ethers.formatUnits(gasPrice, 'gwei')} Gwei
-                </div>
-                ✅ تراکنش با موفقیت تایید شد! 🎉<br>
-                <span class="success-text">📦 شماره بلاک: ${receipt.blockNumber}</span><br>
-                <a href="https://polygonscan.com/tx/${tx.hash}" target="_blank">🔍 مشاهده در Polygonscan</a>
-            `;
-            
-            setTimeout(checkBalance, 5000);
-            
-        } catch(e) {
-            document.getElementById('txStatus').style.display = 'block';
-            document.getElementById('txStatus').innerHTML = `❌ خطا: ${e.message}`;
-        }
-    }
 
-    function clearWallet() {
-        wallet = null;
-        provider = null;
-        document.getElementById('result').style.display = 'none';
-        document.getElementById('phraseInput').value = '';
-        document.getElementById('toAddress').value = '';
-        document.getElementById('amount').value = '';
-        document.getElementById('balanceDisplay').style.display = 'none';
-        document.getElementById('txStatus').style.display = 'none';
-        alert('🔒 اطلاعات پاک شد!');
+
+        /* =========================
+           تراکنش ارسال شد
+        ========================= */
+
+        status.innerHTML = `
+            <div class="tx-info">
+
+            <strong>
+            📊 تراکنش ارسال شد
+            </strong>
+
+            <br>
+
+            💸 مبلغ:
+            ${amount} POL
+
+            <br>
+
+            ⛽ Gas Limit:
+            ${gasLimit.toString()}
+
+            <br>
+
+            🔥 Gas Price:
+            ${ethers.formatUnits(
+                gasPrice,
+                "gwei"
+            )} Gwei
+
+            </div>
+
+            ⏳ در انتظار تایید...
+
+            <br><br>
+
+            🔗 هش تراکنش:
+
+            <br>
+
+            ${tx.hash}
+
+            <br><br>
+
+            <a
+                href="https://polygonscan.com/tx/${tx.hash}"
+                target="_blank"
+                style="color:#4CAF50;"
+            >
+            🔍 مشاهده در PolygonScan
+            </a>
+        `;
+
+
+        /* =========================
+           انتظار تایید
+        ========================= */
+
+        const receipt =
+            await tx.wait();
+
+
+        if(
+            receipt &&
+            receipt.status === 0
+        ){
+
+            throw new Error(
+                "تراکنش توسط شبکه Reverted شد."
+            );
+        }
+
+
+        /* =========================
+           موفق
+        ========================= */
+
+        status.innerHTML = `
+            <div class="tx-info">
+
+            <strong class="success-text">
+            ✅ تراکنش با موفقیت تایید شد!
+            </strong>
+
+            <br><br>
+
+            💸 مبلغ:
+            ${amount} POL
+
+            <br>
+
+            📦 شماره بلاک:
+            ${receipt.blockNumber}
+
+            <br>
+
+            🔗 Hash:
+
+            <br>
+
+            ${tx.hash}
+
+            <br><br>
+
+            <a
+                href="https://polygonscan.com/tx/${tx.hash}"
+                target="_blank"
+                style="color:#4CAF50;"
+            >
+            🔍 مشاهده در PolygonScan
+            </a>
+
+            </div>
+        `;
+
+
+        setTimeout(
+            checkBalance,
+            3000
+        );
+
+
+    }catch(e){
+
+        console.error(e);
+
+        status.style.display = "block";
+
+        let message =
+            e.shortMessage ||
+            e.reason ||
+            e.message ||
+            "خطای ناشناخته";
+
+
+        status.innerHTML = `
+            <div class="tx-info">
+
+            <span class="error-text">
+            ❌ خطا در ارسال تراکنش
+            </span>
+
+            <br><br>
+
+            ${message}
+
+            </div>
+        `;
+
+    }finally{
+
+        sendBtn.disabled = false;
     }
+}
+
+
+/* =========================
+   پاک کردن کیف پول
+========================= */
+
+function clearWallet(){
+
+    wallet = null;
+
+    provider = null;
+
+    document.getElementById(
+        "result"
+    ).style.display = "none";
+
+    document.getElementById(
+        "phraseInput"
+    ).value = "";
+
+    document.getElementById(
+        "toAddress"
+    ).value = "";
+
+    document.getElementById(
+        "amount"
+    ).value = "";
+
+    document.getElementById(
+        "balanceDisplay"
+    ).style.display = "none";
+
+    document.getElementById(
+        "txStatus"
+    ).style.display = "none";
+}
+
 </script>
+
 </body>
-            </html>
+    </html>
