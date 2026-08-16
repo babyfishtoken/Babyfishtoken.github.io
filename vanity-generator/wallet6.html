@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>کیف پول Polygon - ۶ کلمه</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
 
 <style>
+
 body{
     font-family:Arial,sans-serif;
     background:#0a0a0a;
@@ -23,11 +27,12 @@ body{
     border-radius:15px;
 }
 
-input,button{
+input,
+button{
     width:100%;
-    padding:12px;
+    padding:13px;
     margin:8px 0;
-    border:0;
+    border:none;
     border-radius:8px;
     font-size:14px;
     box-sizing:border-box;
@@ -35,12 +40,12 @@ input,button{
 
 input{
     background:#333;
-    color:#fff;
+    color:white;
 }
 
 button{
     background:#4CAF50;
-    color:#fff;
+    color:white;
     cursor:pointer;
     font-weight:bold;
 }
@@ -50,43 +55,59 @@ button:disabled{
     cursor:not-allowed;
 }
 
-.btn-danger{
-    background:#ff4444;
-}
-
 .btn-warning{
     background:#ff9800;
 }
 
+.btn-danger{
+    background:#ff4444;
+}
+
 .output{
     background:#222;
-    padding:12px;
+    padding:13px;
     border-radius:8px;
     margin:10px 0;
     word-break:break-all;
+    line-height:1.8;
 }
 
 .tx-info{
-    background:#2a2a2a;
-    padding:12px;
+    background:#292929;
+    padding:13px;
     border-radius:8px;
     margin:10px 0;
-    border-right:3px solid #4CAF50;
-    line-height:1.9;
+    border-right:4px solid #4CAF50;
+    line-height:2;
 }
 
 .pending{
     color:#ff9800;
 }
 
-.success-text{
+.success{
     color:#4CAF50;
 }
 
-.error-text{
+.error{
     color:#ff5555;
 }
+
+.warning{
+    color:#ffb300;
+}
+
+a{
+    color:#4CAF50;
+}
+
+.small{
+    font-size:12px;
+    color:#aaa;
+}
+
 </style>
+
 </head>
 
 <body>
@@ -95,7 +116,9 @@ button:disabled{
 
 <h2>🔐 کیف پول Polygon — ۶ کلمه</h2>
 
-<label>عبارت ۶ کلمه‌ای:</label>
+<label>
+عبارت ۶ کلمه‌ای:
+</label>
 
 <input
     type="text"
@@ -109,35 +132,64 @@ button:disabled{
 
 <button
     class="btn-warning"
-    onclick="generateRandomPhrase()"
     id="randomBtn"
+    onclick="generateRandomPhrase()"
     disabled
 >
 🎲 تولید تصادفی
 </button>
 
-<div id="result" style="display:none;">
+
+<div
+    id="result"
+    style="display:none;"
+>
 
 <h3>🔐 اطلاعات کیف پول</h3>
 
 <div class="output">
-<strong>عبارت:</strong>
+
+<strong>
+عبارت:
+</strong>
+
 <span id="phraseDisplay"></span>
+
 </div>
 
-<div class="output">
-<strong>آدرس:</strong>
-<span id="addressDisplay" style="color:#4CAF50;"></span>
-</div>
 
 <div class="output">
-<strong>کلید خصوصی:</strong>
-<span id="privateKeyDisplay" style="color:#ffa500;"></span>
+
+<strong>
+آدرس:
+</strong>
+
+<span
+    id="addressDisplay"
+    style="color:#4CAF50;"
+></span>
+
 </div>
+
+
+<div class="output">
+
+<strong>
+کلید خصوصی:
+</strong>
+
+<span
+    id="privateKeyDisplay"
+    style="color:#ffa500;"
+></span>
+
+</div>
+
 
 <button onclick="checkBalance()">
 💰 بررسی موجودی POL
 </button>
+
 
 <div
     id="balanceDisplay"
@@ -145,7 +197,11 @@ button:disabled{
     style="display:none;"
 ></div>
 
-<h3>📤 انتقال POL</h3>
+
+<h3>
+📤 انتقال POL
+</h3>
+
 
 <input
     type="text"
@@ -153,24 +209,28 @@ button:disabled{
     placeholder="آدرس مقصد 0x..."
 >
 
+
 <input
     type="text"
     id="amount"
     placeholder="مقدار POL مثلا 0.1"
 >
 
+
 <button
-    onclick="sendTransaction()"
     id="sendBtn"
+    onclick="sendTransaction()"
 >
 💸 ارسال تراکنش
 </button>
+
 
 <div
     id="txStatus"
     class="output"
     style="display:none;"
 ></div>
+
 
 <button
     class="btn-danger"
@@ -183,107 +243,244 @@ button:disabled{
 
 </div>
 
+
 <script>
 
-const PROVIDER_URL =
-"https://polygon-mainnet.infura.io/v3/934a2ae012c840dea039c5c2571bce16";
+/* =====================================================
+   تنظیمات Polygon
+===================================================== */
+
+const CHAIN_ID = 137;
+
+
+/*
+ * RPCهای عمومی Polygon
+ *
+ * برای خواندن اطلاعات از چند RPC استفاده می‌شود.
+ */
+
+const RPC_URLS = [
+
+    "https://polygon-rpc.com",
+
+    "https://polygon-bor-rpc.publicnode.com",
+
+    "https://1rpc.io/poly"
+
+];
+
+
+/* =====================================================
+   متغیرها
+===================================================== */
 
 let wallet = null;
+
 let provider = null;
+
 let wordList = [];
+
 let isLoaded = false;
 
 
-/* =========================
-   بارگذاری کلمات
-========================= */
+/* =====================================================
+   ساخت Provider
+===================================================== */
+
+function createProvider(url){
+
+    return new ethers.JsonRpcProvider(
+        url,
+        {
+            name:"Polygon",
+            chainId:137
+        },
+        {
+            staticNetwork:true
+        }
+    );
+}
+
+
+/* =====================================================
+   پیدا کردن RPC سالم
+===================================================== */
+
+async function getWorkingProvider(){
+
+    for(
+        const url of RPC_URLS
+    ){
+
+        try{
+
+            const p =
+                createProvider(url);
+
+            const network =
+                await p.getNetwork();
+
+            if(
+                Number(network.chainId) === CHAIN_ID
+            ){
+
+                return p;
+            }
+
+        }catch(e){
+
+            console.log(
+                "RPC failed:",
+                url,
+                e.message
+            );
+
+        }
+    }
+
+    throw new Error(
+        "هیچ RPC سالمی برای Polygon در دسترس نیست."
+    );
+}
+
+
+/* =====================================================
+   بارگذاری key.txt
+===================================================== */
 
 async function loadWordList(){
 
     try{
 
-        const response = await fetch("key.txt");
+        const response =
+            await fetch("key.txt",{
+                cache:"no-store"
+            });
 
         if(!response.ok){
-            throw new Error("فایل key.txt پیدا نشد!");
+
+            throw new Error(
+                "فایل key.txt پیدا نشد."
+            );
+
         }
 
-        const text = await response.text();
+        const text =
+            await response.text();
 
-        wordList = text
+        wordList =
+            text
             .split(/\r?\n/)
-            .map(word => word.trim())
-            .filter(word => word.length > 0);
+            .map(x => x.trim())
+            .filter(x => x.length > 0);
 
-        if(wordList.length === 0){
-            throw new Error("فایل key.txt خالی است!");
+
+        if(
+            wordList.length === 0
+        ){
+
+            throw new Error(
+                "فایل key.txt خالی است."
+            );
+
         }
+
 
         isLoaded = true;
 
-        const btn =
-            document.getElementById("randomBtn");
+        document
+        .getElementById("randomBtn")
+        .disabled = false;
 
-        btn.disabled = false;
 
         console.log(
-            "کلمات بارگذاری شد:",
+            "Words loaded:",
             wordList.length
         );
+
 
     }catch(e){
 
         console.error(e);
 
-        document.getElementById("randomBtn").disabled = true;
+        document
+        .getElementById("randomBtn")
+        .disabled = true;
 
         alert(
             "❌ خطا در بارگذاری key.txt\n\n" +
             e.message
         );
+
     }
+
 }
+
 
 loadWordList();
 
 
-/* =========================
-   تولید عبارت تصادفی
-========================= */
+/* =====================================================
+   تولید تصادفی
+===================================================== */
 
 function generateRandomPhrase(){
 
-    if(!isLoaded || wordList.length === 0){
+    if(
+        !isLoaded ||
+        wordList.length === 0
+    ){
 
         alert(
-            "⏳ لیست کلمات هنوز بارگذاری نشده است."
+            "⏳ لیست کلمات هنوز آماده نیست."
         );
 
         return;
     }
 
+
     const selected = [];
 
-    for(let i = 0; i < 6; i++){
 
-        const randomIndex =
-            Math.floor(
-                Math.random() * wordList.length
-            );
+    /*
+     * استفاده از crypto برای انتخاب تصادفی
+     */
+
+    const randomArray =
+        new Uint32Array(6);
+
+    crypto
+        .getRandomValues(randomArray);
+
+
+    for(
+        let i = 0;
+        i < 6;
+        i++
+    ){
+
+        const index =
+            randomArray[i] %
+            wordList.length;
 
         selected.push(
-            wordList[randomIndex]
+            wordList[index]
         );
+
     }
 
-    document.getElementById("phraseInput").value =
+
+    document
+    .getElementById("phraseInput")
+    .value =
         selected.join(" ");
+
 }
 
 
-/* =========================
-   ساخت کیف پول
-========================= */
+/* =====================================================
+   ساخت Wallet
+===================================================== */
 
 function createWallet(){
 
@@ -293,89 +490,117 @@ function createWallet(){
         .value
         .trim();
 
+
     const words =
         phrase
         .split(/\s+/)
         .filter(Boolean);
 
-    if(words.length !== 6){
+
+    if(
+        words.length !== 6
+    ){
 
         alert(
-            "❌ لطفاً دقیقاً ۶ کلمه وارد کنید."
+            "❌ باید دقیقاً ۶ کلمه وارد کنید."
         );
 
         return;
     }
 
+
     try{
 
         /*
-         * این کیف پول BIP39 نیست.
+         * توجه:
          *
-         * کل عبارت ۶ کلمه‌ای مستقیماً
-         * به Keccak256 تبدیل می‌شود
-         * و خروجی به عنوان private key استفاده می‌شود.
+         * این BIP39 نیست.
+         *
+         * عبارت ۶ کلمه‌ای مستقیماً
+         * با Keccak256 تبدیل به Private Key می‌شود.
          */
 
         const privateKey =
             ethers.keccak256(
-                ethers.toUtf8Bytes(phrase)
+                ethers.toUtf8Bytes(
+                    phrase
+                )
             );
+
 
         wallet =
-            new ethers.Wallet(privateKey);
-
-        provider =
-            new ethers.JsonRpcProvider(
-                PROVIDER_URL
+            new ethers.Wallet(
+                privateKey
             );
 
-        document.getElementById(
-            "phraseDisplay"
-        ).textContent = phrase;
 
-        document.getElementById(
-            "addressDisplay"
-        ).textContent = wallet.address;
+        provider =
+            createProvider(
+                RPC_URLS[0]
+            );
 
-        document.getElementById(
-            "privateKeyDisplay"
-        ).textContent = wallet.privateKey;
 
-        document.getElementById(
-            "result"
-        ).style.display = "block";
+        document
+        .getElementById("phraseDisplay")
+        .textContent =
+            phrase;
 
-        document.getElementById(
-            "txStatus"
-        ).style.display = "none";
 
-        document.getElementById(
-            "balanceDisplay"
-        ).style.display = "none";
+        document
+        .getElementById("addressDisplay")
+        .textContent =
+            wallet.address;
+
+
+        document
+        .getElementById("privateKeyDisplay")
+        .textContent =
+            wallet.privateKey;
+
+
+        document
+        .getElementById("result")
+        .style.display =
+            "block";
+
+
+        document
+        .getElementById("txStatus")
+        .style.display =
+            "none";
+
+
+        document
+        .getElementById("balanceDisplay")
+        .style.display =
+            "none";
+
 
         setTimeout(
             checkBalance,
             500
         );
 
+
     }catch(e){
 
         alert(
-            "❌ خطا در ساخت کیف پول:\n" +
+            "❌ خطا:\n" +
             e.message
         );
+
     }
+
 }
 
 
-/* =========================
+/* =====================================================
    بررسی موجودی
-========================= */
+===================================================== */
 
 async function checkBalance(){
 
-    if(!wallet || !provider){
+    if(!wallet){
 
         alert(
             "ابتدا کیف پول را بسازید."
@@ -384,51 +609,237 @@ async function checkBalance(){
         return;
     }
 
+
     try{
 
+        const p =
+            await getWorkingProvider();
+
+
+        provider = p;
+
+
         const balance =
-            await provider.getBalance(
+            await p.getBalance(
                 wallet.address
             );
 
-        const formatted =
-            ethers.formatEther(balance);
 
         const box =
-            document.getElementById(
+            document
+            .getElementById(
                 "balanceDisplay"
             );
 
-        box.style.display = "block";
+
+        box.style.display =
+            "block";
+
 
         box.innerHTML =
-            `💰 موجودی:
-            <strong>${formatted} POL</strong>`;
+
+            "💰 موجودی: " +
+
+            "<strong>" +
+
+            ethers.formatEther(
+                balance
+            ) +
+
+            " POL</strong>";
+
 
     }catch(e){
 
         const box =
-            document.getElementById(
+            document
+            .getElementById(
                 "balanceDisplay"
             );
 
-        box.style.display = "block";
+
+        box.style.display =
+            "block";
+
 
         box.innerHTML =
-            `<span class="error-text">
-            ❌ خطا: ${e.message}
-            </span>`;
+
+            "<span class='error'>" +
+
+            "❌ خطا: " +
+
+            e.message +
+
+            "</span>";
+
     }
+
 }
 
 
-/* =========================
+/* =====================================================
+   دریافت Fee مطمئن Polygon
+===================================================== */
+
+async function getPolygonFees(p){
+
+    /*
+     * آخرین بلاک را می‌گیریم
+     * تا baseFee واقعی شبکه مشخص شود.
+     */
+
+    const block =
+        await p.getBlock(
+            "latest"
+        );
+
+
+    if(!block){
+
+        throw new Error(
+            "آخرین بلاک Polygon دریافت نشد."
+        );
+
+    }
+
+
+    let baseFee =
+        block.baseFeePerGas;
+
+
+    /*
+     * اگر RPC مقدار baseFee نداشت،
+     * از getFeeData استفاده می‌کنیم.
+     */
+
+    if(
+        baseFee === null ||
+        baseFee === undefined
+    ){
+
+        const fd =
+            await p.getFeeData();
+
+
+        if(
+            fd.maxFeePerGas !== null &&
+            fd.maxFeePerGas !== undefined
+        ){
+
+            /*
+             * مقدار تقریبی
+             */
+
+            baseFee =
+                fd.maxFeePerGas / 2n;
+
+        }else{
+
+            throw new Error(
+                "قیمت گس Polygon دریافت نشد."
+            );
+
+        }
+
+    }
+
+
+    /*
+     * اول priority fee شبکه را می‌گیریم.
+     */
+
+    let priority = null;
+
+
+    try{
+
+        priority =
+            await p.send(
+                "eth_maxPriorityFeePerGas",
+                []
+            );
+
+        priority =
+            BigInt(priority);
+
+    }catch(e){
+
+        priority = null;
+
+    }
+
+
+    /*
+     * اگر RPC مقدار عجیب بدهد،
+     * آن را محدود می‌کنیم.
+     *
+     * 30 Gwei برای Polygon
+     * مقدار محافظه‌کارانه‌ای است.
+     */
+
+    const MAX_PRIORITY =
+        ethers.parseUnits(
+            "30",
+            "gwei"
+        );
+
+
+    if(
+        priority === null ||
+        priority <= 0n ||
+        priority > MAX_PRIORITY
+    ){
+
+        priority =
+            MAX_PRIORITY;
+
+    }
+
+
+    /*
+     * EIP-1559
+     *
+     * maxFee = 2 × baseFee + priority
+     */
+
+    let maxFee =
+        baseFee * 2n +
+        priority;
+
+
+    /*
+     * حداقل maxFee باید از priority
+     * بیشتر باشد.
+     */
+
+    if(
+        maxFee < priority
+    ){
+
+        maxFee =
+            priority;
+
+    }
+
+
+    return {
+
+        baseFee,
+        maxFee,
+        priority
+
+    };
+
+}
+
+
+/* =====================================================
    ارسال تراکنش
-========================= */
+===================================================== */
 
 async function sendTransaction(){
 
-    if(!wallet || !provider){
+    if(!wallet){
 
         alert(
             "ابتدا کیف پول را بسازید."
@@ -437,22 +848,32 @@ async function sendTransaction(){
         return;
     }
 
+
     const to =
         document
-        .getElementById("toAddress")
+        .getElementById(
+            "toAddress"
+        )
         .value
         .trim();
+
 
     const amount =
         document
-        .getElementById("amount")
+        .getElementById(
+            "amount"
+        )
         .value
         .trim();
 
 
-    /* بررسی آدرس */
+    /* -------------------------
+       بررسی آدرس
+    ------------------------- */
 
-    if(!ethers.isAddress(to)){
+    if(
+        !ethers.isAddress(to)
+    ){
 
         alert(
             "❌ آدرس مقصد نامعتبر است."
@@ -462,9 +883,12 @@ async function sendTransaction(){
     }
 
 
-    /* بررسی مقدار */
+    /* -------------------------
+       مقدار
+    ------------------------- */
 
     let value;
+
 
     try{
 
@@ -472,13 +896,17 @@ async function sendTransaction(){
             !amount ||
             Number(amount) <= 0
         ){
-            throw new Error(
-                "مقدار باید بیشتر از صفر باشد."
-            );
+
+            throw new Error();
+
         }
 
+
         value =
-            ethers.parseEther(amount);
+            ethers.parseEther(
+                amount
+            );
+
 
     }catch(e){
 
@@ -487,17 +915,29 @@ async function sendTransaction(){
         );
 
         return;
+
     }
 
 
-    /* تایید کاربر */
+    /* -------------------------
+       تایید
+    ------------------------- */
 
     if(
         !confirm(
-            `⚠️ ارسال ${amount} POL\n\n` +
-            `مقصد:\n${to}\n\n` +
-            `این تراکنش قابل برگشت نیست.\n\n` +
-            `آیا مطمئن هستید؟`
+
+            "⚠️ ارسال تراکنش\n\n" +
+
+            "مبلغ: " +
+            amount +
+            " POL\n\n" +
+
+            "مقصد:\n" +
+            to +
+            "\n\n" +
+
+            "آیا مطمئن هستید؟"
+
         )
     ){
 
@@ -506,329 +946,433 @@ async function sendTransaction(){
 
 
     const sendBtn =
-        document.getElementById(
+        document
+        .getElementById(
             "sendBtn"
         );
 
+
     const status =
-        document.getElementById(
+        document
+        .getElementById(
             "txStatus"
         );
 
+
     try{
 
-        sendBtn.disabled = true;
+        sendBtn.disabled =
+            true;
 
-        status.style.display = "block";
+
+        status.style.display =
+            "block";
+
 
         status.innerHTML =
-            "⏳ در حال بررسی موجودی و کارمزد شبکه...";
+            "⏳ در حال اتصال به Polygon...";
 
 
-        /* =========================
+        /* =================================================
+           پیدا کردن RPC
+        ================================================= */
+
+        const p =
+            await getWorkingProvider();
+
+
+        provider = p;
+
+
+        /* =================================================
+           بررسی Chain
+        ================================================= */
+
+        const network =
+            await p.getNetwork();
+
+
+        if(
+            Number(network.chainId) !==
+            CHAIN_ID
+        ){
+
+            throw new Error(
+                "شبکه Polygon PoS پیدا نشد."
+            );
+
+        }
+
+
+        /* =================================================
            موجودی
-        ========================= */
+        ================================================= */
 
         const balance =
-            await provider.getBalance(
+            await p.getBalance(
                 wallet.address
             );
 
 
-        /* =========================
-           دریافت Gas Data
-        ========================= */
+        /* =================================================
+           Fee
+        ================================================= */
 
-        const feeData =
-            await provider.getFeeData();
-
-
-        /*
-         * Polygon ممکن است از EIP-1559
-         * استفاده کند.
-         */
-
-        let gasPrice =
-            feeData.gasPrice;
+        status.innerHTML =
+            "⏳ در حال محاسبه کارمزد واقعی شبکه...";
 
 
-        if(
-            gasPrice === null ||
-            gasPrice === undefined
-        ){
-
-            if(
-                feeData.maxFeePerGas !== null &&
-                feeData.maxFeePerGas !== undefined
-            ){
-
-                gasPrice =
-                    feeData.maxFeePerGas;
-
-            }else{
-
-                throw new Error(
-                    "قیمت گس از شبکه دریافت نشد."
-                );
-            }
-        }
+        const fees =
+            await getPolygonFees(
+                p
+            );
 
 
-        /* =========================
-           تخمین Gas
-        ========================= */
+        /* =================================================
+           Gas Estimate
+        ================================================= */
 
         const estimatedGas =
-            await provider.estimateGas({
+            await p.estimateGas({
 
-                from: wallet.address,
+                from:
+                    wallet.address,
 
-                to: to,
+                to:
+                    to,
 
-                value: value
+                value:
+                    value
+
             });
 
 
         /*
-         * مقدار کمی حاشیه برای جلوگیری
-         * از خطای تخمین پایین گس
+         * کمی حاشیه
          */
 
         const gasLimit =
-            estimatedGas * 110n / 100n;
+            estimatedGas *
+            110n /
+            100n;
 
+
+        /* =================================================
+           محاسبه هزینه
+        ================================================= */
 
         const estimatedFee =
-            gasLimit * gasPrice;
+            gasLimit *
+            fees.maxFee;
 
 
-        const totalCost =
-            value + estimatedFee;
+        const total =
+            value +
+            estimatedFee;
 
 
-        /* =========================
+        /* =================================================
            بررسی موجودی
-        ========================= */
+        ================================================= */
 
-        if(balance < totalCost){
-
-            const currentBalance =
-                ethers.formatEther(balance);
-
-            const required =
-                ethers.formatEther(totalCost);
+        if(
+            balance < total
+        ){
 
             const missing =
-                ethers.formatEther(
-                    totalCost - balance
-                );
+                total -
+                balance;
+
 
             status.innerHTML = `
+
                 <div class="tx-info">
 
-                ❌ <strong>
-                موجودی کافی نیست
-                </strong>
+                <span class="error">
+
+                ❌ موجودی کافی نیست
+
+                </span>
 
                 <br><br>
 
                 💰 موجودی:
-                ${currentBalance} POL
+                ${ethers.formatEther(
+                    balance
+                )}
+                POL
 
                 <br>
 
                 💸 مبلغ:
-                ${amount} POL
+                ${ethers.formatEther(
+                    value
+                )}
+                POL
 
                 <br>
 
-                ⛽ کارمزد تقریبی:
-                ${ethers.formatEther(estimatedFee)}
+                ⛽ حداکثر کارمزد:
+                ${ethers.formatEther(
+                    estimatedFee
+                )}
                 POL
 
                 <br>
 
                 💰 مجموع مورد نیاز:
-                ${required} POL
+                ${ethers.formatEther(
+                    total
+                )}
+                POL
 
                 <br>
 
                 🔻 کسری:
-                ${missing} POL
+                ${ethers.formatEther(
+                    missing
+                )}
+                POL
 
                 </div>
+
             `;
 
-            sendBtn.disabled = false;
+
+            sendBtn.disabled =
+                false;
+
 
             return;
+
         }
 
 
-        /* =========================
-           نمایش جزئیات
-        ========================= */
+        /* =================================================
+           Nonce
+        ================================================= */
+
+        const nonce =
+            await p.getTransactionCount(
+                wallet.address,
+                "pending"
+            );
+
+
+        /* =================================================
+           نمایش اطلاعات
+        ================================================= */
 
         status.innerHTML = `
-            <div class="tx-info">
 
-            <strong>📊 جزئیات تراکنش</strong>
-
-            <br>
-
-            💸 مبلغ:
-            ${amount} POL
-
-            <br>
-
-            ⛽ Gas Limit:
-            ${gasLimit.toString()}
-
-            <br>
-
-            ⛽ قیمت گس:
-            ${ethers.formatUnits(
-                gasPrice,
-                "gwei"
-            )} Gwei
-
-            <br>
-
-            💰 کارمزد تقریبی:
-            ${ethers.formatEther(
-                estimatedFee
-            )} POL
-
-            <br>
-
-            💰 مجموع:
-            ${ethers.formatEther(
-                totalCost
-            )} POL
-
-            </div>
-
-            ⏳ در حال ارسال تراکنش...
-        `;
-
-
-        /* =========================
-           ساخت Signer
-        ========================= */
-
-        const signer =
-            wallet.connect(provider);
-
-
-        /* =========================
-           ارسال
-        ========================= */
-
-        const tx =
-            await signer.sendTransaction({
-
-                to: to,
-
-                value: value,
-
-                gasLimit: gasLimit,
-
-                gasPrice: gasPrice
-            });
-
-
-        /* =========================
-           تراکنش ارسال شد
-        ========================= */
-
-        status.innerHTML = `
             <div class="tx-info">
 
             <strong>
-            📊 تراکنش ارسال شد
+            📊 تراکنش آماده ارسال
             </strong>
 
             <br>
 
             💸 مبلغ:
-            ${amount} POL
+            ${ethers.formatEther(
+                value
+            )}
+            POL
 
             <br>
 
             ⛽ Gas Limit:
-            ${gasLimit.toString()}
+            ${gasLimit}
 
             <br>
 
-            🔥 Gas Price:
+            🔥 Max Fee:
             ${ethers.formatUnits(
-                gasPrice,
+                fees.maxFee,
                 "gwei"
-            )} Gwei
+            )}
+            Gwei
+
+            <br>
+
+            ⚡ Priority Fee:
+            ${ethers.formatUnits(
+                fees.priority,
+                "gwei"
+            )}
+            Gwei
+
+            <br>
+
+            ⛽ حداکثر کارمزد:
+            ${ethers.formatEther(
+                estimatedFee
+            )}
+            POL
+
+            <br>
+
+            🔢 Nonce:
+            ${nonce}
 
             </div>
 
-            ⏳ در انتظار تایید...
+            ⏳ در حال امضای تراکنش...
 
-            <br><br>
-
-            🔗 هش تراکنش:
-
-            <br>
-
-            ${tx.hash}
-
-            <br><br>
-
-            <a
-                href="https://polygonscan.com/tx/${tx.hash}"
-                target="_blank"
-                style="color:#4CAF50;"
-            >
-            🔍 مشاهده در PolygonScan
-            </a>
         `;
 
 
-        /* =========================
-           انتظار تایید
-        ========================= */
+        /* =================================================
+           ساخت تراکنش EIP-1559
+        ================================================= */
 
-        const receipt =
-            await tx.wait();
+        const txRequest = {
+
+            type: 2,
+
+            chainId:
+                CHAIN_ID,
+
+            nonce:
+                nonce,
+
+            to:
+                to,
+
+            value:
+                value,
+
+            gasLimit:
+                gasLimit,
+
+            maxFeePerGas:
+                fees.maxFee,
+
+            maxPriorityFeePerGas:
+                fees.priority
+
+        };
 
 
-        if(
-            receipt &&
-            receipt.status === 0
+        /* =================================================
+           امضا
+        ================================================= */
+
+        const signedTx =
+            await wallet.signTransaction(
+                txRequest
+            );
+
+
+        status.innerHTML =
+            "⏳ تراکنش امضا شد؛ در حال انتشار روی Polygon...";
+
+
+        /* =================================================
+           Broadcast
+        ================================================= */
+
+        let txHash = null;
+
+        let broadcastError = null;
+
+
+        for(
+            const rpcUrl of RPC_URLS
         ){
 
-            throw new Error(
-                "تراکنش توسط شبکه Reverted شد."
-            );
+            try{
+
+                const sendProvider =
+                    createProvider(
+                        rpcUrl
+                    );
+
+
+                txHash =
+                    await sendProvider.send(
+                        "eth_sendRawTransaction",
+                        [
+                            signedTx
+                        ]
+                    );
+
+
+                console.log(
+                    "Broadcast success:",
+                    rpcUrl,
+                    txHash
+                );
+
+
+                break;
+
+
+            }catch(e){
+
+                console.log(
+                    "Broadcast failed:",
+                    rpcUrl,
+                    e.message
+                );
+
+
+                broadcastError =
+                    e;
+
+            }
+
         }
 
 
-        /* =========================
-           موفق
-        ========================= */
+        if(!txHash){
+
+            throw new Error(
+                "تراکنش به RPCهای Polygon ارسال نشد.\n\n" +
+                (
+                    broadcastError?.message ||
+                    ""
+                )
+            );
+
+        }
+
+
+        /* =================================================
+           Hash نمایش داده شود
+        ================================================= */
 
         status.innerHTML = `
+
             <div class="tx-info">
 
-            <strong class="success-text">
-            ✅ تراکنش با موفقیت تایید شد!
+            <strong>
+            📤 تراکنش ارسال شد
             </strong>
 
             <br><br>
 
             💸 مبلغ:
-            ${amount} POL
+            ${ethers.formatEther(
+                value
+            )}
+            POL
 
             <br>
 
-            📦 شماره بلاک:
-            ${receipt.blockNumber}
+            ⛽ Gas Limit:
+            ${gasLimit}
+
+            <br>
+
+            🔥 Max Fee:
+            ${ethers.formatUnits(
+                fees.maxFee,
+                "gwei"
+            )}
+            Gwei
+
+            <br>
 
             <br>
 
@@ -836,25 +1380,38 @@ async function sendTransaction(){
 
             <br>
 
-            ${tx.hash}
+            ${txHash}
 
             <br><br>
 
             <a
-                href="https://polygonscan.com/tx/${tx.hash}"
+                href="https://polygonscan.com/tx/${txHash}"
                 target="_blank"
-                style="color:#4CAF50;"
             >
             🔍 مشاهده در PolygonScan
             </a>
 
             </div>
+
+            <span class="pending">
+
+            ⏳ در حال بررسی تایید شبکه...
+
+            </span>
+
         `;
 
 
-        setTimeout(
-            checkBalance,
-            3000
+        /* =================================================
+           بررسی Receipt بدون wait()
+        ================================================= */
+
+        await waitForReceipt(
+            txHash,
+            status,
+            value,
+            gasLimit,
+            fees
         );
 
 
@@ -862,39 +1419,329 @@ async function sendTransaction(){
 
         console.error(e);
 
-        status.style.display = "block";
 
-        let message =
-            e.shortMessage ||
-            e.reason ||
-            e.message ||
-            "خطای ناشناخته";
+        status.style.display =
+            "block";
 
 
         status.innerHTML = `
+
             <div class="tx-info">
 
-            <span class="error-text">
-            ❌ خطا در ارسال تراکنش
+            <span class="error">
+
+            ❌ خطا
+
             </span>
 
             <br><br>
 
-            ${message}
+            ${
+                e.shortMessage ||
+                e.reason ||
+                e.message ||
+                "خطای ناشناخته"
+            }
 
             </div>
+
         `;
 
     }finally{
 
-        sendBtn.disabled = false;
+        sendBtn.disabled =
+            false;
+
     }
+
 }
 
 
-/* =========================
-   پاک کردن کیف پول
-========================= */
+/* =====================================================
+   بررسی دستی Receipt
+===================================================== */
+
+async function waitForReceipt(
+    txHash,
+    status,
+    value,
+    gasLimit,
+    fees
+){
+
+    /*
+     * حداکثر ۶۰ ثانیه
+     */
+
+    const maxTime =
+        60000;
+
+
+    const start =
+        Date.now();
+
+
+    while(
+        Date.now() - start <
+        maxTime
+    ){
+
+        /*
+         * چند RPC را بررسی می‌کنیم.
+         */
+
+        for(
+            const rpcUrl of RPC_URLS
+        ){
+
+            try{
+
+                const p =
+                    createProvider(
+                        rpcUrl
+                    );
+
+
+                const receipt =
+                    await p.getTransactionReceipt(
+                        txHash
+                    );
+
+
+                if(receipt){
+
+                    if(
+                        receipt.status === 1
+                    ){
+
+                        const gasUsed =
+                            receipt.gasUsed;
+
+
+                        const actualGasPrice =
+                            receipt.gasPrice;
+
+
+                        const actualFee =
+                            gasUsed *
+                            actualGasPrice;
+
+
+                        status.innerHTML = `
+
+                            <div class="tx-info">
+
+                            <strong class="success">
+
+                            ✅ تراکنش با موفقیت تایید شد
+
+                            </strong>
+
+                            <br><br>
+
+                            💸 مبلغ:
+                            ${ethers.formatEther(
+                                value
+                            )}
+                            POL
+
+                            <br>
+
+                            ⛽ Gas مصرف‌شده:
+                            ${gasUsed}
+
+                            <br>
+
+                            🔥 Gas Price واقعی:
+                            ${ethers.formatUnits(
+                                actualGasPrice,
+                                "gwei"
+                            )}
+                            Gwei
+
+                            <br>
+
+                            💰 کارمزد واقعی:
+                            ${ethers.formatEther(
+                                actualFee
+                            )}
+                            POL
+
+                            <br>
+
+                            📦 بلاک:
+                            ${receipt.blockNumber}
+
+                            <br><br>
+
+                            🔗 Hash:
+
+                            <br>
+
+                            ${txHash}
+
+                            <br><br>
+
+                            <a
+                                href="https://polygonscan.com/tx/${txHash}"
+                                target="_blank"
+                            >
+                            🔍 مشاهده در PolygonScan
+                            </a>
+
+                            </div>
+
+                        `;
+
+
+                        setTimeout(
+                            checkBalance,
+                            3000
+                        );
+
+
+                        return;
+
+                    }
+
+
+                    /*
+                     * Receipt وجود دارد اما failed
+                     */
+
+                    status.innerHTML = `
+
+                        <div class="tx-info">
+
+                        <span class="error">
+
+                        ❌ تراکنش توسط شبکه رد شد
+
+                        </span>
+
+                        <br><br>
+
+                        Hash:
+
+                        <br>
+
+                        ${txHash}
+
+                        <br><br>
+
+                        <a
+                            href="https://polygonscan.com/tx/${txHash}"
+                            target="_blank"
+                        >
+                        🔍 مشاهده در PolygonScan
+                        </a>
+
+                        </div>
+
+                    `;
+
+
+                    return;
+
+                }
+
+            }catch(e){
+
+                console.log(
+                    "Receipt check failed:",
+                    rpcUrl
+                );
+
+            }
+
+        }
+
+
+        /*
+         * هر ۳ ثانیه دوباره بررسی
+         */
+
+        await sleep(
+            3000
+        );
+
+    }
+
+
+    /* =================================================
+       Timeout
+    ================================================= */
+
+    status.innerHTML = `
+
+        <div class="tx-info">
+
+        <span class="warning">
+
+        ⚠️ تراکنش هنوز تایید نشده است
+
+        </span>
+
+        <br><br>
+
+        این به معنی شکست قطعی تراکنش نیست.
+
+        <br>
+
+        ممکن است تراکنش هنوز در mempool باشد
+        یا RPCها هنوز آن را مشاهده نکرده باشند.
+
+        <br><br>
+
+        🔗 Hash:
+
+        <br>
+
+        ${txHash}
+
+        <br><br>
+
+        <a
+            href="https://polygonscan.com/tx/${txHash}"
+            target="_blank"
+        >
+        🔍 بررسی در PolygonScan
+        </a>
+
+        </div>
+
+        <div class="small">
+
+        صفحه دیگر منتظر نمی‌ماند.
+        وضعیت تراکنش را می‌توانید با Hash بررسی کنید.
+
+        </div>
+
+    `;
+
+}
+
+
+/* =====================================================
+   Sleep
+===================================================== */
+
+function sleep(ms){
+
+    return new Promise(
+        resolve =>
+            setTimeout(
+                resolve,
+                ms
+            )
+    );
+
+}
+
+
+/* =====================================================
+   پاک کردن
+===================================================== */
 
 function clearWallet(){
 
@@ -902,29 +1749,42 @@ function clearWallet(){
 
     provider = null;
 
-    document.getElementById(
-        "result"
-    ).style.display = "none";
 
-    document.getElementById(
-        "phraseInput"
-    ).value = "";
+    document
+    .getElementById("result")
+    .style.display =
+        "none";
 
-    document.getElementById(
-        "toAddress"
-    ).value = "";
 
-    document.getElementById(
-        "amount"
-    ).value = "";
+    document
+    .getElementById("phraseInput")
+    .value =
+        "";
 
-    document.getElementById(
-        "balanceDisplay"
-    ).style.display = "none";
 
-    document.getElementById(
-        "txStatus"
-    ).style.display = "none";
+    document
+    .getElementById("toAddress")
+    .value =
+        "";
+
+
+    document
+    .getElementById("amount")
+    .value =
+        "";
+
+
+    document
+    .getElementById("balanceDisplay")
+    .style.display =
+        "none";
+
+
+    document
+    .getElementById("txStatus")
+    .style.display =
+        "none";
+
 }
 
 </script>
