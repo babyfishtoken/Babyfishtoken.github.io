@@ -12,14 +12,12 @@
         button { background: #4CAF50; color: #fff; cursor: pointer; font-weight: bold; }
         .output { background: #222; padding: 12px; border-radius: 8px; margin: 10px 0; word-break: break-all; }
         .warning { color: #ff6b6b; border: 2px solid #ff6b6b; padding: 12px; border-radius: 8px; margin: 10px 0; text-align: center; }
-        .success { color: #4CAF50; border: 1px solid #4CAF50; padding: 10px; border-radius: 8px; margin: 10px 0; }
         .btn-danger { background: #ff4444; }
         .btn-warning { background: #ff9800; }
         .btn-small { padding: 8px; font-size: 12px; width: auto; display: inline-block; margin: 5px; }
         .tx-info { background: #2a2a2a; padding: 10px; border-radius: 8px; margin: 10px 0; border-right: 3px solid #4CAF50; }
         .pending { color: #ff9800; }
         .success-text { color: #4CAF50; }
-        .error-text { color: #ff6b6b; }
     </style>
 </head>
 <body>
@@ -55,8 +53,8 @@
 </div>
 
 <script>
-    // ✅ استفاده از RPC جایگزین (بدون تحریم)
-    const PROVIDER_URL = "https://polygon-rpc.com";
+    // ✅ استفاده از Infura با کلید شما
+    const PROVIDER_URL = "https://polygon-mainnet.infura.io/v3/934a2ae012c840dea039c5c2571bce16";
     
     let wallet = null;
     let provider = null;
@@ -406,21 +404,17 @@
             
             let gasPrice;
             if (feeData.gasPrice === null) {
-                gasPrice = BigInt(50000000000); // 50 Gwei
+                gasPrice = BigInt(50000000000);
             } else {
-                // افزایش 20% برای تایید سریع‌تر
                 gasPrice = BigInt(feeData.gasPrice) * BigInt(120) / BigInt(100);
             }
             
-            // ✅ مقدار صحیح برای تراکنش ساده POL
             const gasLimit = BigInt(21000);
             const estimatedFee = gasPrice * gasLimit;
-            
-            // محاسبه کل هزینه مورد نیاز
             const totalCost = requiredAmount + estimatedFee;
             
             if (balance < totalCost) {
-                alert(`موجودی برای پوشش تراکنش و گس کافی نیست!\nموجودی: ${ethers.formatEther(balance)} MATIC\nنیاز: ${ethers.formatEther(totalCost)} MATIC\nکارمزد: ${ethers.formatEther(estimatedFee)} MATIC`);
+                alert(`موجودی برای پوشش تراکنش و گس کافی نیست!\nموجودی: ${ethers.formatEther(balance)} MATIC\nنیاز: ${ethers.formatEther(totalCost)} MATIC`);
                 return;
             }
             
@@ -493,4 +487,4 @@
     }
 </script>
 </body>
-</html>
+    </html>
