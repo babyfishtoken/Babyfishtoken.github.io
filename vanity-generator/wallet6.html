@@ -55,8 +55,8 @@
 </div>
 
 <script>
-    // شبکه پالیگان (Polygon Mainnet)
-    const PROVIDER_URL = "https://polygon-mainnet.infura.io/v3/934a2ae012c840dea039c5c2571bce16";
+    // ✅ استفاده از RPC جایگزین (بدون تحریم)
+    const PROVIDER_URL = "https://polygon-rpc.com";
     
     let wallet = null;
     let provider = null;
@@ -406,16 +406,21 @@
             
             let gasPrice;
             if (feeData.gasPrice === null) {
-                gasPrice = BigInt(50000000000);
+                gasPrice = BigInt(50000000000); // 50 Gwei
             } else {
-                gasPrice = BigInt(feeData.gasPrice);
+                // افزایش 20% برای تایید سریع‌تر
+                gasPrice = BigInt(feeData.gasPrice) * BigInt(120) / BigInt(100);
             }
             
+            // ✅ مقدار صحیح برای تراکنش ساده POL
             const gasLimit = BigInt(21000);
             const estimatedFee = gasPrice * gasLimit;
             
-            if (balance < requiredAmount + estimatedFee) {
-                alert(`موجودی برای پوشش گس کافی نیست! نیاز: ${ethers.formatEther(requiredAmount + estimatedFee)} MATIC`);
+            // محاسبه کل هزینه مورد نیاز
+            const totalCost = requiredAmount + estimatedFee;
+            
+            if (balance < totalCost) {
+                alert(`موجودی برای پوشش تراکنش و گس کافی نیست!\nموجودی: ${ethers.formatEther(balance)} MATIC\nنیاز: ${ethers.formatEther(totalCost)} MATIC\nکارمزد: ${ethers.formatEther(estimatedFee)} MATIC`);
                 return;
             }
             
@@ -425,7 +430,7 @@
                     <strong>📊 جزئیات تراکنش:</strong><br>
                     مبلغ: ${amount} MATIC<br>
                     کارمزد گس: ${ethers.formatEther(estimatedFee)} MATIC<br>
-                    جمعاً: ${ethers.formatEther(requiredAmount + estimatedFee)} MATIC<br>
+                    جمعاً: ${ethers.formatEther(totalCost)} MATIC<br>
                     قیمت گس: ${ethers.formatUnits(gasPrice, 'gwei')} Gwei
                 </div>
                 ⏳ در حال ارسال تراکنش...<br>
@@ -444,7 +449,7 @@
                     <strong>📊 جزئیات تراکنش:</strong><br>
                     مبلغ: ${amount} MATIC<br>
                     کارمزد گس: ${ethers.formatEther(estimatedFee)} MATIC<br>
-                    جمعاً: ${ethers.formatEther(requiredAmount + estimatedFee)} MATIC<br>
+                    جمعاً: ${ethers.formatEther(totalCost)} MATIC<br>
                     قیمت گس: ${ethers.formatUnits(gasPrice, 'gwei')} Gwei
                 </div>
                 ⏳ تراکنش ارسال شد! هش: <span class="pending">${tx.hash}</span><br>
@@ -459,7 +464,7 @@
                     <strong>📊 جزئیات تراکنش:</strong><br>
                     مبلغ: ${amount} MATIC<br>
                     کارمزد گس: ${ethers.formatEther(estimatedFee)} MATIC<br>
-                    جمعاً: ${ethers.formatEther(requiredAmount + estimatedFee)} MATIC<br>
+                    جمعاً: ${ethers.formatEther(totalCost)} MATIC<br>
                     قیمت گس: ${ethers.formatUnits(gasPrice, 'gwei')} Gwei
                 </div>
                 ✅ تراکنش با موفقیت تایید شد! 🎉<br>
@@ -488,4 +493,4 @@
     }
 </script>
 </body>
-    </html>
+</html>
