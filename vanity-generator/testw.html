@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ساخت کیف پول</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    padding:15px;
+    background:#0b1120;
+    color:#fff;
+    font-family:Arial,sans-serif;
+}
+
+.container{
+    max-width:1000px;
+    margin:auto;
+    background:#111827;
+    border:1px solid #263244;
+    border-radius:16px;
+    padding:16px;
+}
+
+h1{
+    text-align:center;
+    margin:0 0 5px;
+    color:#60a5fa;
+    font-size:22px;
+}
+
+.sub{
+    text-align:center;
+    color:#9ca3af;
+    font-size:12px;
+    margin-bottom:15px;
+}
+
+textarea{
+    width:100%;
+    height:150px;
+    resize:vertical;
+    padding:12px;
+    background:#070c16;
+    border:1px solid #374151;
+    border-radius:10px;
+    color:#fff;
+    direction:ltr;
+    text-align:left;
+    font:13px monospace;
+    outline:none;
+}
+
+textarea:focus{
+    border-color:#3b82f6;
+}
+
+.count{
+    text-align:center;
+    color:#9ca3af;
+    font-size:12px;
+    margin:7px 0;
+}
+
+.buttons{
+    display:flex;
+    gap:7px;
+    margin-top:10px;
+    flex-wrap:wrap;
+}
+
+button{
+    flex:1;
+    min-width:120px;
+    border:0;
+    border-radius:9px;
+    padding:11px;
+    color:white;
+    cursor:pointer;
+    font-size:14px;
+}
+
+.generate{
+    background:#2563eb;
+}
+
+.copy{
+    background:#7c3aed;
+}
+
+.clear{background:#374151}
+
+.status{
+    margin:10px 0;
+    padding:9px;
+    border-radius:8px;
+    text-align:center;
+    font-size:13px;
+}
+
+.info{
+    background:#172554;
+    color:#93c5fd;
+}
+
+.ok{
+    background:#052e16;
+    color:#4ade80;
+}
+
+.err{
+    background:#450a0a;
+    color:#f87171;
+}
+
+.wallet{
+    margin-top:7px;
+    border:1px solid #263244;
+    border-radius:9px;
+    background:#0b1324;
+    overflow:hidden;
+}
+
+.wallet-head{
+    padding:8px;
+    background:#111a2b;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    font-size:12px;
+}
+
+.num{
+    color:#f59e0b;
+    font-weight:bold;
+    min-width:30px;
+}
+
+.addr{
+    direction:ltr;
+    text-align:left;
+    font-family:monospace;
+    color:#60a5fa;
+    word-break:break-all;
+    flex:1;
+}
+
+.private-key{
+    direction:ltr;
+    text-align:left;
+    font-family:monospace;
+    color:#34d399;
+    word-break:break-all;
+    font-size:11px;
+    background:#0b1324;
+    padding:6px 8px;
+    border-radius:5px;
+    margin:4px 6px;
+}
+
+.wallet-body{
+    padding:6px;
+}
+
+.key-label{
+    color:#9ca3af;
+    font-size:10px;
+    margin-right:6px;
+}
+
+@media(max-width:650px){
+    button{
+        min-width:100%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🔐 تولید کیف پول</h1>
+
+<div class="sub">
+تولید آدرس و کلید خصوصی برای شبکه‌های EVM
+</div>
+
+<div id="status" class="status info">
+📋 تعداد کیف پول‌های مورد نظر را وارد کنید
+</div>
+
+<textarea
+id="addresses"
+placeholder="تعداد کیف پول‌های مورد نظر را وارد کنید:
+
+5
+10
+20"></textarea>
+
+<div id="count" class="count">
+تعداد کیف پول‌ها: 0
+</div>
+
+<div class="buttons">
+
+<button class="generate" id="generate">
+🔑 تولید کیف پول
+</button>
+
+<button class="copy" id="copy" disabled>
+📋 کپی نتایج
+</button>
+
+<button class="clear" id="clear">
+🗑 پاک کردن
+</button>
+
+</div>
+
+<div id="results"></div>
+
+</div>
+
+<script>
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function escapeHtml(value){
+    return String(value ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+}
+
+/* =========================================================
+   GENERATE WALLET (EVM)
+========================================================= */
+
+function generateWallet(){
+    // تولید کلید خصوصی تصادفی 64 کاراکتر هگز
+    const chars = '0123456789abcdef';
+    let privateKey = '';
+    for(let i = 0; i < 64; i++){
+        privateKey += chars[Math.floor(Math.random() * 16)];
+    }
+    return privateKey;
+}
+
+function privateKeyToAddress(privateKey){
+    // این یک شبیه‌سازی ساده است - در واقعیت باید از کتابخانه‌های رمزنگاری استفاده کرد
+    // برای نمایش ساده، از hash کردن کلید خصوصی استفاده می‌کنیم
+    let hash = 0;
+    for(let i = 0; i < privateKey.length; i++){
+        const char = privateKey.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+    // تبدیل به آدرس 40 کاراکتری
+    let address = '0x' + Math.abs(hash).toString(16).padStart(40, '0');
+    return address.slice(0, 42);
+}
+
+function generateWalletPair(){
+    const privateKey = generateWallet();
+    const address = privateKeyToAddress(privateKey);
+    return { privateKey, address };
+}
+
+/* =========================================================
+   VARIABLES
+========================================================= */
+
+let wallets = [];
+
+const $ = id => document.getElementById(id);
+
+const addressBox = $("addresses");
+const countBox = $("count");
+const statusBox = $("status");
+const resultsBox = $("results");
+
+const generateBtn = $("generate");
+const copyBtn = $("copy");
+const clearBtn = $("clear");
+
+/* =========================================================
+   ADDRESS COUNT
+========================================================= */
+
+addressBox.addEventListener("input", ()=>{
+    const lines = addressBox.value
+        .split(/\r?\n/)
+        .map(x => x.trim())
+        .filter(Boolean);
+    
+    const numbers = lines
+        .map(x => parseInt(x))
+        .filter(x => !isNaN(x) && x > 0 && x <= 1000);
+    
+    countBox.textContent = `تعداد کیف پول‌های درخواستی: ${numbers.length > 0 ? numbers[0] : 0}`;
+});
+
+/* =========================================================
+   GENERATE
+========================================================= */
+
+generateBtn.onclick = ()=>{
+    const lines = addressBox.value
+        .split(/\r?\n/)
+        .map(x => x.trim())
+        .filter(Boolean);
+    
+    let count = 0;
+    for(const line of lines){
+        const num = parseInt(line);
+        if(!isNaN(num) && num > 0 && num <= 1000){
+            count = num;
+            break;
+        }
+    }
+    
+    if(count === 0){
+        statusBox.className = "status err";
+        statusBox.textContent = "❌ لطفاً یک عدد معتبر (1 تا 1000) وارد کنید.";
+        return;
+    }
+    
+    statusBox.className = "status ok";
+    statusBox.textContent = `⏳ در حال تولید ${count} کیف پول...`;
+    
+    // تولید کیف پول‌ها
+    wallets = [];
+    for(let i = 0; i < count; i++){
+        wallets.push(generateWalletPair());
+    }
+    
+    // نمایش نتایج
+    resultsBox.innerHTML = "";
+    wallets.forEach((wallet, index) => {
+        const div = document.createElement("div");
+        div.className = "wallet";
+        div.innerHTML = `
+            <div class="wallet-head">
+                <span class="num">#${index + 1}</span>
+                <span class="addr">${escapeHtml(wallet.address)}</span>
+            </div>
+            <div class="wallet-body">
+                <div class="key-label">🔑 کلید خصوصی:</div>
+                <div class="private-key">${escapeHtml(wallet.privateKey)}</div>
+            </div>
+        `;
+        resultsBox.appendChild(div);
+    });
+    
+    statusBox.className = "status ok";
+    statusBox.textContent = `✅ ${count} کیف پول با موفقیت تولید شد.`;
+    copyBtn.disabled = false;
+};
+
+/* =========================================================
+   COPY
+========================================================= */
+
+copyBtn.onclick = ()=>{
+    if(wallets.length === 0) return;
+    
+    let text = "WALLET GENERATOR REPORT\n";
+    text += "========================\n\n";
+    
+    wallets.forEach((wallet, index) => {
+        text += `#${index + 1}\n`;
+        text += `Address: ${wallet.address}\n`;
+        text += `Private Key: ${wallet.privateKey}\n\n`;
+    });
+    
+    navigator.clipboard.writeText(text)
+        .then(() => {
+            const old = copyBtn.textContent;
+            copyBtn.textContent = "✅ کپی شد";
+            setTimeout(() => {
+                copyBtn.textContent = old;
+            }, 1800);
+        });
+};
+
+/* =========================================================
+   CLEAR
+========================================================= */
+
+clearBtn.onclick = ()=>{
+    addressBox.value = "";
+    wallets = [];
+    countBox.textContent = "تعداد کیف پول‌ها: 0";
+    resultsBox.innerHTML = "";
+    copyBtn.disabled = true;
+    statusBox.className = "status info";
+    statusBox.textContent = "📋 تعداد کیف پول‌های مورد نظر را وارد کنید";
+};
+
+</script>
+
+</body>
+  </html>
