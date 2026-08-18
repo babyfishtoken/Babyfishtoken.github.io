@@ -1,0 +1,2031 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>جستجوی خودکار کیف پول + اسکنر مولتی‌چین</title>
+
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    padding:30px 15px;
+    background:#111827;
+    color:#fff;
+    font-family:Arial,sans-serif;
+}
+
+.container{
+    max-width:850px;
+    margin:auto;
+    background:#1f2937;
+    padding:25px;
+    border-radius:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,.3);
+}
+
+h1{
+    text-align:center;
+    margin-top:0;
+    color:#60a5fa;
+}
+
+h1 span{
+    color:#f59e0b;
+    font-size:14px;
+    display:block;
+    margin-top:5px;
+}
+
+textarea{
+    width:100%;
+    height:120px;
+    padding:15px;
+    border:1px solid #374151;
+    border-radius:12px;
+    background:#111827;
+    color:#fff;
+    font-size:16px;
+    resize:none;
+    direction:ltr;
+    text-align:left;
+    transition:0.3s;
+}
+
+textarea.found{
+    border:3px solid #34d399;
+    box-shadow:0 0 30px rgba(52,211,153,0.4);
+}
+
+textarea.checking{
+    border:2px solid #f59e0b;
+    box-shadow:0 0 20px rgba(245,158,11,0.2);
+}
+
+.btn-group{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+    flex-wrap:wrap;
+}
+
+.btn-group button{
+    flex:1;
+    padding:12px 10px;
+    border:0;
+    border-radius:12px;
+    color:white;
+    font-size:15px;
+    cursor:pointer;
+    min-width:70px;
+    transition:0.2s;
+}
+
+.btn-group button:disabled{
+    opacity:0.4;
+    cursor:not-allowed;
+}
+
+.btn-primary{
+    background:#2563eb;
+}
+.btn-primary:hover:not(:disabled){
+    background:#1d4ed8;
+}
+
+.btn-random{
+    background:#059669;
+}
+.btn-random:hover:not(:disabled){
+    background:#047857;
+}
+
+.btn-copy{
+    background:#7c3aed;
+}
+.btn-copy:hover:not(:disabled){
+    background:#6d28d9;
+}
+
+.btn-start{
+    background:#059669;
+}
+.btn-start:hover:not(:disabled){
+    background:#047857;
+}
+
+.btn-stop{
+    background:#dc2626;
+}
+.btn-stop:hover:not(:disabled){
+    background:#b91c1c;
+}
+
+.result{
+    display:none;
+    margin-top:20px;
+    padding:15px;
+    background:#111827;
+    border-radius:12px;
+}
+
+.label{
+    color:#9ca3af;
+    margin-bottom:8px;
+}
+
+.address{
+    direction:ltr;
+    text-align:left;
+    word-break:break-all;
+    color:#34d399;
+    font-family:monospace;
+    font-size:15px;
+}
+
+.error{
+    margin-top:15px;
+    color:#f87171;
+    text-align:center;
+}
+
+.status{
+    margin-top:10px;
+    padding:10px;
+    border-radius:8px;
+    text-align:center;
+    font-size:14px;
+    display:none;
+}
+
+.status.loading{
+    display:block;
+    background:#1e3a5f;
+    color:#60a5fa;
+}
+
+.status.success{
+    display:block;
+    background:#064e3b;
+    color:#34d399;
+}
+
+.status.error{
+    display:block;
+    background:#7f1d1d;
+    color:#f87171;
+}
+
+.status.info{
+    display:block;
+    background:#1e3a5f;
+    color:#60a5fa;
+}
+
+.status.found{
+    display:block;
+    background:#064e3b;
+    color:#34d399;
+    border:2px solid #34d399;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.status.checking{
+    display:block;
+    background:#1e3a5f;
+    color:#f59e0b;
+    border:2px solid #f59e0b;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.info{
+    margin-top:12px;
+    color:#9ca3af;
+    font-size:13px;
+    text-align:center;
+}
+
+.counter{
+    margin-top:10px;
+    text-align:center;
+    color:#60a5fa;
+    font-size:14px;
+}
+
+.counter.found{
+    color:#34d399;
+    font-weight:bold;
+    font-size:18px;
+}
+
+.counter.checking{
+    color:#f59e0b;
+}
+
+/* ===== لیست‌های جداگانه ===== */
+.lists-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.list-box {
+    background: #0a1a2f;
+    border-radius: 12px;
+    padding: 15px;
+    border: 1px solid #2a4a6f;
+    display: none;
+}
+
+.list-box .title {
+    color: #60a5fa;
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 10px;
+    text-align: center;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #2a4a6f;
+}
+
+.list-box .title .count {
+    color: #f59e0b;
+    font-size: 14px;
+}
+
+.list-box .items {
+    font-family: monospace;
+    font-size: 13px;
+    direction: ltr;
+    text-align: left;
+    color: #d1d5db;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 5px;
+    line-height: 1.8;
+}
+
+.list-box .items::-webkit-scrollbar {
+    width: 6px;
+}
+
+.list-box .items::-webkit-scrollbar-track {
+    background: #1a2a3f;
+    border-radius: 10px;
+}
+
+.list-box .items::-webkit-scrollbar-thumb {
+    background: #3a6a9f;
+    border-radius: 10px;
+}
+
+.list-box.addresses {
+    border-color: #34d399;
+}
+
+.list-box.addresses .title {
+    color: #34d399;
+}
+
+.list-box.mnemonics {
+    border-color: #f59e0b;
+}
+
+.list-box.mnemonics .title {
+    color: #f59e0b;
+}
+
+.copy-list-btn {
+    background: #7c3aed;
+    color: white;
+    border: 0;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: 0.2s;
+}
+
+.copy-list-btn:hover {
+    background: #6d28d9;
+}
+
+.stats{
+    display:flex;
+    justify-content:space-around;
+    margin-top:10px;
+    padding:10px;
+    background:#0a2647;
+    border-radius:8px;
+    flex-wrap:wrap;
+}
+
+.stats div{
+    text-align:center;
+    padding:5px 10px;
+}
+
+.stats .number{
+    color:#f59e0b;
+    font-size:20px;
+    font-weight:bold;
+}
+
+.stats .number.green{
+    color:#34d399;
+}
+
+.stats .label{
+    color:#9ca3af;
+    font-size:12px;
+}
+
+.spinner {
+    display:inline-block;
+    width:16px;
+    height:16px;
+    border:3px solid #f59e0b;
+    border-top:3px solid transparent;
+    border-radius:50%;
+    animation: spin 0.8s linear infinite;
+    margin-right:8px;
+    vertical-align:middle;
+}
+
+.spinner-white {
+    border:3px solid #fff;
+    border-top:3px solid transparent;
+}
+
+/* ===== استایل‌های کد دوم ===== */
+.scanner-section {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 2px solid #374151;
+}
+
+.scanner-section h2 {
+    color: #60a5fa;
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.scanner-section .sub {
+    text-align: center;
+    color: #9ca3af;
+    font-size: 12px;
+    margin-bottom: 15px;
+}
+
+.scanner-section .count {
+    text-align: center;
+    color: #9ca3af;
+    font-size: 12px;
+    margin: 7px 0;
+}
+
+.scanner-section .buttons {
+    display: flex;
+    gap: 7px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.scanner-section button {
+    flex: 1;
+    min-width: 120px;
+    border: 0;
+    border-radius: 9px;
+    padding: 11px;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.scanner-section button:disabled {
+    opacity: .4;
+    cursor: not-allowed;
+}
+
+.scanner-section .parse { background: #2563eb; }
+.scanner-section .scan { background: #059669; }
+.scanner-section .copy { background: #7c3aed; }
+.scanner-section .clear { background: #374151; }
+
+.scanner-section .status {
+    margin: 10px 0;
+    padding: 9px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 13px;
+}
+
+.scanner-section .info { background: #172554; color: #93c5fd; }
+.scanner-section .ok { background: #052e16; color: #4ade80; }
+.scanner-section .err { background: #450a0a; color: #f87171; }
+.scanner-section .loading { background: #172554; color: #60a5fa; }
+
+.scanner-section .progress {
+    height: 7px;
+    background: #1f2937;
+    border-radius: 5px;
+    overflow: hidden;
+    display: none;
+}
+
+.scanner-section .progress div {
+    height: 100%;
+    width: 0;
+    background: #10b981;
+    transition: .2s;
+}
+
+.scanner-section .stats {
+    display: none;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.scanner-section .stat {
+    background: #0b1324;
+    border: 1px solid #263244;
+    border-radius: 8px;
+    padding: 8px;
+    text-align: center;
+}
+
+.scanner-section .stat b {
+    display: block;
+    color: #fbbf24;
+    font-size: 17px;
+}
+
+.scanner-section .stat span {
+    color: #9ca3af;
+    font-size: 10px;
+}
+
+.scanner-section .wallet {
+    margin-top: 7px;
+    border: 1px solid #263244;
+    border-radius: 9px;
+    background: #0b1324;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.scanner-section .wallet.has-balance {
+    border-color: #10b981;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+}
+
+.scanner-section .wallet-head {
+    padding: 8px;
+    background: #111a2b;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    flex-wrap: wrap;
+}
+
+.scanner-section .num {
+    color: #f59e0b;
+    font-weight: bold;
+}
+
+.scanner-section .addr {
+    direction: ltr;
+    text-align: left;
+    font-family: monospace;
+    color: #60a5fa;
+    word-break: break-all;
+    flex: 1;
+}
+
+.scanner-section .wstatus {
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+.scanner-section .status-light {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 5px;
+    flex-shrink: 0;
+}
+
+.scanner-section .status-light.green { background: #10b981; box-shadow: 0 0 10px #10b981; }
+.scanner-section .status-light.gray { background: #4b5563; }
+.scanner-section .status-light.yellow { background: #f59e0b; box-shadow: 0 0 10px #f59e0b; }
+.scanner-section .status-light.red { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
+
+.scanner-section .networks { padding: 5px; }
+.scanner-section .net {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 6px;
+    border-bottom: 1px solid #1d2737;
+    min-height: 29px;
+    flex-wrap: wrap;
+}
+
+.scanner-section .net:last-child { border-bottom: 0; }
+
+.scanner-section .netname {
+    width: 95px;
+    color: #d1d5db;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.scanner-section .native {
+    color: #fbbf24;
+    font: 11px monospace;
+    direction: ltr;
+    white-space: nowrap;
+}
+
+.scanner-section .tokens {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    flex: 1;
+}
+
+.scanner-section .token {
+    background: #182235;
+    border: 1px solid #293548;
+    border-radius: 5px;
+    padding: 3px 5px;
+    font-size: 10px;
+    direction: ltr;
+    white-space: nowrap;
+}
+
+.scanner-section .token b { color: #fbbf24; }
+.scanner-section .token small { color: #9ca3af; }
+
+.scanner-section .nothing { color: #4b5563; font-size: 10px; }
+.scanner-section .retry { color: #fbbf24; font-size: 10px; }
+.scanner-section .fail { color: #f87171; font-size: 10px; }
+
+.scanner-section .error-list {
+    color: #f87171;
+    font-size: 11px;
+    margin-top: 7px;
+}
+
+.scanner-section .mnemonic-link {
+    color: #f59e0b;
+    font-size: 10px;
+    font-family: monospace;
+    word-break: break-all;
+    background: #1a1a2e;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid #f59e0b33;
+    max-width: 300px;
+}
+
+@media(max-width:650px) {
+    .scanner-section .stats {
+        grid-template-columns: repeat(2,1fr);
+    }
+    .scanner-section .netname {
+        width: 80px;
+    }
+    .scanner-section .wallet-head {
+        align-items: flex-start;
+    }
+    .scanner-section .wstatus {
+        display: none;
+    }
+    .scanner-section button {
+        min-width: 100%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>
+        🔑 جستجوی خودکار کیف پول
+        <span>⏳ ذخیره جداگانه آدرس‌ها و عبارات</span>
+    </h1>
+
+    <div id="status" class="status loading">⏳ در حال بارگذاری کلمات از فایل key.txt...</div>
+
+    <textarea
+        id="mnemonic"
+        placeholder="12 کلمه را با فاصله وارد کنید..."
+        autocomplete="off"
+        spellcheck="false"></textarea>
+
+    <div class="btn-group">
+        <button class="btn-random" id="randomBtn" onclick="setRandomMnemonic()" disabled>
+            🎲 تصادفی
+        </button>
+        <button class="btn-primary" onclick="generateAddress()">
+            🔍 نمایش آدرس
+        </button>
+        <button class="btn-copy" onclick="copyMnemonic()" id="copyBtn" disabled>
+            📋 کپی
+        </button>
+        <button class="btn-start" id="autoBtn" onclick="toggleAutoFind()" disabled>
+            🚀 شروع جستجو
+        </button>
+    </div>
+
+    <div id="counter" class="counter"></div>
+    <div id="error" class="error"></div>
+
+    <div id="result" class="result">
+        <div class="label">آدرس کیف پول:</div>
+        <div id="address" class="address"></div>
+    </div>
+
+    <!-- لیست‌های جداگانه -->
+    <div class="lists-container">
+        <!-- لیست آدرس‌ها -->
+        <div id="addressListBox" class="list-box addresses">
+            <div class="title">🔗 لیست آدرس‌ها <span class="count" id="addressCount">(0)</span></div>
+            <div id="addressList" class="items"></div>
+            <button class="copy-list-btn" onclick="copyAddressList()">📋 کپی همه آدرس‌ها</button>
+        </div>
+
+        <!-- لیست عبارات -->
+        <div id="mnemonicListBox" class="list-box mnemonics">
+            <div class="title">🔑 لیست عبارات ۱۲ کلمه‌ای <span class="count" id="mnemonicCount">(0)</span></div>
+            <div id="mnemonicList" class="items"></div>
+            <button class="copy-list-btn" onclick="copyMnemonicList()">📋 کپی همه عبارات</button>
+        </div>
+    </div>
+
+    <div id="stats" class="stats" style="display:none;">
+        <div>
+            <div class="number" id="statAttempts">0</div>
+            <div class="label">تعداد تلاش</div>
+        </div>
+        <div>
+            <div class="number green" id="statFound">0</div>
+            <div class="label">پیدا شده</div>
+        </div>
+        <div>
+            <div class="number" id="statSpeed">0</div>
+            <div class="label">سرعت (تلاش/ثانیه)</div>
+        </div>
+    </div>
+
+    <div class="info">
+        ⏳ هر کیف پول پیدا شده در دو لیست جداگانه ذخیره می‌شود | 🔒 آدرس‌ها و عبارات جدا
+    </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- ===== بخش اسکنر مولتی‌چین (کد دوم) ===== -->
+<!-- ============================================================ -->
+
+<div class="container scanner-section">
+
+    <h2>💰 Multichain Wallet Scanner</h2>
+
+    <div class="sub">
+        بررسی موجودی Native + ERC-20 / BEP-20 با APIهای عمومی
+    </div>
+
+    <div id="scannerStatus" class="status info">
+        📋 آدرس‌ها را از لیست بالا وارد کنید یا دکمه "انتقال آدرس‌ها" را بزنید
+    </div>
+
+    <textarea
+        id="scannerAddresses"
+        placeholder="هر آدرس را در یک خط وارد کنید:
+
+0x0000000000000000000000000000000000000000
+0x1111111111111111111111111111111111111111"></textarea>
+
+    <div id="scannerCount" class="count">
+        تعداد آدرس‌ها: 0
+    </div>
+
+    <div class="buttons">
+
+        <button class="parse" id="scannerParse">
+            📋 بررسی آدرس‌ها
+        </button>
+
+        <button class="scan" id="scannerScan" disabled>
+            🔍 شروع استعلام
+        </button>
+
+        <button class="copy" id="scannerCopy" disabled>
+            📋 کپی نتایج
+        </button>
+
+        <button class="clear" id="scannerClear">
+            🗑 پاک کردن
+        </button>
+
+        <button class="parse" id="transferAddresses" style="background:#8b5cf6;">
+            ⬇️ انتقال آدرس‌ها از لیست بالا
+        </button>
+
+    </div>
+
+    <div class="error-list" id="scannerErrors"></div>
+
+    <div class="progress" id="scannerProgress">
+        <div id="scannerProgressFill"></div>
+    </div>
+
+    <div class="stats" id="scannerStats">
+
+        <div class="stat">
+            <b id="scannerS1">0</b>
+            <span>آدرس</span>
+        </div>
+
+        <div class="stat">
+            <b id="scannerS2">0</b>
+            <span>دارای موجودی</span>
+        </div>
+
+        <div class="stat">
+            <b id="scannerS3">0</b>
+            <span>توکن</span>
+        </div>
+
+        <div class="stat">
+            <b id="scannerS4">0</b>
+            <span>خطا</span>
+        </div>
+
+    </div>
+
+    <div id="scannerResults"></div>
+
+</div>
+
+<script>
+
+// ================================================================
+// ===== کد اول: جستجوی خودکار کیف پول =====
+// ================================================================
+
+let fileWords = [];
+let isAutoFinding = false;
+let autoInterval = null;
+let attempts = 0;
+let foundCount = 0;
+let startTime = 0;
+let lastUpdateTime = 0;
+let speedCounter = 0;
+
+// آرایه‌های جداگانه
+let foundAddresses = [];
+let foundMnemonics = [];
+
+// کش برای بهبود سرعت
+let walletCache = new Map();
+
+// متغیرهای جدید برای روش پیچیده
+let shuffledWords = [];
+let shuffleIndex = 0;
+let wordFrequency = {};
+
+const statusDiv = document.getElementById('status');
+const randomBtn = document.getElementById('randomBtn');
+const copyBtn = document.getElementById('copyBtn');
+const autoBtn = document.getElementById('autoBtn');
+const mnemonicInput = document.getElementById('mnemonic');
+const resultDiv = document.getElementById('result');
+const addressBox = document.getElementById('address');
+const errorBox = document.getElementById('error');
+const counterDiv = document.getElementById('counter');
+const statsDiv = document.getElementById('stats');
+const statAttempts = document.getElementById('statAttempts');
+const statFound = document.getElementById('statFound');
+const statSpeed = document.getElementById('statSpeed');
+
+const addressListBox = document.getElementById('addressListBox');
+const mnemonicListBox = document.getElementById('mnemonicListBox');
+const addressList = document.getElementById('addressList');
+const mnemonicList = document.getElementById('mnemonicList');
+const addressCount = document.getElementById('addressCount');
+const mnemonicCount = document.getElementById('mnemonicCount');
+
+// ==================== بارگذاری فایل ====================
+async function loadWords() {
+    try {
+        statusDiv.className = 'status loading';
+        statusDiv.textContent = '⏳ در حال خواندن فایل key.txt...';
+        statusDiv.style.display = 'block';
+
+        const response = await fetch('key.txt');
+
+        if (!response.ok) {
+            throw new Error(`خطا: ${response.status}`);
+        }
+
+        const content = await response.text();
+        fileWords = content.split(/\r?\n/).filter(line => line.trim() !== '');
+
+        if (fileWords.length === 0) {
+            throw new Error('فایل خالی است!');
+        }
+
+        if (fileWords.length < 12) {
+            throw new Error(`فایل فقط ${fileWords.length} کلمه دارد! حداقل ۱۲ کلمه نیاز است.`);
+        }
+
+        // آماده‌سازی برای روش پیچیده
+        prepareComplexRandom();
+
+        statusDiv.className = 'status success';
+        statusDiv.textContent = `✅ ${fileWords.length} کلمه بارگذاری شد! (روش پیچیده)`;
+        randomBtn.disabled = false;
+        autoBtn.disabled = false;
+        copyBtn.disabled = true;
+        autoBtn.textContent = '🚀 شروع جستجو';
+
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 3000);
+
+    } catch (error) {
+        statusDiv.className = 'status error';
+        statusDiv.textContent = `❌ خطا: ${error.message}`;
+        statusDiv.style.display = 'block';
+        randomBtn.disabled = true;
+        autoBtn.disabled = true;
+        copyBtn.disabled = true;
+        console.error('Error loading file:', error);
+    }
+}
+
+// ==================== آماده‌سازی روش پیچیده ====================
+function prepareComplexRandom() {
+    // ۱. محاسبه فراوانی کلمات
+    wordFrequency = {};
+    fileWords.forEach(word => {
+        wordFrequency[word] = (wordFrequency[word] || 0) + 1;
+    });
+
+    // ۲. ساخت لیست شافل شده
+    shuffledWords = [...fileWords];
+    for (let i = shuffledWords.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledWords[i], shuffledWords[j]] = [shuffledWords[j], shuffledWords[i]];
+    }
+    shuffleIndex = 0;
+}
+
+// ==================== روش‌های پیچیده تصادفی ====================
+
+// روش ۱: ترکیبی از شافل و انتخاب تصادفی
+function getRandomWordsComplex1() {
+    if (fileWords.length === 0) return null;
+    
+    // ۱۲ کلمه با استفاده از شافل
+    let result = [];
+    let usedIndices = new Set();
+    
+    for (let i = 0; i < 12; i++) {
+        let randomIndex;
+        do {
+            randomIndex = Math.floor(Math.random() * fileWords.length);
+        } while (usedIndices.has(randomIndex) && usedIndices.size < fileWords.length);
+        
+        usedIndices.add(randomIndex);
+        result.push(fileWords[randomIndex]);
+    }
+    
+    return result;
+}
+
+// روش ۲: بر اساس وزن (تکرار کلمات)
+function getRandomWordsComplex2() {
+    if (fileWords.length === 0) return null;
+    
+    // محاسبه وزن کل
+    let totalWeight = fileWords.length;
+    let result = [];
+    
+    for (let i = 0; i < 12; i++) {
+        let random = Math.random() * totalWeight;
+        let cumulative = 0;
+        let selected = fileWords[0];
+        
+        for (let j = 0; j < fileWords.length; j++) {
+            const word = fileWords[j];
+            // وزن بیشتر برای کلماتی که کمتر تکرار شدن
+            const weight = 1 / (wordFrequency[word] || 1);
+            cumulative += weight;
+            if (random <= cumulative) {
+                selected = word;
+                break;
+            }
+        }
+        result.push(selected);
+    }
+    
+    return result;
+}
+
+// روش ۳: ترکیبی با الگو
+function getRandomWordsComplex3() {
+    if (fileWords.length === 0) return null;
+    
+    // ترکیبی از روش‌ها
+    let method = Math.floor(Math.random() * 3);
+    let result = [];
+    
+    switch(method) {
+        case 0: // روش تصادفی ساده
+            for (let i = 0; i < 12; i++) {
+                result.push(fileWords[Math.floor(Math.random() * fileWords.length)]);
+            }
+            break;
+            
+        case 1: // روش بدون تکرار
+            let used = new Set();
+            for (let i = 0; i < 12; i++) {
+                let randomIndex;
+                do {
+                    randomIndex = Math.floor(Math.random() * fileWords.length);
+                } while (used.has(randomIndex) && used.size < fileWords.length);
+                used.add(randomIndex);
+                result.push(fileWords[randomIndex]);
+            }
+            break;
+            
+        case 2: // روش ترتیبی با پرش
+            let start = Math.floor(Math.random() * fileWords.length);
+            let step = Math.floor(Math.random() * 50) + 1;
+            for (let i = 0; i < 12; i++) {
+                let index = (start + (i * step)) % fileWords.length;
+                result.push(fileWords[index]);
+            }
+            break;
+    }
+    
+    return result;
+}
+
+// روش ۴: ترکیبی از شافل و جابجایی
+function getRandomWordsComplex4() {
+    if (fileWords.length === 0) return null;
+    
+    // شافل کردن بخشی از لیست
+    let tempList = [...fileWords];
+    let startIdx = Math.floor(Math.random() * (fileWords.length - 50));
+    let endIdx = Math.min(startIdx + 50, fileWords.length);
+    
+    // شافل کردن بخش انتخاب شده
+    for (let i = startIdx; i < endIdx - 1; i++) {
+        const j = Math.floor(Math.random() * (endIdx - startIdx)) + startIdx;
+        [tempList[i], tempList[j]] = [tempList[j], tempList[i]];
+    }
+    
+    // انتخاب ۱۲ کلمه از بخش شافل شده
+    let result = [];
+    for (let i = 0; i < 12; i++) {
+        const idx = startIdx + Math.floor(Math.random() * (endIdx - startIdx));
+        result.push(tempList[idx % fileWords.length]);
+    }
+    
+    return result;
+}
+
+// روش ۵: ترکیبی از همه روش‌ها (روش اصلی)
+function getRandomWords() {
+    if (fileWords.length === 0) return null;
+    
+    // انتخاب تصادفی بین ۴ روش
+    const methods = [
+        getRandomWordsComplex1,
+        getRandomWordsComplex2,
+        getRandomWordsComplex3,
+        getRandomWordsComplex4
+    ];
+    
+    const selectedMethod = methods[Math.floor(Math.random() * methods.length)];
+    return selectedMethod.call(this);
+}
+
+// ==================== توابع کمکی ====================
+function setRandomMnemonic() {
+    if (fileWords.length === 0) {
+        errorBox.textContent = '❌ فایل بارگذاری نشده است!';
+        return;
+    }
+    const words = getRandomWords();
+    if (!words) return;
+    mnemonicInput.value = words.join(' ');
+    mnemonicInput.classList.remove('found', 'checking');
+    copyBtn.disabled = false;
+    errorBox.textContent = '';
+    resultDiv.style.display = 'none';
+    
+    // نمایش روش استفاده شده
+    statusDiv.className = 'status success';
+    statusDiv.textContent = `✅ ۱۲ کلمه تصادفی (روش پیچیده) انتخاب شد!`;
+    statusDiv.style.display = 'block';
+    setTimeout(() => {
+        statusDiv.style.display = 'none';
+    }, 2000);
+}
+
+// ==================== تولید آدرس با کش ====================
+function tryGenerateAddress(mnemonic) {
+    try {
+        if (typeof ethers === "undefined") {
+            return { success: false, error: "کتابخانه ethers بارگذاری نشده است." };
+        }
+        
+        // بررسی کش
+        if (walletCache.has(mnemonic)) {
+            return { success: true, address: walletCache.get(mnemonic) };
+        }
+        
+        const words = mnemonic.split(" ");
+        if (words.length !== 12) {
+            return { success: false, error: "عبارت باید دقیقاً ۱۲ کلمه داشته باشد." };
+        }
+        if (!ethers.Mnemonic.isValidMnemonic(mnemonic)) {
+            return { success: false, error: "عبارت بازیابی معتبر نیست." };
+        }
+        const wallet = ethers.HDNodeWallet.fromPhrase(mnemonic);
+        const address = wallet.address;
+        
+        // ذخیره در کش
+        walletCache.set(mnemonic, address);
+        
+        return { success: true, address: address };
+    } catch (error) {
+        console.error(error);
+        return { success: false, error: "خطا در پردازش عبارت بازیابی." };
+    }
+}
+
+function generateAddress() {
+    const input = mnemonicInput;
+    const result = resultDiv;
+    const addressBox = document.getElementById("address");
+    const errorBox = document.getElementById("error");
+
+    result.style.display = "none";
+    errorBox.textContent = "";
+
+    const mnemonic = input.value.trim().replace(/\s+/g, " ");
+
+    if (!mnemonic) {
+        errorBox.textContent = "❌ عبارت بازیابی را وارد کنید.";
+        return;
+    }
+
+    if (typeof ethers === "undefined") {
+        errorBox.textContent = "❌ کتابخانه ethers بارگذاری نشده است.";
+        return;
+    }
+
+    const words = mnemonic.split(" ");
+    if (words.length !== 12) {
+        errorBox.textContent = "❌ عبارت باید دقیقاً ۱۲ کلمه داشته باشد.";
+        return;
+    }
+
+    try {
+        if (!ethers.Mnemonic.isValidMnemonic(mnemonic)) {
+            errorBox.textContent = "❌ عبارت بازیابی معتبر نیست.";
+            return;
+        }
+        const wallet = ethers.HDNodeWallet.fromPhrase(mnemonic);
+        const currentAddress = wallet.address;
+        addressBox.textContent = currentAddress;
+        result.style.display = "block";
+        copyBtn.disabled = false;
+
+    } catch (error) {
+        console.error(error);
+        errorBox.textContent = "❌ خطا در پردازش عبارت بازیابی.";
+    }
+}
+
+// ==================== به‌روزرسانی لیست‌ها ====================
+function updateLists() {
+    // لیست آدرس‌ها
+    if (foundAddresses.length > 0) {
+        addressListBox.style.display = 'block';
+        addressList.textContent = foundAddresses.join('\n');
+        addressCount.textContent = `(${foundAddresses.length})`;
+    }
+
+    // لیست عبارات
+    if (foundMnemonics.length > 0) {
+        mnemonicListBox.style.display = 'block';
+        mnemonicList.textContent = foundMnemonics.join('\n\n');
+        mnemonicCount.textContent = `(${foundMnemonics.length})`;
+    }
+}
+
+// ==================== کپی لیست‌ها ====================
+function copyAddressList() {
+    const text = foundAddresses.join('\n');
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+        alert('✅ لیست آدرس‌ها کپی شد!');
+    }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('✅ لیست آدرس‌ها کپی شد!');
+    });
+}
+
+function copyMnemonicList() {
+    const text = foundMnemonics.join('\n\n');
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+        alert('✅ لیست عبارات کپی شد!');
+    }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('✅ لیست عبارات کپی شد!');
+    });
+}
+
+// ==================== جستجوی خودکار ====================
+function findAddressAuto() {
+    if (isAutoFinding === false) return;
+
+    attempts++;
+    speedCounter++;
+    
+    const words = getRandomWords();
+    if (!words) {
+        stopAutoFind();
+        return;
+    }
+
+    const mnemonic = words.join(' ');
+    
+    mnemonicInput.value = mnemonic;
+    mnemonicInput.classList.add('checking');
+    mnemonicInput.classList.remove('found');
+
+    const result = tryGenerateAddress(mnemonic);
+    
+    if (result.success) {
+        const address = result.address;
+        
+        foundCount++;
+        foundAddresses.push(address);
+        foundMnemonics.push(mnemonic);
+
+        addressBox.textContent = address;
+        resultDiv.style.display = "block";
+        errorBox.textContent = "";
+        copyBtn.disabled = false;
+
+        mnemonicInput.classList.remove('checking');
+        mnemonicInput.classList.add('found');
+
+        statusDiv.className = 'status found';
+        statusDiv.textContent = `✅ کیف پول پیدا شد! (${foundCount} تا)`;
+        statusDiv.style.display = 'block';
+        
+        counterDiv.className = 'counter found';
+        counterDiv.textContent = `✅ ${foundCount} کیف پول پیدا شد!`;
+        
+        updateLists();
+        
+        // به‌روزرسانی خودکار تکست‌ارِی اسکنر
+        updateScannerTextarea();
+        
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 2000);
+        
+    } else {
+        if (attempts % 100 === 0) {
+            errorBox.textContent = `🔄 ${attempts} تلاش...`;
+        }
+    }
+    
+    if (attempts % 50 === 0) {
+        statAttempts.textContent = attempts;
+        statsDiv.style.display = 'flex';
+        
+        if (startTime > 0) {
+            const elapsed = (Date.now() - startTime) / 1000;
+            if (elapsed > 0) {
+                const speed = Math.round(speedCounter / 50);
+                statSpeed.textContent = speed;
+                speedCounter = 0;
+            }
+        }
+    }
+}
+
+function toggleAutoFind() {
+    if (isAutoFinding) {
+        stopAutoFind();
+    } else {
+        startAutoFind();
+    }
+}
+
+function startAutoFind() {
+    if (fileWords.length === 0) {
+        errorBox.textContent = '❌ فایل بارگذاری نشده است!';
+        return;
+    }
+
+    isAutoFinding = true;
+    attempts = 0;
+    foundCount = 0;
+    speedCounter = 0;
+    startTime = Date.now();
+    
+    statsDiv.style.display = 'flex';
+    statAttempts.textContent = '0';
+    statFound.textContent = '0';
+    statSpeed.textContent = '0';
+    
+    autoBtn.textContent = '⏹ توقف';
+    autoBtn.className = 'btn-stop';
+    randomBtn.disabled = true;
+    
+    counterDiv.className = 'counter';
+    counterDiv.textContent = '⚡ شروع جستجو (روش پیچیده)...';
+    errorBox.textContent = '';
+    resultDiv.style.display = 'none';
+    
+    statusDiv.className = 'status info';
+    statusDiv.textContent = '⚡ جستجو با روش پیچیده در حال اجرا...';
+    statusDiv.style.display = 'block';
+
+    findAddressAuto();
+    autoInterval = setInterval(findAddressAuto, 0);
+}
+
+function stopAutoFind() {
+    isAutoFinding = false;
+    if (autoInterval) {
+        clearInterval(autoInterval);
+        autoInterval = null;
+    }
+    
+    autoBtn.textContent = '🚀 شروع جستجو';
+    autoBtn.className = 'btn-start';
+    randomBtn.disabled = false;
+    
+    if (foundCount === 0) {
+        statusDiv.className = 'status info';
+        statusDiv.textContent = `⏹ متوقف شد. ${attempts} تلاش (روش پیچیده)`;
+        statusDiv.style.display = 'block';
+        counterDiv.textContent = `⏹ متوقف شد. ${attempts} تلاش`;
+        mnemonicInput.classList.remove('checking');
+        
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 3000);
+    } else {
+        statusDiv.className = 'status success';
+        statusDiv.textContent = `✅ ${foundCount} کیف پول پیدا شد! (روش پیچیده)`;
+        statusDiv.style.display = 'block';
+        counterDiv.textContent = `✅ ${foundCount} کیف پول پیدا شد!`;
+    }
+}
+
+// ==================== کپی ====================
+function copyMnemonic() {
+    const text = mnemonicInput.value;
+    if (!text) return;
+
+    navigator.clipboard.writeText(text).then(() => {
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = '✅ کپی شد!';
+        setTimeout(() => {
+            copyBtn.textContent = originalText;
+        }, 2000);
+    }).catch(() => {
+        mnemonicInput.select();
+        document.execCommand('copy');
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = '✅ کپی شد!';
+        setTimeout(() => {
+            copyBtn.textContent = originalText;
+        }, 2000);
+    });
+}
+
+// ==================== به‌روزرسانی تکست‌ارِی اسکنر ====================
+function updateScannerTextarea() {
+    const scannerTextarea = document.getElementById('scannerAddresses');
+    if (foundAddresses.length > 0) {
+        scannerTextarea.value = foundAddresses.join('\n');
+        // به‌روزرسانی شمارنده
+        const lines = scannerTextarea.value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+        const valid = lines.filter(x => /^0x[a-fA-F0-9]{40}$/.test(x));
+        document.getElementById('scannerCount').textContent = `تعداد آدرس‌های معتبر: ${valid.length} | کل خطوط: ${lines.length}`;
+        document.getElementById('scannerScan').disabled = false;
+    }
+}
+
+// ==================== بارگذاری اولیه ====================
+window.addEventListener('DOMContentLoaded', loadWords);
+
+console.log('✅ کد با روش تصادفی پیچیده آماده است!');
+
+
+// ================================================================
+// ===== کد دوم: اسکنر مولتی‌چین =====
+// ================================================================
+
+/* =========================================================
+   NETWORKS
+========================================================= */
+
+const NETWORKS = [
+
+{
+    id:"eth",
+    name:"Ethereum",
+    symbol:"ETH",
+    rpc:"https://ethereum-rpc.publicnode.com",
+    explorer:"https://eth.blockscout.com"
+},
+
+{
+    id:"bnb",
+    name:"BNB Chain",
+    symbol:"BNB",
+    rpc:"https://bsc-dataseed.binance.org",
+    explorer:"https://eth.blockscout.com"
+},
+
+{
+    id:"polygon",
+    name:"Polygon",
+    symbol:"POL",
+    rpc:"https://polygon-bor-rpc.publicnode.com",
+    explorer:"https://polygon.blockscout.com"
+},
+
+{
+    id:"arbitrum",
+    name:"Arbitrum",
+    symbol:"ETH",
+    rpc:"https://arbitrum-one-rpc.publicnode.com",
+    explorer:"https://arbitrum.blockscout.com"
+},
+
+{
+    id:"optimism",
+    name:"Optimism",
+    symbol:"ETH",
+    rpc:"https://optimism-rpc.publicnode.com",
+    explorer:"https://optimism.blockscout.com"
+},
+
+{
+    id:"base",
+    name:"Base",
+    symbol:"ETH",
+    rpc:"https://base-rpc.publicnode.com",
+    explorer:"https://base.blockscout.com"
+},
+
+{
+    id:"avalanche",
+    name:"Avalanche",
+    symbol:"AVAX",
+    rpc:"https://avalanche-c-chain-rpc.publicnode.com",
+    explorer:null
+},
+
+{
+    id:"gnosis",
+    name:"Gnosis",
+    symbol:"xDAI",
+    rpc:"https://gnosis-rpc.publicnode.com",
+    explorer:"https://gnosis.blockscout.com"
+},
+
+{
+    id:"celo",
+    name:"Celo",
+    symbol:"CELO",
+    rpc:"https://celo-rpc.publicnode.com",
+    explorer:"https://celo.blockscout.com"
+},
+
+{
+    id:"zksync",
+    name:"zkSync",
+    symbol:"ETH",
+    rpc:"https://zksync-era-rpc.publicnode.com",
+    explorer:"https://zksync.blockscout.com"
+},
+
+{
+    id:"linea",
+    name:"Linea",
+    symbol:"ETH",
+    rpc:"https://linea-rpc.publicnode.com",
+    explorer:null
+},
+
+{
+    id:"scroll",
+    name:"Scroll",
+    symbol:"ETH",
+    rpc:"https://scroll-rpc.publicnode.com",
+    explorer:"https://scroll.blockscout.com"
+},
+
+{
+    id:"mantle",
+    name:"Mantle",
+    symbol:"MNT",
+    rpc:"https://mantle-rpc.publicnode.com",
+    explorer:null
+},
+
+{
+    id:"blast",
+    name:"Blast",
+    symbol:"ETH",
+    rpc:"https://blast-rpc.publicnode.com",
+    explorer:null
+}
+
+];
+
+
+/* =========================================================
+   SPEED SETTINGS
+========================================================= */
+
+const CONCURRENT = 50;
+const RETRIES = 3;
+const TIMEOUT = 12000;
+
+
+/* =========================================================
+   VARIABLES
+========================================================= */
+
+let scannerAddresses = [];
+let scannerResults = [];
+
+const scannerStatus = document.getElementById("scannerStatus");
+const scannerErrors = document.getElementById("scannerErrors");
+const scannerProgress = document.getElementById("scannerProgress");
+const scannerProgressFill = document.getElementById("scannerProgressFill");
+const scannerResultsBox = document.getElementById("scannerResults");
+const scannerStats = document.getElementById("scannerStats");
+const scannerAddressBox = document.getElementById("scannerAddresses");
+const scannerCount = document.getElementById("scannerCount");
+const scannerParseBtn = document.getElementById("scannerParse");
+const scannerScanBtn = document.getElementById("scannerScan");
+const scannerCopyBtn = document.getElementById("scannerCopy");
+const scannerClearBtn = document.getElementById("scannerClear");
+const transferBtn = document.getElementById("transferAddresses");
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function sleep(ms){
+    return new Promise(resolve => setTimeout(resolve,ms));
+}
+
+function escapeHtml(value){
+    return String(value ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+}
+
+function shortAddress(address){
+    return address.slice(0,8) + "..." + address.slice(-6);
+}
+
+function formatUnits(value,decimals){
+    try{
+        const n = Number(value) / Math.pow(10,decimals);
+        if(!Number.isFinite(n)) return String(value);
+        if(n === 0) return "0";
+        if(n < 0.000001) return n.toExponential(5);
+        if(n < 1) return n.toFixed(8);
+        return n.toLocaleString("en-US", { maximumFractionDigits:8 });
+    }catch{
+        return String(value);
+    }
+}
+
+/* =========================================================
+   ADDRESS COUNT
+========================================================= */
+
+scannerAddressBox.addEventListener("input", ()=>{
+    const lines = scannerAddressBox.value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+    const valid = lines.filter(x => /^0x[a-fA-F0-9]{40}$/.test(x));
+    scannerCount.textContent = `تعداد آدرس‌های معتبر: ${valid.length} | کل خطوط: ${lines.length}`;
+});
+
+/* =========================================================
+   TRANSFER ADDRESSES FROM LIST
+========================================================= */
+
+transferBtn.onclick = ()=>{
+    if (foundAddresses.length === 0) {
+        scannerStatus.className = "status err";
+        scannerStatus.textContent = "❌ هیچ آدرسی در لیست بالا پیدا نشده است!";
+        return;
+    }
+    scannerAddressBox.value = foundAddresses.join('\n');
+    const lines = scannerAddressBox.value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+    const valid = lines.filter(x => /^0x[a-fA-F0-9]{40}$/.test(x));
+    scannerCount.textContent = `تعداد آدرس‌های معتبر: ${valid.length} | کل خطوط: ${lines.length}`;
+    scannerStatus.className = "status ok";
+    scannerStatus.textContent = `✅ ${valid.length} آدرس از لیست بالا منتقل شد!`;
+    scannerScanBtn.disabled = false;
+};
+
+/* =========================================================
+   PARSE
+========================================================= */
+
+scannerParseBtn.onclick = ()=>{
+    const lines = scannerAddressBox.value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+    scannerAddresses = [];
+    const invalid = [];
+
+    lines.forEach((address,index)=>{
+        if(/^0x[a-fA-F0-9]{40}$/.test(address)){
+            if(!scannerAddresses.some(x => x.toLowerCase() === address.toLowerCase())){
+                scannerAddresses.push(address);
+            }
+        }else{
+            invalid.push(`خط ${index+1}: آدرس نامعتبر`);
+        }
+    });
+
+    scannerErrors.innerHTML = invalid.join("<br>");
+    scannerCount.textContent = `تعداد آدرس‌های معتبر: ${scannerAddresses.length}`;
+    scannerResultsBox.innerHTML="";
+    scannerStats.style.display="none";
+    scannerCopyBtn.disabled=true;
+
+    if(!scannerAddresses.length){
+        scannerScanBtn.disabled=true;
+        scannerStatus.className = "status err";
+        scannerStatus.textContent = "❌ هیچ آدرس معتبر پیدا نشد.";
+        return;
+    }
+
+    scannerScanBtn.disabled=false;
+    scannerStatus.className = "status ok";
+    scannerStatus.textContent = `✅ ${scannerAddresses.length} آدرس آماده است.`;
+};
+
+/* =========================================================
+   FETCH WITH RETRY
+========================================================= */
+
+async function fetchRetry(url, options={}){
+    let lastError = null;
+    for(let attempt=1; attempt<=RETRIES; attempt++){
+        let controller;
+        let timer;
+        try{
+            controller = new AbortController();
+            timer = setTimeout(()=>{ controller.abort(); }, TIMEOUT);
+            const response = await fetch(url, { ...options, signal: controller.signal });
+            clearTimeout(timer);
+            if(!response.ok) throw new Error("HTTP " + response.status);
+            const data = await response.json();
+            return { ok:true, data:data, attempt:attempt };
+        }catch(error){
+            clearTimeout(timer);
+            lastError=error;
+            if(attempt < RETRIES) await sleep(300 * attempt);
+        }
+    }
+    return { ok:false, error:lastError, attempt:RETRIES };
+}
+
+/* =========================================================
+   NATIVE BALANCE
+========================================================= */
+
+async function getNative(network, address){
+    const body = {
+        jsonrpc:"2.0",
+        id:Date.now(),
+        method:"eth_getBalance",
+        params:[address, "latest"]
+    };
+    const result = await fetchRetry(network.rpc, {
+        method:"POST",
+        headers:{ "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+    });
+    if(!result.ok) throw result.error;
+    if(result.data.error) throw new Error(result.data.error.message || "RPC error");
+    return { wei: BigInt(result.data.result), attempt: result.attempt };
+}
+
+/* =========================================================
+   TOKEN BALANCES
+========================================================= */
+
+async function getTokens(network, address){
+    if(!network.explorer) return { supported:false, tokens:[] };
+    const url = network.explorer + "/api/v2/addresses/" + encodeURIComponent(address) + "/token-balances";
+    const result = await fetchRetry(url);
+    if(!result.ok) throw result.error;
+    const raw = Array.isArray(result.data) ? result.data : (result.data.items || result.data.result || []);
+    const tokens=[];
+    for(const item of raw){
+        const token = item.token || item;
+        const type = String(token.type || token.token_type || "").toUpperCase();
+        if(type && !type.includes("ERC-20")) continue;
+        const value = item.value ?? item.balance ?? token.balance ?? "0";
+        let balance;
+        try{ balance = BigInt(String(value)); }catch{ continue; }
+        if(balance === 0n) continue;
+        const decimals = Number(token.decimals ?? item.decimals ?? 18);
+        const symbol = token.symbol || item.symbol || "TOKEN";
+        const name = token.name || item.name || symbol;
+        const contract = token.address_hash || token.contract_address || item.token_address || "";
+        tokens.push({ name:name, symbol:symbol, decimals:decimals, value:String(value), address:contract });
+    }
+    return { supported:true, tokens:tokens, attempt:result.attempt };
+}
+
+/* =========================================================
+   WALLET OBJECT
+========================================================= */
+
+function createWallet(address, mnemonic){
+    const wallet={ address:address, mnemonic:mnemonic || null, networks:{} };
+    for(const network of NETWORKS){
+        wallet.networks[network.id]={
+            network:network,
+            native:null,
+            tokens:[],
+            nativeError:null,
+            tokenError:null,
+            nativeRetry:0,
+            tokenRetry:0,
+            tokenSupported:false
+        };
+    }
+    return wallet;
+}
+
+/* =========================================================
+   GET MNEMONIC FOR ADDRESS
+========================================================= */
+
+function getMnemonicForAddress(address) {
+    const index = foundAddresses.findIndex(addr => addr.toLowerCase() === address.toLowerCase());
+    if (index !== -1 && foundMnemonics[index]) {
+        return foundMnemonics[index];
+    }
+    return null;
+}
+
+/* =========================================================
+   CREATE WALLET UI
+========================================================= */
+
+function createWalletElement(wallet, index){
+    const div = document.createElement("div");
+    div.className = "wallet";
+    div.id = "scanner-wallet-" + index;
+    
+    const mnemonic = wallet.mnemonic || getMnemonicForAddress(wallet.address);
+    const mnemonicHtml = mnemonic ? `<span class="mnemonic-link">🔑 ${escapeHtml(mnemonic)}</span>` : '';
+    
+    div.innerHTML = `
+        <div class="wallet-head">
+            <span class="num">#${index+1}</span>
+            <span class="status-light gray" id="scanner-light-${index}"></span>
+            <span class="addr">${escapeHtml(wallet.address)}</span>
+            ${mnemonicHtml}
+            <span class="wstatus">در حال بررسی...</span>
+        </div>
+        <div class="networks"></div>
+    `;
+    
+    scannerResultsBox.appendChild(div);
+    return div;
+}
+
+/* =========================================================
+   RENDER NETWORK
+========================================================= */
+
+function renderNetwork(walletElement, data){
+    const network = data.network;
+    const networksBox = walletElement.querySelector(".networks");
+    let row = networksBox.querySelector(`[data-network="${network.id}"]`);
+    if(!row){
+        row = document.createElement("div");
+        row.className="net";
+        row.dataset.network = network.id;
+        networksBox.appendChild(row);
+    }
+
+    let nativeHtml;
+    if(data.nativeError){
+        nativeHtml = `<span class="fail">❌</span>`;
+    }else if(data.native !== null){
+        nativeHtml = `<span class="native">${formatUnits(data.native, 18)} ${network.symbol}</span>`;
+    }else{
+        nativeHtml = `<span class="retry">⏳</span>`;
+    }
+
+    let tokenHtml="";
+    if(data.tokenError){
+        tokenHtml = `<span class="fail">Token ❌</span>`;
+    }else if(data.tokenSupported && data.tokens.length){
+        tokenHtml = data.tokens.map(token=>`
+            <span class="token" title="${escapeHtml(token.name + " | " + token.address)}">
+                ${escapeHtml(token.symbol)}
+                <b>${formatUnits(token.value, token.decimals)}</b>
+            </span>
+        `).join("");
+    }else if(data.tokenSupported){
+        tokenHtml = `<span class="nothing">بدون توکن</span>`;
+    }else{
+        tokenHtml = `<span class="nothing">Token API ندارد</span>`;
+    }
+
+    row.innerHTML = `
+        <span class="netname">${escapeHtml(network.name)}</span>
+        ${nativeHtml}
+        <span class="tokens">${tokenHtml}</span>
+    `;
+}
+
+/* =========================================================
+   UPDATE WALLET STATUS & LIGHT
+========================================================= */
+
+function updateWalletStatus(wallet, element, index){
+    let done=0;
+    let errors=0;
+    let hasNative=false;
+    let hasToken=false;
+
+    for(const id in wallet.networks){
+        const data = wallet.networks[id];
+        if(data.native !== null || data.nativeError) done++;
+        if(data.nativeError || data.tokenError) errors++;
+        if(data.native && data.native !== 0n) hasNative = true;
+        if(data.tokens.length) hasToken = true;
+    }
+
+    const status = element.querySelector(".wstatus");
+    const light = element.querySelector(".status-light");
+
+    if(done === NETWORKS.length){
+        if(hasNative || hasToken){
+            light.className = "status-light green";
+            element.classList.add("has-balance");
+            status.textContent = "● دارای موجودی";
+            status.style.color = "#34d399";
+            moveWalletToTop(element);
+        }else{
+            light.className = "status-light gray";
+            element.classList.remove("has-balance");
+            status.textContent = "○ بدون موجودی";
+            status.style.color = "#9ca3af";
+        }
+    }else{
+        light.className = "status-light yellow";
+        element.classList.remove("has-balance");
+        status.textContent = `${done}/${NETWORKS.length}`;
+        status.style.color = "#fbbf24";
+    }
+}
+
+/* =========================================================
+   🔝 حرکت کیف پول به بالای لیست در صورت داشتن موجودی
+========================================================= */
+
+function moveWalletToTop(element){
+    const parent = element.parentNode;
+    if(parent && parent.firstChild !== element){
+        parent.insertBefore(element, parent.firstChild);
+    }
+}
+
+/* =========================================================
+   SCAN
+========================================================= */
+
+scannerScanBtn.onclick = async function(){
+    if(!scannerAddresses.length) return;
+
+    scannerScanBtn.disabled=true;
+    scannerParseBtn.disabled=true;
+    scannerCopyBtn.disabled=true;
+
+    scannerResultsBox.innerHTML="";
+    scannerResults=[];
+
+    scannerProgress.style.display = "block";
+    scannerProgressFill.style.width = "0%";
+    scannerStats.style.display = "grid";
+
+    document.getElementById("scannerS1").textContent = scannerAddresses.length;
+    document.getElementById("scannerS2").textContent = "0";
+    document.getElementById("scannerS3").textContent = "0";
+    document.getElementById("scannerS4").textContent = "0";
+
+    const elements=[];
+
+    scannerAddresses.forEach((address,index)=>{
+        const mnemonic = getMnemonicForAddress(address);
+        const wallet = createWallet(address, mnemonic);
+        scannerResults.push(wallet);
+        elements.push(createWalletElement(wallet, index));
+    });
+
+    const tasks=[];
+
+    for(let i=0; i<scannerResults.length; i++){
+        const wallet = scannerResults[i];
+        for(const network of NETWORKS){
+            tasks.push(async()=>{
+                const data = wallet.networks[network.id];
+                
+                scannerStatus.className = "status loading";
+                scannerStatus.textContent = `⏳ ${network.name} — ${shortAddress(wallet.address)}`;
+
+                const nativePromise = getNative(network, wallet.address)
+                    .then(result=>{ data.native = result.wei; data.nativeRetry = result.attempt; })
+                    .catch(error=>{ data.nativeError = error?.message || "RPC Error"; });
+
+                const tokenPromise = getTokens(network, wallet.address)
+                    .then(result=>{ data.tokenSupported = result.supported; data.tokens = result.tokens || []; data.tokenRetry = result.attempt || 0; })
+                    .catch(error=>{ data.tokenError = error?.message || "Token API Error"; });
+
+                await Promise.all([nativePromise, tokenPromise]);
+
+                renderNetwork(elements[i], data);
+                updateWalletStatus(wallet, elements[i], i);
+                updateScannerStats();
+            });
+        }
+    }
+
+    let pointer=0;
+    let completed=0;
+
+    async function worker(){
+        while(true){
+            const taskIndex = pointer++;
+            if(taskIndex >= tasks.length) return;
+            try{ await tasks[taskIndex](); }catch(error){ console.error(error); }
+            completed++;
+            scannerProgressFill.style.width = (completed / tasks.length * 100) + "%";
+        }
+    }
+
+    const workers=[];
+    for(let i=0; i<Math.min(CONCURRENT, tasks.length); i++){
+        workers.push(worker());
+    }
+
+    await Promise.all(workers);
+
+    scannerProgressFill.style.width = "100%";
+    scannerScanBtn.disabled=false;
+    scannerParseBtn.disabled=false;
+    scannerCopyBtn.disabled=false;
+
+    scannerStatus.className = "status ok";
+    scannerStatus.textContent = `✅ بررسی کامل شد — ${scannerAddresses.length} آدرس در ${NETWORKS.length} شبکه بررسی شد.`;
+};
+
+/* =========================================================
+   STATS
+========================================================= */
+
+function updateScannerStats(){
+    let walletsWithBalance=0;
+    let tokenCount=0;
+    let errors=0;
+
+    for(const wallet of scannerResults){
+        let has=false;
+        for(const id in wallet.networks){
+            const data = wallet.networks[id];
+            if(data.native !== null && data.native !== 0n) has=true;
+            tokenCount += data.tokens.length;
+            if(data.nativeError || data.tokenError) errors++;
+        }
+        if(has) walletsWithBalance++;
+    }
+
+    document.getElementById("scannerS2").textContent = walletsWithBalance;
+    document.getElementById("scannerS3").textContent = tokenCount;
+    document.getElementById("scannerS4").textContent = errors;
+}
+
+/* =========================================================
+   COPY
+========================================================= */
+
+scannerCopyBtn.onclick = ()=>{
+    let text = "MULTICHAIN WALLET REPORT\n========================\n\n";
+    for(const wallet of scannerResults){
+        text += wallet.address + "\n";
+        if(wallet.mnemonic) text += "Mnemonic: " + wallet.mnemonic + "\n";
+        for(const network of NETWORKS){
+            const data = wallet.networks[network.id];
+            if(data.native !== null && !data.nativeError){
+                text += `${network.name}: ${formatUnits(data.native, 18)} ${network.symbol}\n`;
+            }else{
+                text += `${network.name}: ERROR\n`;
+            }
+            for(const token of data.tokens){
+                text += `  ${token.symbol}: ${formatUnits(token.value, token.decimals)} | ${token.address}\n`;
+            }
+        }
+        text += "\n";
+    }
+    navigator.clipboard.writeText(text).then(()=>{
+        const old = scannerCopyBtn.textContent;
+        scannerCopyBtn.textContent = "✅ کپی شد";
+        setTimeout(()=>{ scannerCopyBtn.textContent = old; }, 1800);
+    });
+};
+
+/* =========================================================
+   CLEAR
+========================================================= */
+
+scannerClearBtn.onclick = ()=>{
+    scannerAddressBox.value="";
+    scannerAddresses=[];
+    scannerResults=[];
+    scannerCount.textContent = "تعداد آدرس‌ها: 0";
+    scannerResultsBox.innerHTML="";
+    scannerErrors.innerHTML="";
+    scannerStats.style.display = "none";
+    scannerProgress.style.display = "none";
+    scannerScanBtn.disabled=true;
+    scannerCopyBtn.disabled=true;
+    scannerStatus.className = "status info";
+    scannerStatus.textContent = "📋 آدرس‌ها را وارد کنید";
+};
+
+</script>
+
+</body>
+  </html>
