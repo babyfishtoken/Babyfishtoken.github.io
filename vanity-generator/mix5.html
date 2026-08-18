@@ -152,13 +152,8 @@ textarea.checking{
 .status.success{ background:#064e3b; color:#34d399; }
 .status.error{ background:#7f1d1d; color:#f87171; }
 .status.info{ background:#1e3a5f; color:#60a5fa; }
-.status.found{ background:#064e3b; color:#34d399; border:2px solid #34d399; animation:pulse 1.5s ease-in-out infinite; }
+.status.found{ background:#064e3b; color:#34d399; border:2px solid #34d399; }
 .status.checking{ background:#1e3a5f; color:#f59e0b; border:2px solid #f59e0b; }
-
-@keyframes pulse{
-    0%,100%{ opacity:1; }
-    50%{ opacity:0.7; }
-}
 
 @keyframes spin{
     0%{ transform:rotate(0deg); }
@@ -523,6 +518,7 @@ textarea.checking{
     gap:2px;
     width:100%;
     margin-top:3px;
+    padding:0 8px 5px 8px;
 }
 
 .scanner-section .mnemonic-text {
@@ -1432,25 +1428,18 @@ function findAddressAuto() {
         mnemonicInput.classList.remove('checking');
         mnemonicInput.classList.add('found');
         
-        // استفاده از textContent برای جلوگیری از پرش صفحه
-        const statusText = `✅ کیف پول پیدا شد! (${foundCount} تا)`;
-        document.querySelector('.status.found') ? statusDiv.textContent = statusText : null;
-        statusDiv.textContent = statusText;
-        statusDiv.className = 'status found';
-        
+        // فقط شمارنده به‌روز می‌شود، بدون نمایش پیام status
         counterDiv.textContent = `✅ ${foundCount} کیف پول پیدا شد!`;
         counterDiv.className = 'counter found';
         
         updateLists();
         updateScannerTextarea();
-        setTimeout(() => { 
-            if (statusDiv.classList.contains('found')) {
-                statusDiv.style.display = 'none';
-            }
-        }, 2000);
+        
     } else {
-        if (attempts % 100 === 0) {
-            errorBox.textContent = `🔄 ${attempts} تلاش...`;
+        // حذف نمایش پیام تلاش‌ها
+        // فقط در صورت نیاز خطا نمایش داده شود
+        if (attempts % 100 === 0 && errorBox.textContent === '') {
+            // خطاها را نمایش نده
         }
     }
     if (attempts % 50 === 0) {
@@ -1935,4 +1924,4 @@ function copySingleMnemonic(mnemonic) {
 </script>
 
 </body>
-            </html>
+    </html>
