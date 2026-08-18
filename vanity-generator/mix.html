@@ -126,6 +126,13 @@ textarea.checking{
     background:#b91c1c;
 }
 
+.btn-clear-list{
+    background:#dc2626;
+}
+.btn-clear-list:hover:not(:disabled){
+    background:#b91c1c;
+}
+
 .result{
     display:none;
     margin-top:20px;
@@ -325,6 +332,30 @@ textarea.checking{
 
 .copy-list-btn:hover {
     background: #6d28d9;
+}
+
+.clear-list-btn {
+    background: #dc2626;
+    color: white;
+    border: 0;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: 0.2s;
+}
+
+.clear-list-btn:hover {
+    background: #b91c1c;
+}
+
+.list-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .stats{
@@ -607,6 +638,19 @@ textarea.checking{
     border-radius: 4px;
     border: 1px solid #f59e0b33;
     max-width: 300px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.scanner-section .mnemonic-link:hover {
+    background: #f59e0b22;
+    border-color: #f59e0b;
+}
+
+.scanner-section .mnemonic-link.copied {
+    border-color: #34d399;
+    background: #064e3b33;
+    color: #34d399;
 }
 
 @media(max-width:650px) {
@@ -675,14 +719,20 @@ textarea.checking{
         <div id="addressListBox" class="list-box addresses">
             <div class="title">🔗 لیست آدرس‌ها <span class="count" id="addressCount">(0)</span></div>
             <div id="addressList" class="items"></div>
-            <button class="copy-list-btn" onclick="copyAddressList()">📋 کپی همه آدرس‌ها</button>
+            <div class="list-buttons">
+                <button class="copy-list-btn" onclick="copyAddressList()">📋 کپی همه آدرس‌ها</button>
+                <button class="clear-list-btn" onclick="clearAddressList()">🗑 پاک کردن آدرس‌ها</button>
+            </div>
         </div>
 
         <!-- لیست عبارات -->
         <div id="mnemonicListBox" class="list-box mnemonics">
             <div class="title">🔑 لیست عبارات ۱۲ کلمه‌ای <span class="count" id="mnemonicCount">(0)</span></div>
             <div id="mnemonicList" class="items"></div>
-            <button class="copy-list-btn" onclick="copyMnemonicList()">📋 کپی همه عبارات</button>
+            <div class="list-buttons">
+                <button class="copy-list-btn" onclick="copyMnemonicList()">📋 کپی همه عبارات</button>
+                <button class="clear-list-btn" onclick="clearMnemonicList()">🗑 پاک کردن عبارات</button>
+            </div>
         </div>
     </div>
 
@@ -1155,6 +1205,23 @@ function updateLists() {
     }
 }
 
+// ==================== پاک کردن لیست‌ها ====================
+function clearAddressList() {
+    foundAddresses = [];
+    addressListBox.style.display = 'none';
+    addressList.textContent = '';
+    addressCount.textContent = '(0)';
+    // به‌روزرسانی تکست‌ارِی اسکنر
+    updateScannerTextarea();
+}
+
+function clearMnemonicList() {
+    foundMnemonics = [];
+    mnemonicListBox.style.display = 'none';
+    mnemonicList.textContent = '';
+    mnemonicCount.textContent = '(0)';
+}
+
 // ==================== کپی لیست‌ها ====================
 function copyAddressList() {
     const text = foundAddresses.join('\n');
@@ -1364,6 +1431,10 @@ function updateScannerTextarea() {
         const valid = lines.filter(x => /^0x[a-fA-F0-9]{40}$/.test(x));
         document.getElementById('scannerCount').textContent = `تعداد آدرس‌های معتبر: ${valid.length} | کل خطوط: ${lines.length}`;
         document.getElementById('scannerScan').disabled = false;
+    } else {
+        scannerTextarea.value = '';
+        document.getElementById('scannerCount').textContent = 'تعداد آدرس‌ها: 0';
+        document.getElementById('scannerScan').disabled = true;
     }
 }
 
@@ -1746,7 +1817,9 @@ function createWalletElement(wallet, index){
     div.id = "scanner-wallet-" + index;
     
     const mnemonic = wallet.mnemonic || getMnemonicForAddress(wallet.address);
-    const mnemonicHtml = mnemonic ? `<span class="mnemonic-link">🔑 ${escapeHtml(mnemonic)}</span>` : '';
+    const mnemonicHtml = mnemonic ? 
+        `<span class="mnemonic-link" onclick="copyMnemonicFromScanner('${escapeHtml(mnemonic)}', this)" title="برای کپی کلیک کنید">🔑 ${escapeHtml(mnemonic)}</span>` : 
+        '<span class="nothing">بدون عبارت</span>';
     
     div.innerHTML = `
         <div class="wallet-head">
@@ -1761,6 +1834,38 @@ function createWalletElement(wallet, index){
     
     scannerResultsBox.appendChild(div);
     return div;
+}
+
+/* =========================================================
+   COPY MNEMONIC FROM SCANNER
+========================================================= */
+
+function copyMnemonicFromScanner(mnemonic, element) {
+    if (!mnemonic) return;
+    navigator.clipboard.writeText(mnemonic).then(() => {
+        const originalText = element.textContent;
+        element.textContent = '✅ کپی شد!';
+        element.classList.add('copied');
+        setTimeout(() => {
+            element.textContent = originalText;
+            element.classList.remove('copied');
+        }, 2000);
+    }).catch(() => {
+        // fallback
+        const textarea = document.createElement('textarea');
+        textarea.value = mnemonic;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        const originalText = element.textContent;
+        element.textContent = '✅ کپی شد!';
+        element.classList.add('copied');
+        setTimeout(() => {
+            element.textContent = originalText;
+            element.classList.remove('copied');
+        }, 2000);
+    });
 }
 
 /* =========================================================
@@ -2028,4 +2133,4 @@ scannerClearBtn.onclick = ()=>{
 </script>
 
 </body>
-  </html>
+    </html>
