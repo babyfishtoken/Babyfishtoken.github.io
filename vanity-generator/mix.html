@@ -125,12 +125,12 @@ textarea.checking{
 .btn-stop:hover:not(:disabled){
     background:#b91c1c;
 }
-
-.btn-clear-list{
-    background:#dc2626;
+/* دکمه پاک کردن جدید */
+.btn-clear-all{
+    background:#6b7280;
 }
-.btn-clear-list:hover:not(:disabled){
-    background:#b91c1c;
+.btn-clear-all:hover:not(:disabled){
+    background:#4b5563;
 }
 
 .result{
@@ -334,30 +334,6 @@ textarea.checking{
     background: #6d28d9;
 }
 
-.clear-list-btn {
-    background: #dc2626;
-    color: white;
-    border: 0;
-    border-radius: 8px;
-    padding: 6px 14px;
-    font-size: 12px;
-    cursor: pointer;
-    margin-top: 8px;
-    transition: 0.2s;
-}
-
-.clear-list-btn:hover {
-    background: #b91c1c;
-}
-
-.list-buttons {
-    display: flex;
-    gap: 10px;
-    margin-top: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
 .stats{
     display:flex;
     justify-content:space-around;
@@ -459,6 +435,8 @@ textarea.checking{
 .scanner-section .scan { background: #059669; }
 .scanner-section .copy { background: #7c3aed; }
 .scanner-section .clear { background: #374151; }
+/* دکمه کپی عبارت جدید */
+.scanner-section .copy-mnemonic { background: #d97706; }
 
 .scanner-section .status {
     margin: 10px 0;
@@ -628,56 +606,36 @@ textarea.checking{
     margin-top: 7px;
 }
 
-/* ===== عبارت ۱۲ کلمه‌ای در بالای جدول ===== */
-.scanner-section .mnemonic-display {
-    background: #0a1a2f;
-    border: 1px solid #f59e0b44;
-    border-radius: 6px;
-    padding: 6px 12px;
-    margin: 4px 0 4px 0;
+.scanner-section .mnemonic-link {
+    color: #f59e0b;
+    font-size: 10px;
     font-family: monospace;
-    font-size: 11px;
-    color: #fbbf24;
-    direction: ltr;
-    text-align: left;
     word-break: break-all;
+    background: #1a1a2e;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid #f59e0b33;
+    max-width: 300px;
     cursor: pointer;
-    transition: 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+    transition: all 0.2s ease;
 }
-
-.scanner-section .mnemonic-display:hover {
-    background: #f59e0b11;
+.scanner-section .mnemonic-link:hover {
+    background: #2a2a4e;
     border-color: #f59e0b;
 }
 
-.scanner-section .mnemonic-display .label {
-    color: #9ca3af;
+.scanner-section .copy-mnemonic-btn {
+    background: #d97706;
+    border: 0;
+    border-radius: 4px;
+    color: white;
+    padding: 2px 8px;
     font-size: 10px;
-    font-family: Arial, sans-serif;
+    cursor: pointer;
+    transition: 0.2s;
 }
-
-.scanner-section .mnemonic-display .text {
-    color: #fbbf24;
-    flex: 1;
-}
-
-.scanner-section .mnemonic-display .copy-hint {
-    color: #6b7280;
-    font-size: 9px;
-    font-family: Arial, sans-serif;
-}
-
-.scanner-section .mnemonic-display.copied {
-    border-color: #34d399;
-    background: #064e3b33;
-}
-
-.scanner-section .mnemonic-display.copied .text {
-    color: #34d399;
+.scanner-section .copy-mnemonic-btn:hover {
+    background: #b45309;
 }
 
 @media(max-width:650px) {
@@ -730,6 +688,10 @@ textarea.checking{
         <button class="btn-start" id="autoBtn" onclick="toggleAutoFind()" disabled>
             🚀 شروع جستجو
         </button>
+        <!-- دکمه پاک کردن جدید -->
+        <button class="btn-clear-all" id="clearAllBtn" onclick="clearAllData()">
+            🗑 پاک کردن
+        </button>
     </div>
 
     <div id="counter" class="counter"></div>
@@ -746,20 +708,14 @@ textarea.checking{
         <div id="addressListBox" class="list-box addresses">
             <div class="title">🔗 لیست آدرس‌ها <span class="count" id="addressCount">(0)</span></div>
             <div id="addressList" class="items"></div>
-            <div class="list-buttons">
-                <button class="copy-list-btn" onclick="copyAddressList()">📋 کپی همه آدرس‌ها</button>
-                <button class="clear-list-btn" onclick="clearAddressList()">🗑 پاک کردن آدرس‌ها</button>
-            </div>
+            <button class="copy-list-btn" onclick="copyAddressList()">📋 کپی همه آدرس‌ها</button>
         </div>
 
         <!-- لیست عبارات -->
         <div id="mnemonicListBox" class="list-box mnemonics">
             <div class="title">🔑 لیست عبارات ۱۲ کلمه‌ای <span class="count" id="mnemonicCount">(0)</span></div>
             <div id="mnemonicList" class="items"></div>
-            <div class="list-buttons">
-                <button class="copy-list-btn" onclick="copyMnemonicList()">📋 کپی همه عبارات</button>
-                <button class="clear-list-btn" onclick="clearMnemonicList()">🗑 پاک کردن عبارات</button>
-            </div>
+            <button class="copy-list-btn" onclick="copyMnemonicList()">📋 کپی همه عبارات</button>
         </div>
     </div>
 
@@ -831,6 +787,11 @@ textarea.checking{
 
         <button class="parse" id="transferAddresses" style="background:#8b5cf6;">
             ⬇️ انتقال آدرس‌ها از لیست بالا
+        </button>
+
+        <!-- دکمه کپی عبارت جدید -->
+        <button class="copy-mnemonic" id="copyMnemonicFromScanner" onclick="copyMnemonicFromScanner()">
+            🔑 کپی عبارت داراها
         </button>
 
     </div>
@@ -916,6 +877,66 @@ const addressList = document.getElementById('addressList');
 const mnemonicList = document.getElementById('mnemonicList');
 const addressCount = document.getElementById('addressCount');
 const mnemonicCount = document.getElementById('mnemonicCount');
+
+// ==================== تابع پاک کردن ====================
+function clearAllData() {
+    // توقف جستجو اگر در حال اجراست
+    if (isAutoFinding) {
+        stopAutoFind();
+    }
+    
+    // پاک کردن آرایه‌ها
+    foundAddresses = [];
+    foundMnemonics = [];
+    walletCache.clear();
+    
+    // پاک کردن فیلدها
+    mnemonicInput.value = '';
+    mnemonicInput.classList.remove('found', 'checking');
+    addressBox.textContent = '';
+    resultDiv.style.display = 'none';
+    errorBox.textContent = '';
+    counterDiv.textContent = '';
+    counterDiv.className = 'counter';
+    
+    // پاک کردن لیست‌ها
+    addressList.textContent = '';
+    mnemonicList.textContent = '';
+    addressListBox.style.display = 'none';
+    mnemonicListBox.style.display = 'none';
+    addressCount.textContent = '(0)';
+    mnemonicCount.textContent = '(0)';
+    
+    // پاک کردن آمار
+    attempts = 0;
+    foundCount = 0;
+    statAttempts.textContent = '0';
+    statFound.textContent = '0';
+    statSpeed.textContent = '0';
+    statsDiv.style.display = 'none';
+    
+    // غیرفعال کردن دکمه کپی
+    copyBtn.disabled = true;
+    
+    // همچنین پاک کردن تکست‌ارِی اسکنر
+    document.getElementById('scannerAddresses').value = '';
+    document.getElementById('scannerCount').textContent = 'تعداد آدرس‌ها: 0';
+    document.getElementById('scannerResults').innerHTML = '';
+    document.getElementById('scannerErrors').innerHTML = '';
+    document.getElementById('scannerStats').style.display = 'none';
+    document.getElementById('scannerProgress').style.display = 'none';
+    document.getElementById('scannerScan').disabled = true;
+    document.getElementById('scannerCopy').disabled = true;
+    document.getElementById('scannerStatus').className = 'status info';
+    document.getElementById('scannerStatus').textContent = '📋 همه داده‌ها پاک شدند.';
+    
+    statusDiv.className = 'status info';
+    statusDiv.textContent = '🗑 همه داده‌ها پاک شدند.';
+    statusDiv.style.display = 'block';
+    setTimeout(() => {
+        statusDiv.style.display = 'none';
+    }, 2000);
+}
 
 // ==================== بارگذاری فایل ====================
 async function loadWords() {
@@ -1232,23 +1253,6 @@ function updateLists() {
     }
 }
 
-// ==================== پاک کردن لیست‌ها ====================
-function clearAddressList() {
-    foundAddresses = [];
-    addressListBox.style.display = 'none';
-    addressList.textContent = '';
-    addressCount.textContent = '(0)';
-    // به‌روزرسانی تکست‌ارِی اسکنر
-    updateScannerTextarea();
-}
-
-function clearMnemonicList() {
-    foundMnemonics = [];
-    mnemonicListBox.style.display = 'none';
-    mnemonicList.textContent = '';
-    mnemonicCount.textContent = '(0)';
-}
-
 // ==================== کپی لیست‌ها ====================
 function copyAddressList() {
     const text = foundAddresses.join('\n');
@@ -1458,10 +1462,6 @@ function updateScannerTextarea() {
         const valid = lines.filter(x => /^0x[a-fA-F0-9]{40}$/.test(x));
         document.getElementById('scannerCount').textContent = `تعداد آدرس‌های معتبر: ${valid.length} | کل خطوط: ${lines.length}`;
         document.getElementById('scannerScan').disabled = false;
-    } else {
-        scannerTextarea.value = '';
-        document.getElementById('scannerCount').textContent = 'تعداد آدرس‌ها: 0';
-        document.getElementById('scannerScan').disabled = true;
     }
 }
 
@@ -1844,16 +1844,13 @@ function createWalletElement(wallet, index){
     div.id = "scanner-wallet-" + index;
     
     const mnemonic = wallet.mnemonic || getMnemonicForAddress(wallet.address);
-    
-    // ساخت بخش عبارت ۱۲ کلمه‌ای
     let mnemonicHtml = '';
     if (mnemonic) {
         mnemonicHtml = `
-            <div class="mnemonic-display" onclick="copyMnemonicFromScanner('${escapeHtml(mnemonic)}', this)">
-                <span class="label">🔑 عبارت ۱۲ کلمه‌ای:</span>
-                <span class="text">${escapeHtml(mnemonic)}</span>
-                <span class="copy-hint">(برای کپی کلیک کنید)</span>
-            </div>
+            <span class="mnemonic-link" onclick="copySingleMnemonic('${escapeHtml(mnemonic)}')" title="برای کپی کلیک کنید">
+                🔑 ${escapeHtml(mnemonic)}
+            </span>
+            <button class="copy-mnemonic-btn" onclick="copySingleMnemonic('${escapeHtml(mnemonic)}')">📋 کپی</button>
         `;
     }
     
@@ -1862,48 +1859,14 @@ function createWalletElement(wallet, index){
             <span class="num">#${index+1}</span>
             <span class="status-light gray" id="scanner-light-${index}"></span>
             <span class="addr">${escapeHtml(wallet.address)}</span>
+            ${mnemonicHtml}
             <span class="wstatus">در حال بررسی...</span>
         </div>
-        ${mnemonicHtml}
         <div class="networks"></div>
     `;
     
     scannerResultsBox.appendChild(div);
     return div;
-}
-
-/* =========================================================
-   COPY MNEMONIC FROM SCANNER
-========================================================= */
-
-function copyMnemonicFromScanner(mnemonic, element) {
-    if (!mnemonic) return;
-    navigator.clipboard.writeText(mnemonic).then(() => {
-        element.classList.add('copied');
-        const textSpan = element.querySelector('.text');
-        const originalText = textSpan.textContent;
-        textSpan.textContent = '✅ کپی شد!';
-        setTimeout(() => {
-            textSpan.textContent = originalText;
-            element.classList.remove('copied');
-        }, 2000);
-    }).catch(() => {
-        // fallback
-        const textarea = document.createElement('textarea');
-        textarea.value = mnemonic;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-        element.classList.add('copied');
-        const textSpan = element.querySelector('.text');
-        const originalText = textSpan.textContent;
-        textSpan.textContent = '✅ کپی شد!';
-        setTimeout(() => {
-            textSpan.textContent = originalText;
-            element.classList.remove('copied');
-        }, 2000);
-    });
 }
 
 /* =========================================================
@@ -2167,6 +2130,89 @@ scannerClearBtn.onclick = ()=>{
     scannerStatus.className = "status info";
     scannerStatus.textContent = "📋 آدرس‌ها را وارد کنید";
 };
+
+/* =========================================================
+   COPY SINGLE MNEMONIC (جدید)
+========================================================= */
+
+function copySingleMnemonic(mnemonic) {
+    if (!mnemonic) return;
+    // حذف escape‌ها برای کپی دقیق
+    const cleanMnemonic = mnemonic.replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+    navigator.clipboard.writeText(cleanMnemonic).then(() => {
+        const oldText = document.getElementById('copyMnemonicFromScanner').textContent;
+        document.getElementById('copyMnemonicFromScanner').textContent = '✅ کپی شد!';
+        setTimeout(() => {
+            document.getElementById('copyMnemonicFromScanner').textContent = oldText;
+        }, 1500);
+    }).catch(() => {
+        // روش جایگزین
+        const textarea = document.createElement('textarea');
+        textarea.value = cleanMnemonic;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        const oldText = document.getElementById('copyMnemonicFromScanner').textContent;
+        document.getElementById('copyMnemonicFromScanner').textContent = '✅ کپی شد!';
+        setTimeout(() => {
+            document.getElementById('copyMnemonicFromScanner').textContent = oldText;
+        }, 1500);
+    });
+}
+
+/* =========================================================
+   COPY MNEMONIC FROM SCANNER (دکمه اصلی)
+========================================================= */
+
+function copyMnemonicFromScanner() {
+    // جمع‌آوری تمام عبارات ۱۲ کلمه‌ای کیف‌پول‌های دارای موجودی
+    const mnemonicList = [];
+    for (const wallet of scannerResults) {
+        let hasBalance = false;
+        for (const id in wallet.networks) {
+            const data = wallet.networks[id];
+            if ((data.native && data.native !== 0n) || data.tokens.length > 0) {
+                hasBalance = true;
+                break;
+            }
+        }
+        if (hasBalance && wallet.mnemonic) {
+            mnemonicList.push(wallet.mnemonic);
+        }
+    }
+    
+    if (mnemonicList.length === 0) {
+        scannerStatus.className = "status err";
+        scannerStatus.textContent = "❌ هیچ کیف‌پول دارای موجودی با عبارت ۱۲ کلمه‌ای پیدا نشد.";
+        return;
+    }
+    
+    const text = mnemonicList.join('\n\n');
+    navigator.clipboard.writeText(text).then(() => {
+        const old = document.getElementById('copyMnemonicFromScanner').textContent;
+        document.getElementById('copyMnemonicFromScanner').textContent = `✅ ${mnemonicList.length} عبارت کپی شد!`;
+        setTimeout(() => {
+            document.getElementById('copyMnemonicFromScanner').textContent = old;
+        }, 2000);
+        scannerStatus.className = "status ok";
+        scannerStatus.textContent = `✅ ${mnemonicList.length} عبارت ۱۲ کلمه‌ای کپی شدند.`;
+    }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        const old = document.getElementById('copyMnemonicFromScanner').textContent;
+        document.getElementById('copyMnemonicFromScanner').textContent = `✅ ${mnemonicList.length} عبارت کپی شد!`;
+        setTimeout(() => {
+            document.getElementById('copyMnemonicFromScanner').textContent = old;
+        }, 2000);
+        scannerStatus.className = "status ok";
+        scannerStatus.textContent = `✅ ${mnemonicList.length} عبارت ۱۲ کلمه‌ای کپی شدند.`;
+    });
+}
 
 </script>
 
