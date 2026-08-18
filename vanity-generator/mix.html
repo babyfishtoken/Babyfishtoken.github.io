@@ -628,28 +628,55 @@ textarea.checking{
     margin-top: 7px;
 }
 
-.scanner-section .mnemonic-link {
-    color: #f59e0b;
-    font-size: 10px;
+/* ===== عبارت ۱۲ کلمه‌ای در بالای جدول ===== */
+.scanner-section .mnemonic-display {
+    background: #0a1a2f;
+    border: 1px solid #f59e0b44;
+    border-radius: 6px;
+    padding: 6px 12px;
+    margin: 4px 0 4px 0;
     font-family: monospace;
+    font-size: 11px;
+    color: #fbbf24;
+    direction: ltr;
+    text-align: left;
     word-break: break-all;
-    background: #1a1a2e;
-    padding: 2px 8px;
-    border-radius: 4px;
-    border: 1px solid #f59e0b33;
-    max-width: 300px;
     cursor: pointer;
     transition: 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
-.scanner-section .mnemonic-link:hover {
-    background: #f59e0b22;
+.scanner-section .mnemonic-display:hover {
+    background: #f59e0b11;
     border-color: #f59e0b;
 }
 
-.scanner-section .mnemonic-link.copied {
+.scanner-section .mnemonic-display .label {
+    color: #9ca3af;
+    font-size: 10px;
+    font-family: Arial, sans-serif;
+}
+
+.scanner-section .mnemonic-display .text {
+    color: #fbbf24;
+    flex: 1;
+}
+
+.scanner-section .mnemonic-display .copy-hint {
+    color: #6b7280;
+    font-size: 9px;
+    font-family: Arial, sans-serif;
+}
+
+.scanner-section .mnemonic-display.copied {
     border-color: #34d399;
     background: #064e3b33;
+}
+
+.scanner-section .mnemonic-display.copied .text {
     color: #34d399;
 }
 
@@ -1817,18 +1844,27 @@ function createWalletElement(wallet, index){
     div.id = "scanner-wallet-" + index;
     
     const mnemonic = wallet.mnemonic || getMnemonicForAddress(wallet.address);
-    const mnemonicHtml = mnemonic ? 
-        `<span class="mnemonic-link" onclick="copyMnemonicFromScanner('${escapeHtml(mnemonic)}', this)" title="برای کپی کلیک کنید">🔑 ${escapeHtml(mnemonic)}</span>` : 
-        '<span class="nothing">بدون عبارت</span>';
+    
+    // ساخت بخش عبارت ۱۲ کلمه‌ای
+    let mnemonicHtml = '';
+    if (mnemonic) {
+        mnemonicHtml = `
+            <div class="mnemonic-display" onclick="copyMnemonicFromScanner('${escapeHtml(mnemonic)}', this)">
+                <span class="label">🔑 عبارت ۱۲ کلمه‌ای:</span>
+                <span class="text">${escapeHtml(mnemonic)}</span>
+                <span class="copy-hint">(برای کپی کلیک کنید)</span>
+            </div>
+        `;
+    }
     
     div.innerHTML = `
         <div class="wallet-head">
             <span class="num">#${index+1}</span>
             <span class="status-light gray" id="scanner-light-${index}"></span>
             <span class="addr">${escapeHtml(wallet.address)}</span>
-            ${mnemonicHtml}
             <span class="wstatus">در حال بررسی...</span>
         </div>
+        ${mnemonicHtml}
         <div class="networks"></div>
     `;
     
@@ -1843,11 +1879,12 @@ function createWalletElement(wallet, index){
 function copyMnemonicFromScanner(mnemonic, element) {
     if (!mnemonic) return;
     navigator.clipboard.writeText(mnemonic).then(() => {
-        const originalText = element.textContent;
-        element.textContent = '✅ کپی شد!';
         element.classList.add('copied');
+        const textSpan = element.querySelector('.text');
+        const originalText = textSpan.textContent;
+        textSpan.textContent = '✅ کپی شد!';
         setTimeout(() => {
-            element.textContent = originalText;
+            textSpan.textContent = originalText;
             element.classList.remove('copied');
         }, 2000);
     }).catch(() => {
@@ -1858,11 +1895,12 @@ function copyMnemonicFromScanner(mnemonic, element) {
         textarea.select();
         document.execCommand('copy');
         document.body.removeChild(textarea);
-        const originalText = element.textContent;
-        element.textContent = '✅ کپی شد!';
         element.classList.add('copied');
+        const textSpan = element.querySelector('.text');
+        const originalText = textSpan.textContent;
+        textSpan.textContent = '✅ کپی شد!';
         setTimeout(() => {
-            element.textContent = originalText;
+            textSpan.textContent = originalText;
             element.classList.remove('copied');
         }, 2000);
     });
