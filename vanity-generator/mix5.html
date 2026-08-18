@@ -515,6 +515,43 @@ textarea.checking{
     margin-top:4px;
 }
 
+/* استایل جدید برای نمایش عبارت و دکمه کپی در دو خط */
+.scanner-section .mnemonic-row {
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:2px;
+    width:100%;
+    margin-top:3px;
+}
+
+.scanner-section .mnemonic-text {
+    color:#f59e0b;
+    font-size:9px;
+    font-family:monospace;
+    word-break:break-all;
+    background:#1a1a2e;
+    padding:2px 6px;
+    border-radius:3px;
+    border:1px solid #f59e0b33;
+    width:100%;
+    cursor:pointer;
+}
+
+.scanner-section .mnemonic-copy-btn {
+    background:#d97706;
+    border:0;
+    border-radius:3px;
+    color:white;
+    padding:1px 8px;
+    font-size:9px;
+    cursor:pointer;
+}
+
+.scanner-section .mnemonic-copy-btn:hover {
+    background:#b45309;
+}
+
 @media(max-width:600px){
     .scanner-section .stats-grid{
         grid-template-columns:repeat(2,1fr);
@@ -1289,7 +1326,6 @@ function setRandomMnemonic() {
     copyBtn.disabled = false;
     errorBox.textContent = '';
     resultDiv.style.display = 'none';
-    // حذف پیام status برای جلوگیری از پرش صفحه
 }
 
 function tryGenerateAddress(mnemonic) {
@@ -1395,14 +1431,23 @@ function findAddressAuto() {
         copyBtn.disabled = false;
         mnemonicInput.classList.remove('checking');
         mnemonicInput.classList.add('found');
+        
+        // استفاده از textContent برای جلوگیری از پرش صفحه
+        const statusText = `✅ کیف پول پیدا شد! (${foundCount} تا)`;
+        document.querySelector('.status.found') ? statusDiv.textContent = statusText : null;
+        statusDiv.textContent = statusText;
         statusDiv.className = 'status found';
-        statusDiv.textContent = `✅ کیف پول پیدا شد! (${foundCount} تا)`;
-        statusDiv.style.display = 'block';
-        counterDiv.className = 'counter found';
+        
         counterDiv.textContent = `✅ ${foundCount} کیف پول پیدا شد!`;
+        counterDiv.className = 'counter found';
+        
         updateLists();
         updateScannerTextarea();
-        setTimeout(() => { statusDiv.style.display = 'none'; }, 2000);
+        setTimeout(() => { 
+            if (statusDiv.classList.contains('found')) {
+                statusDiv.style.display = 'none';
+            }
+        }, 2000);
     } else {
         if (attempts % 100 === 0) {
             errorBox.textContent = `🔄 ${attempts} تلاش...`;
@@ -1656,8 +1701,10 @@ function createWalletElement(wallet, index){
     let mnemonicHtml = '';
     if (mnemonic) {
         mnemonicHtml = `
-            <span style="color:#f59e0b;font-size:9px;font-family:monospace;word-break:break-all;background:#1a1a2e;padding:1px 5px;border-radius:3px;border:1px solid #f59e0b33;max-width:200px;cursor:pointer;" onclick="copySingleMnemonic('${escapeHtml(mnemonic)}')">🔑 ${escapeHtml(mnemonic)}</span>
-            <button style="background:#d97706;border:0;border-radius:3px;color:white;padding:1px 6px;font-size:9px;cursor:pointer;" onclick="copySingleMnemonic('${escapeHtml(mnemonic)}')">📋</button>
+            <div class="mnemonic-row">
+                <span class="mnemonic-text" onclick="copySingleMnemonic('${escapeHtml(mnemonic)}')">🔑 ${escapeHtml(mnemonic)}</span>
+                <button class="mnemonic-copy-btn" onclick="copySingleMnemonic('${escapeHtml(mnemonic)}')">📋 کپی</button>
+            </div>
         `;
     }
     div.innerHTML = `
@@ -1665,9 +1712,9 @@ function createWalletElement(wallet, index){
             <span class="num">#${index+1}</span>
             <span class="status-light gray" id="scanner-light-${index}"></span>
             <span class="addr">${escapeHtml(wallet.address)}</span>
-            ${mnemonicHtml}
             <span class="wstatus">در حال بررسی...</span>
         </div>
+        ${mnemonicHtml}
         <div class="networks"></div>
     `;
     scannerResultsBox.appendChild(div);
@@ -1888,4 +1935,4 @@ function copySingleMnemonic(mnemonic) {
 </script>
 
 </body>
-        </html>
+            </html>
