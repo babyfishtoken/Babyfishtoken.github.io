@@ -15,78 +15,78 @@
 }
 
 body{
-    padding:15px 10px;
+    padding:10px 8px;
     background:#0f172a;
     color:#e2e8f0;
     font-family:Arial,sans-serif;
-    font-size:14px;
+    font-size:13px;
 }
 
 .container{
     max-width:800px;
     margin:auto;
     background:#1e293b;
-    padding:15px;
-    border-radius:12px;
+    padding:12px;
+    border-radius:10px;
     box-shadow:0 4px 20px rgba(0,0,0,.4);
 }
 
 h1{
     text-align:center;
-    font-size:20px;
+    font-size:18px;
     color:#60a5fa;
-    margin-bottom:5px;
+    margin-bottom:3px;
 }
 
 h1 span{
     color:#f59e0b;
-    font-size:12px;
+    font-size:11px;
     display:block;
-    margin-top:3px;
+    margin-top:2px;
 }
 
 textarea{
     width:100%;
-    height:80px;
-    padding:10px;
+    height:70px;
+    padding:8px;
     border:1px solid #334155;
-    border-radius:8px;
+    border-radius:6px;
     background:#0f172a;
     color:#e2e8f0;
-    font-size:14px;
+    font-size:13px;
     resize:vertical;
     direction:ltr;
     text-align:left;
     transition:0.3s;
-    min-height:60px;
+    min-height:50px;
 }
 
 textarea.found{
     border:2px solid #34d399;
-    box-shadow:0 0 20px rgba(52,211,153,0.2);
+    box-shadow:0 0 15px rgba(52,211,153,0.15);
 }
 
 textarea.checking{
     border:2px solid #f59e0b;
-    box-shadow:0 0 15px rgba(245,158,11,0.15);
+    box-shadow:0 0 12px rgba(245,158,11,0.12);
 }
 
 .btn-group{
     display:flex;
-    gap:6px;
-    margin-top:10px;
+    gap:5px;
+    margin-top:8px;
     flex-wrap:wrap;
 }
 
 .btn-group button{
     flex:1;
-    padding:8px 6px;
+    padding:6px 5px;
     border:0;
-    border-radius:8px;
+    border-radius:6px;
     color:white;
-    font-size:13px;
+    font-size:12px;
     cursor:pointer;
-    min-width:60px;
+    min-width:50px;
     transition:0.2s;
 }
 
@@ -99,8 +99,6 @@ textarea.checking{
 .btn-primary:hover:not(:disabled){ background:#1d4ed8; }
 .btn-random{ background:#059669; }
 .btn-random:hover:not(:disabled){ background:#047857; }
-.btn-copy{ background:#7c3aed; }
-.btn-copy:hover:not(:disabled){ background:#6d28d9; }
 .btn-start{ background:#059669; }
 .btn-start:hover:not(:disabled){ background:#047857; }
 .btn-stop{ background:#dc2626; }
@@ -110,16 +108,16 @@ textarea.checking{
 
 .result{
     display:none;
-    margin-top:10px;
-    padding:10px;
+    margin-top:8px;
+    padding:8px;
     background:#0f172a;
-    border-radius:8px;
+    border-radius:6px;
 }
 
 .label{
     color:#94a3b8;
-    font-size:12px;
-    margin-bottom:4px;
+    font-size:11px;
+    margin-bottom:3px;
 }
 
 .address{
@@ -128,69 +126,64 @@ textarea.checking{
     word-break:break-all;
     color:#34d399;
     font-family:monospace;
-    font-size:13px;
+    font-size:12px;
 }
 
 .error{
-    margin-top:8px;
+    margin-top:6px;
     color:#f87171;
     text-align:center;
-    font-size:13px;
-    min-height:20px;
+    font-size:12px;
+    min-height:18px;
 }
 
 .status{
-    margin-top:6px;
-    padding:6px 10px;
-    border-radius:6px;
+    margin-top:5px;
+    padding:5px 8px;
+    border-radius:5px;
     text-align:center;
-    font-size:13px;
-    min-height:32px;
+    font-size:12px;
+    min-height:28px;
 }
 
 .status.loading{ background:#1e3a5f; color:#60a5fa; }
 .status.success{ background:#064e3b; color:#34d399; }
 .status.error{ background:#7f1d1d; color:#f87171; }
 .status.info{ background:#1e3a5f; color:#60a5fa; }
-.status.found{ background:#064e3b; color:#34d399; border:2px solid #34d399; }
-.status.checking{ background:#1e3a5f; color:#f59e0b; border:2px solid #f59e0b; }
-
-@keyframes spin{
-    0%{ transform:rotate(0deg); }
-    100%{ transform:rotate(360deg); }
-}
+.status.found{ background:#064e3b; color:#34d399; border:1px solid #34d399; }
+.status.checking{ background:#1e3a5f; color:#f59e0b; border:1px solid #f59e0b; }
 
 .info-text{
-    margin-top:8px;
+    margin-top:6px;
     color:#94a3b8;
-    font-size:12px;
+    font-size:11px;
     text-align:center;
 }
 
 .counter{
-    margin-top:6px;
+    margin-top:5px;
     text-align:center;
     color:#60a5fa;
-    font-size:13px;
-    min-height:22px;
+    font-size:12px;
+    min-height:20px;
 }
 
-.counter.found{ color:#34d399; font-weight:bold; font-size:16px; }
+.counter.found{ color:#34d399; font-weight:bold; font-size:14px; }
 .counter.checking{ color:#f59e0b; }
 
 .lists-container{
     display:flex;
-    gap:10px;
-    margin-top:12px;
+    gap:8px;
+    margin-top:10px;
     flex-wrap:wrap;
 }
 
 .list-box{
     flex:1;
-    min-width:200px;
+    min-width:180px;
     background:#0a1a2f;
-    border-radius:8px;
-    padding:10px;
+    border-radius:6px;
+    padding:8px;
     border:1px solid #2a4a6f;
     display:none;
 }
@@ -198,42 +191,42 @@ textarea.checking{
 .list-box .title{
     color:#60a5fa;
     font-weight:bold;
-    font-size:13px;
-    margin-bottom:6px;
+    font-size:11px;
+    margin-bottom:4px;
     text-align:center;
-    padding-bottom:5px;
+    padding-bottom:4px;
     border-bottom:1px solid #2a4a6f;
 }
 
 .list-box .title .count{
     color:#f59e0b;
-    font-size:12px;
+    font-size:10px;
 }
 
 .list-box .items{
     font-family:monospace;
-    font-size:11px;
+    font-size:10px;
     direction:ltr;
     text-align:left;
     color:#d1d5db;
     white-space:pre-wrap;
     word-break:break-all;
-    max-height:150px;
+    max-height:100px;
     overflow-y:auto;
-    padding:3px;
-    line-height:1.6;
+    padding:2px;
+    line-height:1.5;
 }
 
 .list-box .items::-webkit-scrollbar{
-    width:4px;
+    width:3px;
 }
 .list-box .items::-webkit-scrollbar-track{
     background:#1a2a3f;
-    border-radius:5px;
+    border-radius:3px;
 }
 .list-box .items::-webkit-scrollbar-thumb{
     background:#3a6a9f;
-    border-radius:5px;
+    border-radius:3px;
 }
 
 .list-box.addresses{ border-color:#34d399; }
@@ -245,11 +238,11 @@ textarea.checking{
     background:#7c3aed;
     color:white;
     border:0;
-    border-radius:5px;
-    padding:4px 10px;
-    font-size:11px;
+    border-radius:4px;
+    padding:3px 8px;
+    font-size:10px;
     cursor:pointer;
-    margin-top:5px;
+    margin-top:4px;
     transition:0.2s;
     width:100%;
 }
@@ -258,68 +251,68 @@ textarea.checking{
 .stats{
     display:flex;
     justify-content:space-around;
-    margin-top:8px;
-    padding:8px;
+    margin-top:6px;
+    padding:6px;
     background:#0a2647;
-    border-radius:6px;
+    border-radius:5px;
     flex-wrap:wrap;
 }
 
 .stats div{
     text-align:center;
-    padding:3px 8px;
+    padding:2px 6px;
 }
 
 .stats .number{
     color:#f59e0b;
-    font-size:16px;
+    font-size:14px;
     font-weight:bold;
 }
 
 .stats .number.green{ color:#34d399; }
-.stats .label{ color:#94a3b8; font-size:10px; }
+.stats .label{ color:#94a3b8; font-size:9px; }
 
 /* ===== اسکنر ===== */
 .scanner-section{
-    margin-top:20px;
-    padding-top:15px;
+    margin-top:15px;
+    padding-top:12px;
     border-top:2px solid #334155;
 }
 
 .scanner-section h2{
     color:#60a5fa;
     text-align:center;
-    font-size:17px;
-    margin-bottom:3px;
+    font-size:15px;
+    margin-bottom:2px;
 }
 
 .scanner-section .sub{
     text-align:center;
     color:#94a3b8;
-    font-size:11px;
-    margin-bottom:10px;
+    font-size:10px;
+    margin-bottom:8px;
 }
 
 .scanner-section textarea{
-    height:70px;
+    height:60px;
 }
 
 .scanner-section .buttons{
     display:flex;
-    gap:5px;
-    margin-top:8px;
+    gap:4px;
+    margin-top:6px;
     flex-wrap:wrap;
 }
 
 .scanner-section button{
     flex:1;
-    min-width:80px;
+    min-width:70px;
     border:0;
-    border-radius:6px;
-    padding:7px 8px;
+    border-radius:5px;
+    padding:6px 6px;
     color:white;
     cursor:pointer;
-    font-size:12px;
+    font-size:11px;
 }
 
 .scanner-section button:disabled{
@@ -329,16 +322,15 @@ textarea.checking{
 
 .scanner-section .parse{ background:#2563eb; }
 .scanner-section .scan{ background:#059669; }
-.scanner-section .copy{ background:#7c3aed; }
 .scanner-section .clear{ background:#374151; }
 
 .scanner-section .status{
-    margin:5px 0;
-    padding:5px 8px;
-    border-radius:6px;
+    margin:4px 0;
+    padding:4px 6px;
+    border-radius:5px;
     text-align:center;
-    font-size:12px;
-    min-height:28px;
+    font-size:11px;
+    min-height:24px;
 }
 
 .scanner-section .info{ background:#172554; color:#93c5fd; }
@@ -349,17 +341,17 @@ textarea.checking{
 .scanner-section .count{
     text-align:center;
     color:#94a3b8;
-    font-size:11px;
-    margin:4px 0;
+    font-size:10px;
+    margin:3px 0;
 }
 
 .scanner-section .progress{
-    height:4px;
+    height:3px;
     background:#1f2937;
-    border-radius:3px;
+    border-radius:2px;
     overflow:hidden;
     display:none;
-    margin:5px 0;
+    margin:4px 0;
 }
 .scanner-section .progress div{
     height:100%;
@@ -371,33 +363,33 @@ textarea.checking{
 .scanner-section .stats-grid{
     display:none;
     grid-template-columns:repeat(4,1fr);
-    gap:4px;
-    margin-top:6px;
+    gap:3px;
+    margin-top:5px;
 }
 
 .scanner-section .stat{
     background:#0b1324;
     border:1px solid #263244;
-    border-radius:5px;
-    padding:4px;
+    border-radius:4px;
+    padding:3px;
     text-align:center;
 }
 
 .scanner-section .stat b{
     display:block;
     color:#fbbf24;
-    font-size:14px;
+    font-size:12px;
 }
 
 .scanner-section .stat span{
     color:#94a3b8;
-    font-size:9px;
+    font-size:8px;
 }
 
 .scanner-section .wallet{
-    margin-top:5px;
+    margin-top:4px;
     border:1px solid #263244;
-    border-radius:6px;
+    border-radius:5px;
     background:#0b1324;
     overflow:hidden;
     transition:all .3s ease;
@@ -405,23 +397,23 @@ textarea.checking{
 
 .scanner-section .wallet.has-balance{
     border-color:#10b981;
-    box-shadow:0 0 12px rgba(16,185,129,0.15);
+    box-shadow:0 0 10px rgba(16,185,129,0.12);
 }
 
 .scanner-section .wallet-head{
-    padding:5px 8px;
+    padding:4px 6px;
     background:#111a2b;
     display:flex;
     align-items:center;
-    gap:5px;
-    font-size:11px;
+    gap:4px;
+    font-size:10px;
     flex-wrap:wrap;
 }
 
 .scanner-section .num{
     color:#f59e0b;
     font-weight:bold;
-    font-size:11px;
+    font-size:10px;
 }
 
 .scanner-section .addr{
@@ -431,58 +423,58 @@ textarea.checking{
     color:#60a5fa;
     word-break:break-all;
     flex:1;
-    font-size:11px;
+    font-size:10px;
 }
 
 .scanner-section .wstatus{
-    font-size:9px;
+    font-size:8px;
     white-space:nowrap;
 }
 
 .scanner-section .status-light{
     display:inline-block;
-    width:8px;
-    height:8px;
+    width:7px;
+    height:7px;
     border-radius:50%;
-    margin-right:3px;
+    margin-right:2px;
     flex-shrink:0;
 }
 
-.scanner-section .status-light.green{ background:#10b981; box-shadow:0 0 8px #10b981; }
+.scanner-section .status-light.green{ background:#10b981; box-shadow:0 0 6px #10b981; }
 .scanner-section .status-light.gray{ background:#4b5563; }
-.scanner-section .status-light.yellow{ background:#f59e0b; box-shadow:0 0 8px #f59e0b; }
-.scanner-section .status-light.red{ background:#ef4444; box-shadow:0 0 8px #ef4444; }
+.scanner-section .status-light.yellow{ background:#f59e0b; box-shadow:0 0 6px #f59e0b; }
+.scanner-section .status-light.red{ background:#ef4444; box-shadow:0 0 6px #ef4444; }
 
-.scanner-section .networks{ padding:3px 5px; }
+.scanner-section .networks{ padding:2px 4px; }
 .scanner-section .net{
     display:flex;
     align-items:center;
-    gap:4px;
-    padding:3px 4px;
+    gap:3px;
+    padding:2px 3px;
     border-bottom:1px solid #1d2737;
-    min-height:22px;
+    min-height:20px;
     flex-wrap:wrap;
-    font-size:10px;
+    font-size:9px;
 }
 .scanner-section .net:last-child{ border-bottom:0; }
 
 .scanner-section .netname{
-    width:65px;
+    width:55px;
     color:#d1d5db;
-    font-size:10px;
+    font-size:9px;
     white-space:nowrap;
 }
 
 .scanner-section .native{
     color:#fbbf24;
-    font:10px monospace;
+    font:9px monospace;
     direction:ltr;
     white-space:nowrap;
 }
 
 .scanner-section .tokens{
     display:flex;
-    gap:3px;
+    gap:2px;
     flex-wrap:wrap;
     flex:1;
 }
@@ -491,8 +483,8 @@ textarea.checking{
     background:#182235;
     border:1px solid #293548;
     border-radius:3px;
-    padding:2px 4px;
-    font-size:9px;
+    padding:1px 3px;
+    font-size:8px;
     direction:ltr;
     white-space:nowrap;
 }
@@ -500,34 +492,34 @@ textarea.checking{
 .scanner-section .token b{ color:#fbbf24; }
 .scanner-section .token small{ color:#94a3b8; }
 
-.scanner-section .nothing{ color:#4b5563; font-size:9px; }
-.scanner-section .retry{ color:#fbbf24; font-size:9px; }
-.scanner-section .fail{ color:#f87171; font-size:9px; }
+.scanner-section .nothing{ color:#4b5563; font-size:8px; }
+.scanner-section .retry{ color:#fbbf24; font-size:8px; }
+.scanner-section .fail{ color:#f87171; font-size:8px; }
 
 .scanner-section .error-list{
     color:#f87171;
-    font-size:10px;
-    margin-top:4px;
+    font-size:9px;
+    margin-top:3px;
 }
 
-/* استایل جدید برای نمایش عبارت و دکمه کپی در دو خط */
+/* استایل برای نمایش عبارت و دکمه کپی در دو خط */
 .scanner-section .mnemonic-row {
     display:flex;
     flex-direction:column;
     align-items:flex-start;
     gap:2px;
     width:100%;
-    margin-top:3px;
-    padding:0 8px 5px 8px;
+    margin-top:2px;
+    padding:0 6px 4px 6px;
 }
 
 .scanner-section .mnemonic-text {
     color:#f59e0b;
-    font-size:9px;
+    font-size:8px;
     font-family:monospace;
     word-break:break-all;
     background:#1a1a2e;
-    padding:2px 6px;
+    padding:2px 5px;
     border-radius:3px;
     border:1px solid #f59e0b33;
     width:100%;
@@ -539,8 +531,8 @@ textarea.checking{
     border:0;
     border-radius:3px;
     color:white;
-    padding:1px 8px;
-    font-size:9px;
+    padding:1px 6px;
+    font-size:8px;
     cursor:pointer;
 }
 
@@ -553,27 +545,27 @@ textarea.checking{
         grid-template-columns:repeat(2,1fr);
     }
     .scanner-section .netname{
-        width:55px;
+        width:45px;
     }
     .scanner-section button{
-        min-width:70px;
-        font-size:11px;
+        min-width:60px;
+        font-size:10px;
     }
     .list-box{
         min-width:100%;
     }
     .btn-group button{
-        font-size:12px;
-        padding:6px 4px;
+        font-size:11px;
+        padding:5px 3px;
     }
 }
 
 @media(max-width:400px){
-    body{ padding:8px 5px; }
-    .container{ padding:10px; }
-    h1{ font-size:17px; }
-    textarea{ font-size:12px; height:60px; }
-    .scanner-section textarea{ height:55px; }
+    body{ padding:5px 3px; }
+    .container{ padding:8px; }
+    h1{ font-size:15px; }
+    textarea{ font-size:11px; height:50px; }
+    .scanner-section textarea{ height:45px; }
 }
 </style>
 </head>
@@ -598,7 +590,6 @@ textarea.checking{
     <div class="btn-group">
         <button class="btn-random" id="randomBtn" onclick="setRandomMnemonic()" disabled>🎲 تصادفی</button>
         <button class="btn-primary" onclick="generateAddress()">🔍 نمایش آدرس</button>
-        <button class="btn-copy" onclick="copyMnemonic()" id="copyBtn" disabled>📋 کپی</button>
         <button class="btn-start" id="autoBtn" onclick="toggleAutoFind()" disabled>🚀 شروع</button>
         <button class="btn-clear-all" onclick="clearAllData()">🗑 پاک</button>
     </div>
@@ -650,7 +641,6 @@ textarea.checking{
     <div class="buttons">
         <button class="parse" id="scannerParse">📋 بررسی</button>
         <button class="scan" id="scannerScan" disabled>🔍 استعلام</button>
-        <button class="copy" id="scannerCopy" disabled>📋 کپی نتایج</button>
         <button class="clear" id="scannerClear">🗑 پاک</button>
     </div>
 
@@ -694,7 +684,6 @@ let wordFrequency = {};
 
 const statusDiv = document.getElementById('status');
 const randomBtn = document.getElementById('randomBtn');
-const copyBtn = document.getElementById('copyBtn');
 const autoBtn = document.getElementById('autoBtn');
 const mnemonicInput = document.getElementById('mnemonic');
 const resultDiv = document.getElementById('result');
@@ -738,7 +727,6 @@ function clearAllData() {
     statFound.textContent = '0';
     statSpeed.textContent = '0';
     statsDiv.style.display = 'none';
-    copyBtn.disabled = true;
     
     document.getElementById('scannerAddresses').value = '';
     document.getElementById('scannerCount').textContent = 'تعداد آدرس‌ها: 0';
@@ -747,7 +735,6 @@ function clearAllData() {
     document.getElementById('scannerStats').style.display = 'none';
     document.getElementById('scannerProgress').style.display = 'none';
     document.getElementById('scannerScan').disabled = true;
-    document.getElementById('scannerCopy').disabled = true;
     document.getElementById('scannerStatus').className = 'status info';
     document.getElementById('scannerStatus').textContent = '📋 همه داده‌ها پاک شدند.';
     
@@ -779,7 +766,6 @@ async function loadWords() {
         statusDiv.textContent = `✅ ${fileWords.length} کلمه بارگذاری شد! (۲۳ روش)`;
         randomBtn.disabled = false;
         autoBtn.disabled = false;
-        copyBtn.disabled = true;
         autoBtn.textContent = '🚀 شروع';
 
         setTimeout(() => { statusDiv.style.display = 'none'; }, 2000);
@@ -790,7 +776,6 @@ async function loadWords() {
         statusDiv.style.display = 'block';
         randomBtn.disabled = true;
         autoBtn.disabled = true;
-        copyBtn.disabled = true;
         console.error('Error loading file:', error);
     }
 }
@@ -1319,7 +1304,6 @@ function setRandomMnemonic() {
     if (!words) return;
     mnemonicInput.value = words.join(' ');
     mnemonicInput.classList.remove('found', 'checking');
-    copyBtn.disabled = false;
     errorBox.textContent = '';
     resultDiv.style.display = 'none';
 }
@@ -1354,7 +1338,6 @@ function generateAddress() {
         const wallet = ethers.HDNodeWallet.fromPhrase(mnemonic);
         addressBox.textContent = wallet.address;
         resultDiv.style.display = "block";
-        copyBtn.disabled = false;
     } catch (error) {
         console.error(error);
         errorBox.textContent = "❌ خطا در پردازش عبارت بازیابی.";
@@ -1388,22 +1371,6 @@ function copyMnemonicList() {
         .catch(() => { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); alert('✅ لیست عبارات کپی شد!'); });
 }
 
-function copyMnemonic() {
-    const text = mnemonicInput.value;
-    if (!text) return;
-    navigator.clipboard.writeText(text).then(() => {
-        const orig = copyBtn.textContent;
-        copyBtn.textContent = '✅ کپی شد!';
-        setTimeout(() => { copyBtn.textContent = orig; }, 1200);
-    }).catch(() => {
-        mnemonicInput.select();
-        document.execCommand('copy');
-        const orig = copyBtn.textContent;
-        copyBtn.textContent = '✅ کپی شد!';
-        setTimeout(() => { copyBtn.textContent = orig; }, 1200);
-    });
-}
-
 // ==================== جستجوی خودکار ====================
 function findAddressAuto() {
     if (isAutoFinding === false) return;
@@ -1424,23 +1391,15 @@ function findAddressAuto() {
         addressBox.textContent = address;
         resultDiv.style.display = "block";
         errorBox.textContent = "";
-        copyBtn.disabled = false;
         mnemonicInput.classList.remove('checking');
         mnemonicInput.classList.add('found');
         
-        // فقط شمارنده به‌روز می‌شود، بدون نمایش پیام status
         counterDiv.textContent = `✅ ${foundCount} کیف پول پیدا شد!`;
         counterDiv.className = 'counter found';
         
         updateLists();
         updateScannerTextarea();
         
-    } else {
-        // حذف نمایش پیام تلاش‌ها
-        // فقط در صورت نیاز خطا نمایش داده شود
-        if (attempts % 100 === 0 && errorBox.textContent === '') {
-            // خطاها را نمایش نده
-        }
     }
     if (attempts % 50 === 0) {
         statAttempts.textContent = attempts;
@@ -1558,7 +1517,6 @@ const scannerAddressBox = document.getElementById("scannerAddresses");
 const scannerCount = document.getElementById("scannerCount");
 const scannerParseBtn = document.getElementById("scannerParse");
 const scannerScanBtn = document.getElementById("scannerScan");
-const scannerCopyBtn = document.getElementById("scannerCopy");
 const scannerClearBtn = document.getElementById("scannerClear");
 
 function sleep(ms){ return new Promise(resolve => setTimeout(resolve,ms)); }
@@ -1603,7 +1561,6 @@ scannerParseBtn.onclick = ()=>{
     scannerCount.textContent = `تعداد آدرس‌های معتبر: ${scannerAddresses.length}`;
     scannerResultsBox.innerHTML="";
     scannerStats.style.display="none";
-    scannerCopyBtn.disabled=true;
     if(!scannerAddresses.length){
         scannerScanBtn.disabled=true;
         scannerStatus.className = "status err";
@@ -1790,7 +1747,6 @@ scannerScanBtn.onclick = async function(){
     if(!scannerAddresses.length) return;
     scannerScanBtn.disabled=true;
     scannerParseBtn.disabled=true;
-    scannerCopyBtn.disabled=true;
     scannerResultsBox.innerHTML="";
     scannerResults=[];
     scannerProgress.style.display = "block";
@@ -1846,7 +1802,6 @@ scannerScanBtn.onclick = async function(){
     scannerProgressFill.style.width = "100%";
     scannerScanBtn.disabled=false;
     scannerParseBtn.disabled=false;
-    scannerCopyBtn.disabled=false;
     scannerStatus.className = "status ok";
     scannerStatus.textContent = `✅ بررسی کامل شد — ${scannerAddresses.length} آدرس در ${NETWORKS.length} شبکه.`;
 };
@@ -1868,29 +1823,6 @@ function updateScannerStats(){
     document.getElementById("scannerS4").textContent = errors;
 }
 
-scannerCopyBtn.onclick = ()=>{
-    let text = "MULTICHAIN REPORT\n=================\n\n";
-    for(const wallet of scannerResults){
-        text += wallet.address + "\n";
-        if(wallet.mnemonic) text += "Mnemonic: " + wallet.mnemonic + "\n";
-        for(const network of NETWORKS){
-            const data = wallet.networks[network.id];
-            if(data.native !== null && !data.nativeError){
-                text += `${network.name}: ${formatUnits(data.native, 18)} ${network.symbol}\n`;
-            }
-            for(const token of data.tokens){
-                text += `  ${token.symbol}: ${formatUnits(token.value, token.decimals)}\n`;
-            }
-        }
-        text += "\n";
-    }
-    navigator.clipboard.writeText(text).then(()=>{
-        const old = scannerCopyBtn.textContent;
-        scannerCopyBtn.textContent = "✅ کپی شد";
-        setTimeout(()=>{ scannerCopyBtn.textContent = old; }, 1500);
-    });
-};
-
 scannerClearBtn.onclick = ()=>{
     scannerAddressBox.value="";
     scannerAddresses=[];
@@ -1901,7 +1833,6 @@ scannerClearBtn.onclick = ()=>{
     scannerStats.style.display = "none";
     scannerProgress.style.display = "none";
     scannerScanBtn.disabled=true;
-    scannerCopyBtn.disabled=true;
     scannerStatus.className = "status info";
     scannerStatus.textContent = "📋 آدرس‌ها را وارد کنید";
 };
