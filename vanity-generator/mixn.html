@@ -795,7 +795,7 @@ let shuffledWords = [];
 let shuffleIndex = 0;
 let wordFrequency = {};
 
-// ===== تعریف روش‌ها =====
+// ===== تعریف روش‌ها (بدون روش ترتیبی) =====
 const methodDefinitions = [
     { id: 'complex1', name: 'ترکیبی شافل', badge: 'پیچیده', badgeClass: 'complex' },
     { id: 'complex2', name: 'بر اساس وزن', badge: 'پیچیده', badgeClass: 'complex' },
@@ -819,8 +819,7 @@ const methodDefinitions = [
     { id: 'mixer', name: 'روش میکسر', badge: 'جدید', badgeClass: 'sequential' },
     { id: 'randomstep', name: 'پرش تصادفی', badge: 'جدید', badgeClass: 'sequential' },
     { id: 'threeparts', name: 'سه بخشی پیشرفته', badge: 'جدید', badgeClass: 'sequential' },
-    { id: 'reversemixed', name: 'معکوس + تصادفی', badge: 'جدید', badgeClass: 'sequential' },
-    { id: 'sequential', name: 'ترتیبی پشت سر هم', badge: 'ترتیبی', badgeClass: 'sequential' }
+    { id: 'reversemixed', name: 'معکوس + تصادفی', badge: 'جدید', badgeClass: 'sequential' }
 ];
 
 let selectedMethods = new Set(methodDefinitions.map(m => m.id));
@@ -1353,9 +1352,9 @@ function getRandomWordsMirror() {
         let index, attempts = 0;
         do {
             if (i % 2 === 0) {
-                index = Math.floor(Math.random() * mid);
+                index = Math.floor(Math.random() * Math.max(1, mid));
             } else {
-                index = mid + Math.floor(Math.random() * (fileWords.length - mid));
+                index = mid + Math.floor(Math.random() * Math.max(1, fileWords.length - mid));
             }
             attempts++;
         } while (used.has(index) && attempts < 100);
@@ -1384,31 +1383,34 @@ function getRandomWordsStep170() {
     return result;
 }
 
-// روش ۲۰: روش میکسر
+// روش ۲۰: روش میکسر (اصلاح شده - بدون sequential)
 function getRandomWordsMixer() {
     if (fileWords.length === 0) return null;
     let result = [], used = new Set();
-    const methods = ['random', 'reverse', 'step170', 'sequential', 'weighted'];
+    
+    // حذف sequential از لیست
+    const methods = ['random', 'reverse', 'step170', 'weighted', 'mirror'];
+    
     for (let i = 0; i < 12; i++) {
         let index, attempts = 0;
         const method = methods[Math.floor(Math.random() * methods.length)];
+        
         do {
             switch(method) {
                 case 'random':
                     index = Math.floor(Math.random() * fileWords.length);
                     break;
+                    
                 case 'reverse':
                     index = fileWords.length - 1 - Math.floor(Math.random() * 30);
                     if (index < 0) index = Math.floor(Math.random() * fileWords.length);
                     break;
+                    
                 case 'step170':
                     let start = Math.floor(Math.random() * fileWords.length);
                     index = (start + (i * 170) + Math.floor(Math.random() * 10)) % fileWords.length;
                     break;
-                case 'sequential':
-                    let seqStart = Math.floor(Math.random() * (fileWords.length - 20));
-                    index = seqStart + Math.floor(Math.random() * 20);
-                    break;
+                    
                 case 'weighted':
                     let totalWeight = 0;
                     for (const word of fileWords) totalWeight += 1 / (wordFrequency[word] || 1);
@@ -1421,10 +1423,23 @@ function getRandomWordsMixer() {
                         if (random <= cumulative) { index = j; break; }
                     }
                     break;
+                    
+                case 'mirror':
+                    const mid = Math.floor(fileWords.length / 2);
+                    if (i % 2 === 0) {
+                        index = Math.floor(Math.random() * Math.max(1, mid));
+                    } else {
+                        index = mid + Math.floor(Math.random() * Math.max(1, fileWords.length - mid));
+                    }
+                    break;
             }
             attempts++;
         } while ((used.has(index) || index === undefined) && attempts < 100);
-        if (attempts >= 100 || index === undefined) index = getRandomIndex(used, fileWords.length);
+        
+        if (attempts >= 100 || index === undefined) {
+            index = getRandomIndex(used, fileWords.length);
+        }
+        
         used.add(index);
         result.push(fileWords[index]);
     }
@@ -1504,26 +1519,6 @@ function getRandomWordsReverseMixed() {
 }
 
 // ============================================================
-// روش ۲۴: ترتیبی پشت سر هم
-// ============================================================
-
-function getRandomWordsSequential() {
-    if (fileWords.length < 12) return null;
-    
-    let result = [];
-    let usedIndices = new Set();
-    let start = Math.floor(Math.random() * (fileWords.length - 11));
-    
-    for (let i = 0; i < 12; i++) {
-        const index = start + i;
-        usedIndices.add(index);
-        result.push(fileWords[index]);
-    }
-    
-    return result;
-}
-
-// ============================================================
 // تابع اصلی - انتخاب تصادفی از بین روش‌های انتخاب شده
 // ============================================================
 
@@ -1555,8 +1550,7 @@ function getRandomWords() {
         mixer: getRandomWordsMixer,
         randomstep: getRandomWordsRandomStep,
         threeparts: getRandomWordsThreeParts,
-        reversemixed: getRandomWordsReverseMixed,
-        sequential: getRandomWordsSequential
+        reversemixed: getRandomWordsReverseMixed
     };
     
     for (const id of selectedMethods) {
@@ -1796,7 +1790,7 @@ function updateScannerTextarea() {
 }
 
 window.addEventListener('DOMContentLoaded', loadWords);
-console.log('✅ کد با ۲۴ روش تصادفی و Checksum (EIP-55) آماده است!');
+console.log('✅ کد با ۲۳ روش تصادفی و Checksum (EIP-55) آماده است! (روش ترتیبی حذف شد)');
 
 // ================================================================
 // ===== کد اسکنر =====
@@ -2174,4 +2168,4 @@ function copySingleMnemonic(mnemonic) {
 </script>
 
 </body>
-                                                                                   </html>
+    </html>
