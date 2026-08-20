@@ -18,143 +18,69 @@
 
 body{
     padding:10px 8px;
-    background: #0a0a0f;
+    background: #0a0a12;
     color:#00ff88;
     font-family: 'Orbitron', 'Arial', sans-serif;
     font-size:12px;
     min-height:100vh;
-    background-image: 
-        radial-gradient(ellipse at 10% 20%, rgba(0,255,136,0.03) 0%, transparent 50%),
-        radial-gradient(ellipse at 90% 80%, rgba(0,100,255,0.03) 0%, transparent 50%),
-        linear-gradient(180deg, #0a0a0f 0%, #0d0d1a 100%);
 }
 
-/* ===== اسکرول سایبر ===== */
 ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 4px;
+    height: 4px;
 }
 ::-webkit-scrollbar-track {
-    background: #0a0a0f;
-    border: 1px solid #00ff8833;
+    background: #0a0a12;
 }
 ::-webkit-scrollbar-thumb {
-    background: #00ff88;
-    border-radius: 3px;
-    box-shadow: 0 0 15px #00ff8844;
+    background: #00ff8844;
+    border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: #00ff88;
-    box-shadow: 0 0 25px #00ff8866;
+    background: #00ff8866;
 }
 
-/* ===== کانتینر اصلی ===== */
 .container{
     max-width:820px;
     margin:auto;
-    background: rgba(10, 10, 20, 0.85);
-    padding:14px;
-    border-radius:12px;
-    border: 1px solid #00ff8844;
-    box-shadow: 
-        0 0 30px rgba(0,255,136,0.05),
-        inset 0 0 60px rgba(0,255,136,0.02),
-        0 0 100px rgba(0,255,136,0.02);
-    backdrop-filter: blur(10px);
+    background: rgba(8, 8, 20, 0.92);
+    padding:12px;
+    border-radius:10px;
+    border: 1px solid #00ff8822;
+    box-shadow: 0 0 40px rgba(0,255,136,0.02);
     position: relative;
-    overflow: hidden;
 }
 
-.container::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: 
-        repeating-linear-gradient(
-            0deg,
-            transparent,
-            transparent 40px,
-            rgba(0,255,136,0.01) 40px,
-            rgba(0,255,136,0.01) 41px
-        ),
-        repeating-linear-gradient(
-            90deg,
-            transparent,
-            transparent 40px,
-            rgba(0,255,136,0.01) 40px,
-            rgba(0,255,136,0.01) 41px
-        );
-    pointer-events: none;
-    animation: gridMove 20s linear infinite;
-    z-index: 0;
-}
-
-@keyframes gridMove {
-    0% { transform: translate(0, 0); }
-    100% { transform: translate(40px, 40px); }
-}
-
-.container > * {
-    position: relative;
-    z-index: 1;
-}
-
-/* ===== هدر ===== */
-h1{
-    text-align:center;
-    font-size:20px;
-    color:#00ff88;
-    margin-bottom:3px;
-    text-shadow: 0 0 30px rgba(0,255,136,0.3), 0 0 60px rgba(0,255,136,0.1);
-    letter-spacing: 3px;
-    font-weight: 900;
-}
-
-h1 span{
-    color:#00ccff;
-    font-size:10px;
-    display:block;
-    margin-top:2px;
-    text-shadow: 0 0 20px rgba(0,204,255,0.2);
-    letter-spacing: 2px;
-    font-weight: 400;
-}
-
-/* ===== ترمینال هدر ===== */
 .terminal-header {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 10px;
-    background: rgba(0,255,136,0.05);
+    padding: 4px 10px;
+    background: rgba(0,255,136,0.03);
     border-radius: 6px 6px 0 0;
-    border-bottom: 1px solid #00ff8833;
-    margin-bottom: 10px;
+    border-bottom: 1px solid #00ff8822;
+    margin-bottom: 8px;
 }
 
 .terminal-dots {
     display: flex;
-    gap: 6px;
+    gap: 5px;
 }
 .terminal-dot {
-    width: 10px;
-    height: 10px;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.05);
 }
-.terminal-dot.red { background: #ff3355; box-shadow: 0 0 8px #ff335544; }
-.terminal-dot.yellow { background: #ffbb33; box-shadow: 0 0 8px #ffbb3344; }
-.terminal-dot.green { background: #00ff88; box-shadow: 0 0 8px #00ff8844; }
+.terminal-dot.red { background: #ff3355; }
+.terminal-dot.yellow { background: #ffbb33; }
+.terminal-dot.green { background: #00ff88; }
 
 .terminal-title {
-    color: #00ff88aa;
-    font-size: 9px;
+    color: #00ff8866;
+    font-size: 8px;
     letter-spacing: 2px;
     margin-right: auto;
-    font-weight: 400;
 }
 
 .terminal-title .blink {
@@ -166,117 +92,118 @@ h1 span{
     50% { opacity: 0; }
 }
 
-/* ===== تکست‌ارِی ===== */
+h1{
+    text-align:center;
+    font-size:18px;
+    color:#00ff88;
+    margin-bottom:2px;
+    text-shadow: 0 0 20px rgba(0,255,136,0.15);
+    letter-spacing: 2px;
+    font-weight: 700;
+}
+
+h1 span{
+    color:#00ccff88;
+    font-size:10px;
+    display:block;
+    margin-top:2px;
+    letter-spacing: 1px;
+    font-weight: 400;
+}
+
 textarea{
     width:100%;
-    height:65px;
-    padding:8px 12px;
-    border: 1px solid #00ff8844;
-    border-radius:6px;
-    background: rgba(0, 10, 5, 0.8);
+    height:60px;
+    padding:6px 10px;
+    border: 1px solid #00ff8822;
+    border-radius:5px;
+    background: rgba(0, 10, 5, 0.6);
     color:#00ff88;
-    font-size:12px;
+    font-size:11px;
     font-family: 'Courier New', monospace;
     resize:vertical;
     direction:ltr;
     text-align:left;
-    transition: all 0.3s ease;
-    box-shadow: inset 0 0 30px rgba(0,255,136,0.02);
+    transition: all 0.2s ease;
 }
 
 textarea:focus {
     outline: none;
-    border-color: #00ff88;
-    box-shadow: 0 0 30px rgba(0,255,136,0.1), inset 0 0 30px rgba(0,255,136,0.05);
+    border-color: #00ff8844;
+    box-shadow: 0 0 20px rgba(0,255,136,0.04);
 }
 
 textarea.found{
     border-color: #00ff88;
-    box-shadow: 0 0 40px rgba(0,255,136,0.2), inset 0 0 40px rgba(0,255,136,0.05);
-    animation: glowPulse 1.5s ease-in-out infinite;
+    box-shadow: 0 0 30px rgba(0,255,136,0.08);
 }
 
 textarea.checking{
     border-color: #ffbb33;
-    box-shadow: 0 0 30px rgba(255,187,51,0.15), inset 0 0 30px rgba(255,187,51,0.05);
+    box-shadow: 0 0 20px rgba(255,187,51,0.06);
 }
 
-@keyframes glowPulse {
-    0%, 100% { box-shadow: 0 0 40px rgba(0,255,136,0.2), inset 0 0 40px rgba(0,255,136,0.05); }
-    50% { box-shadow: 0 0 60px rgba(0,255,136,0.4), inset 0 0 60px rgba(0,255,136,0.1); }
-}
-
-/* ===== دکمه‌ها ===== */
 .btn-group{
     display:flex;
-    gap:5px;
-    margin-top:8px;
+    gap:4px;
+    margin-top:6px;
     flex-wrap:wrap;
 }
 
 .btn-group button{
     flex:1;
-    padding:7px 5px;
-    border: 1px solid #00ff8844;
-    border-radius:6px;
+    padding:5px 4px;
+    border: 1px solid #00ff8822;
+    border-radius:5px;
     color:#00ff88;
-    font-size:11px;
+    font-size:10px;
     font-family: 'Orbitron', 'Arial', sans-serif;
     cursor:pointer;
-    min-width:50px;
-    transition: all 0.3s ease;
-    background: rgba(0,255,136,0.05);
-    text-shadow: 0 0 10px rgba(0,255,136,0.1);
-    letter-spacing: 1px;
+    min-width:45px;
+    transition: all 0.2s ease;
+    background: rgba(0,255,136,0.02);
+    letter-spacing: 0.5px;
 }
 
 .btn-group button:hover:not(:disabled){
-    background: rgba(0,255,136,0.15);
-    border-color: #00ff88;
-    box-shadow: 0 0 30px rgba(0,255,136,0.15);
-    transform: scale(1.02);
-}
-
-.btn-group button:active:not(:disabled){
-    transform: scale(0.98);
+    background: rgba(0,255,136,0.06);
+    border-color: #00ff8844;
 }
 
 .btn-group button:disabled{
     opacity:0.3;
     cursor:not-allowed;
-    border-color: #00ff8833;
 }
 
-.btn-primary{ border-color: #0066ff88; color: #66aaff; background: rgba(0,102,255,0.05); }
-.btn-primary:hover:not(:disabled){ background: rgba(0,102,255,0.15); border-color: #0066ff; box-shadow: 0 0 30px rgba(0,102,255,0.15); }
+.btn-primary{ border-color: #0066ff44; color: #66aaff; }
+.btn-primary:hover:not(:disabled){ background: rgba(0,102,255,0.06); border-color: #0066ff66; }
 
-.btn-random{ border-color: #00ff8888; color: #00ff88; background: rgba(0,255,136,0.05); }
-.btn-random:hover:not(:disabled){ background: rgba(0,255,136,0.15); border-color: #00ff88; box-shadow: 0 0 30px rgba(0,255,136,0.15); }
+.btn-random{ border-color: #00ff8844; color: #00ff88; }
+.btn-random:hover:not(:disabled){ background: rgba(0,255,136,0.06); border-color: #00ff8866; }
 
-.btn-start{ border-color: #00ff8888; color: #00ff88; background: rgba(0,255,136,0.05); }
-.btn-start:hover:not(:disabled){ background: rgba(0,255,136,0.15); border-color: #00ff88; box-shadow: 0 0 30px rgba(0,255,136,0.15); }
+.btn-start{ border-color: #00ff8844; color: #00ff88; }
+.btn-start:hover:not(:disabled){ background: rgba(0,255,136,0.06); border-color: #00ff8866; }
 
-.btn-stop{ border-color: #ff335588; color: #ff3355; background: rgba(255,51,85,0.05); }
-.btn-stop:hover:not(:disabled){ background: rgba(255,51,85,0.15); border-color: #ff3355; box-shadow: 0 0 30px rgba(255,51,85,0.15); }
+.btn-stop{ border-color: #ff335544; color: #ff3355; }
+.btn-stop:hover:not(:disabled){ background: rgba(255,51,85,0.06); border-color: #ff335566; }
 
-.btn-clear-all{ border-color: #666688; color: #8888aa; background: rgba(100,100,136,0.05); }
-.btn-clear-all:hover:not(:disabled){ background: rgba(100,100,136,0.15); border-color: #8888aa; box-shadow: 0 0 30px rgba(100,100,136,0.1); }
+.btn-clear-all{ border-color: #66668844; color: #8888aa; }
+.btn-clear-all:hover:not(:disabled){ background: rgba(100,100,136,0.06); border-color: #8888aa66; }
 
-/* ===== نتیجه ===== */
 .result{
     display:none;
-    margin-top:8px;
-    padding:8px 12px;
-    background: rgba(0,255,136,0.03);
-    border-radius:6px;
-    border: 1px solid #00ff8844;
+    margin-top:6px;
+    padding:6px 10px;
+    background: rgba(0,255,136,0.02);
+    border-radius:5px;
+    border: 1px solid #00ff8822;
 }
 
 .label{
-    color:#00ff88aa;
-    font-size:9px;
-    margin-bottom:3px;
-    letter-spacing: 2px;
+    color:#00ff8866;
+    font-size:8px;
+    margin-bottom:2px;
+    letter-spacing: 1px;
 }
 
 .address{
@@ -285,196 +212,183 @@ textarea.checking{
     word-break:break-all;
     color:#00ff88;
     font-family: 'Courier New', monospace;
-    font-size:12px;
-    text-shadow: 0 0 20px rgba(0,255,136,0.2);
+    font-size:11px;
 }
 
-/* ===== وضعیت‌ها ===== */
 .status{
-    margin-top:5px;
-    padding:5px 10px;
-    border-radius:5px;
+    margin-top:4px;
+    padding:4px 8px;
+    border-radius:4px;
     text-align:center;
-    font-size:11px;
-    min-height:28px;
+    font-size:10px;
+    min-height:24px;
     border: 1px solid transparent;
 }
 
-.status.loading{ background: rgba(0,100,200,0.1); color: #66aaff; border-color: #0066ff44; }
-.status.success{ background: rgba(0,255,136,0.08); color: #00ff88; border-color: #00ff8844; }
-.status.error{ background: rgba(255,51,85,0.08); color: #ff3355; border-color: #ff335544; }
-.status.info{ background: rgba(0,100,200,0.08); color: #66aaff; border-color: #0066ff44; }
-.status.found{ background: rgba(0,255,136,0.12); color: #00ff88; border-color: #00ff88; animation: statusPulse 1.5s ease-in-out infinite; }
-.status.checking{ background: rgba(255,187,51,0.08); color: #ffbb33; border-color: #ffbb3344; }
+.status.loading{ background: rgba(0,100,200,0.05); color: #66aaff; border-color: #0066ff22; }
+.status.success{ background: rgba(0,255,136,0.05); color: #00ff88; border-color: #00ff8822; }
+.status.error{ background: rgba(255,51,85,0.05); color: #ff3355; border-color: #ff335522; }
+.status.info{ background: rgba(0,100,200,0.04); color: #66aaff; border-color: #0066ff22; }
+.status.found{ background: rgba(0,255,136,0.06); color: #00ff88; border-color: #00ff8844; }
+.status.checking{ background: rgba(255,187,51,0.04); color: #ffbb33; border-color: #ffbb3322; }
 
-@keyframes statusPulse {
-    0%, 100% { box-shadow: 0 0 20px rgba(0,255,136,0.1); }
-    50% { box-shadow: 0 0 40px rgba(0,255,136,0.2); }
-}
-
-/* ===== روش‌ها ===== */
 .methods-section{
-    margin-top:10px;
-    padding:8px 10px;
-    background: rgba(0,255,136,0.02);
-    border-radius:6px;
-    border: 1px solid #00ff8833;
+    margin-top:8px;
+    padding:6px 8px;
+    background: rgba(0,255,136,0.01);
+    border-radius:5px;
+    border: 1px solid #00ff8822;
 }
 
 .methods-section .title{
     color:#00ff88;
-    font-size:10px;
+    font-size:9px;
     font-weight:700;
-    margin-bottom:6px;
+    margin-bottom:4px;
     text-align:center;
-    letter-spacing: 3px;
+    letter-spacing: 2px;
 }
 
 .methods-grid{
     display:grid;
-    grid-template-columns:repeat(auto-fill, minmax(145px, 1fr));
-    gap:4px;
+    grid-template-columns:repeat(auto-fill, minmax(130px, 1fr));
+    gap:3px;
 }
 
 .method-item{
     display:flex;
     align-items:center;
-    gap:5px;
-    padding:3px 6px;
-    background: rgba(0,255,136,0.02);
-    border-radius:4px;
-    border: 1px solid #00ff8833;
+    gap:4px;
+    padding:2px 5px;
+    background: rgba(0,255,136,0.01);
+    border-radius:3px;
+    border: 1px solid #00ff8822;
     cursor:pointer;
-    transition: all 0.3s ease;
+    transition: all 0.15s ease;
 }
 
 .method-item:hover{
-    background: rgba(0,255,136,0.06);
-    border-color: #00ff8866;
+    background: rgba(0,255,136,0.03);
 }
 
 .method-item input[type="checkbox"]{
     accent-color:#00ff88;
-    width:13px;
-    height:13px;
+    width:12px;
+    height:12px;
     cursor:pointer;
     flex-shrink:0;
 }
 
 .method-item label{
     color:#88ddbb;
-    font-size:9px;
+    font-size:8px;
     cursor:pointer;
     flex:1;
     font-family: 'Courier New', monospace;
 }
 
 .method-item .badge{
-    font-size:7px;
-    padding:1px 5px;
-    border-radius:3px;
+    font-size:6px;
+    padding:1px 4px;
+    border-radius:2px;
     background: #00ff8822;
     color:#00ff88;
-    border: 1px solid #00ff8833;
-    font-family: 'Courier New', monospace;
+    border: 1px solid #00ff8822;
 }
 
-.method-item .badge.complex{ background: #0066ff22; color: #66aaff; border-color: #0066ff33; }
-.method-item .badge.beginner{ background: #00ff8822; color: #00ff88; border-color: #00ff8833; }
-.method-item .badge.medium{ background: #ffbb3322; color: #ffbb33; border-color: #ffbb3333; }
-.method-item .badge.secure{ background: #aa66ff22; color: #aa66ff; border-color: #aa66ff33; }
-.method-item .badge.old{ background: #ff883322; color: #ff8833; border-color: #ff883333; }
-.method-item .badge.sequential{ background: #00ccff22; color: #00ccff; border-color: #00ccff33; }
+.method-item .badge.complex{ background: #0066ff22; color: #66aaff; border-color: #0066ff22; }
+.method-item .badge.beginner{ background: #00ff8822; color: #00ff88; border-color: #00ff8822; }
+.method-item .badge.medium{ background: #ffbb3322; color: #ffbb33; border-color: #ffbb3322; }
+.method-item .badge.secure{ background: #aa66ff22; color: #aa66ff; border-color: #aa66ff22; }
+.method-item .badge.old{ background: #ff883322; color: #ff8833; border-color: #ff883322; }
+.method-item .badge.sequential{ background: #00ccff22; color: #00ccff; border-color: #00ccff22; }
 
 .method-item.active{
-    border-color: #00ff88;
-    background: rgba(0,255,136,0.06);
-    box-shadow: 0 0 20px rgba(0,255,136,0.05);
+    border-color: #00ff8844;
+    background: rgba(0,255,136,0.03);
 }
 
 .method-actions{
     display:flex;
-    gap:5px;
-    margin-top:6px;
+    gap:4px;
+    margin-top:4px;
     flex-wrap:wrap;
 }
 
 .method-actions button{
-    padding:3px 12px;
-    border: 1px solid #00ff8844;
-    border-radius:4px;
+    padding:2px 10px;
+    border: 1px solid #00ff8822;
+    border-radius:3px;
     color:#00ff88;
-    font-size:9px;
+    font-size:8px;
     font-family: 'Orbitron', 'Arial', sans-serif;
     cursor:pointer;
-    transition: all 0.3s ease;
-    background: rgba(0,255,136,0.03);
-    letter-spacing: 1px;
+    transition: all 0.15s ease;
+    background: rgba(0,255,136,0.01);
+    letter-spacing: 0.5px;
 }
 
 .method-actions button:hover{
-    background: rgba(0,255,136,0.1);
-    border-color: #00ff88;
-    box-shadow: 0 0 20px rgba(0,255,136,0.1);
+    background: rgba(0,255,136,0.04);
+    border-color: #00ff8844;
 }
 
-/* ===== لیست‌ها ===== */
 .lists-container{
     display:flex;
-    gap:8px;
-    margin-top:10px;
+    gap:6px;
+    margin-top:8px;
     flex-wrap:wrap;
 }
 
 .list-box{
     flex:1;
-    min-width:170px;
-    background: rgba(0,255,136,0.02);
-    border-radius:6px;
-    padding:8px;
-    border: 1px solid #00ff8833;
+    min-width:150px;
+    background: rgba(0,255,136,0.01);
+    border-radius:5px;
+    padding:6px;
+    border: 1px solid #00ff8822;
     display:none;
 }
 
 .list-box .title{
     color:#00ff88;
     font-weight:700;
-    font-size:10px;
-    margin-bottom:4px;
+    font-size:9px;
+    margin-bottom:3px;
     text-align:center;
-    padding-bottom:4px;
-    border-bottom: 1px solid #00ff8833;
-    letter-spacing: 2px;
+    padding-bottom:3px;
+    border-bottom: 1px solid #00ff8822;
+    letter-spacing: 1px;
 }
 
 .list-box .title .count{
     color:#ffbb33;
-    font-size:9px;
+    font-size:8px;
 }
 
 .list-box .items{
     font-family: 'Courier New', monospace;
-    font-size:9px;
+    font-size:8px;
     direction:ltr;
     text-align:left;
     color:#88ddbb;
     white-space:pre-wrap;
     word-break:break-all;
-    max-height:100px;
+    max-height:80px;
     overflow-y:auto;
     padding:2px;
-    line-height:1.5;
+    line-height:1.4;
 }
 
 .list-box .items::-webkit-scrollbar{
     width:3px;
 }
 .list-box .items::-webkit-scrollbar-track{
-    background: #0a0a0f;
+    background: transparent;
 }
 .list-box .items::-webkit-scrollbar-thumb{
-    background: #00ff88;
-    border-radius:3px;
+    background: #00ff8822;
+    border-radius:2px;
 }
 
 .list-box.addresses{ border-color: #00ff8844; }
@@ -483,108 +397,132 @@ textarea.checking{
 .list-box.mnemonics .title{ color:#ffbb33; }
 
 .copy-list-btn{
-    background: rgba(0,255,136,0.05);
+    background: rgba(0,255,136,0.02);
     color:#00ff88;
-    border: 1px solid #00ff8844;
-    border-radius:4px;
-    padding:2px 8px;
-    font-size:9px;
+    border: 1px solid #00ff8822;
+    border-radius:3px;
+    padding:2px 6px;
+    font-size:8px;
     font-family: 'Orbitron', 'Arial', sans-serif;
     cursor:pointer;
-    margin-top:4px;
-    transition: all 0.3s ease;
+    margin-top:3px;
+    transition: all 0.15s ease;
     width:100%;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
 }
 
 .copy-list-btn:hover{
-    background: rgba(0,255,136,0.1);
-    border-color: #00ff88;
-    box-shadow: 0 0 20px rgba(0,255,136,0.1);
+    background: rgba(0,255,136,0.04);
+    border-color: #00ff8844;
 }
 
-/* ===== آمار ===== */
 .stats{
     display:flex;
     justify-content:space-around;
-    margin-top:6px;
-    padding:6px;
-    background: rgba(0,255,136,0.02);
-    border-radius:5px;
-    border: 1px solid #00ff8833;
+    margin-top:5px;
+    padding:4px;
+    background: rgba(0,255,136,0.01);
+    border-radius:4px;
+    border: 1px solid #00ff8822;
     flex-wrap:wrap;
 }
 
 .stats div{
     text-align:center;
-    padding:2px 8px;
+    padding:1px 6px;
 }
 
 .stats .number{
     color:#00ff88;
-    font-size:14px;
+    font-size:12px;
     font-weight:700;
-    text-shadow: 0 0 20px rgba(0,255,136,0.2);
 }
 
 .stats .number.green{ color:#00ff88; }
-.stats .label{ color:#00ff88aa; font-size:8px; letter-spacing: 2px; }
+.stats .label{ color:#00ff8866; font-size:7px; letter-spacing: 1px; }
+
+.counter{
+    text-align:center;
+    color:#00ff88;
+    font-size:10px;
+    min-height:18px;
+    margin-top:4px;
+    font-family:'Courier New',monospace;
+}
+
+.counter.found{ color:#00ff88; }
+
+.error{
+    color:#ff3355;
+    text-align:center;
+    font-size:10px;
+    min-height:16px;
+    font-family:'Courier New',monospace;
+}
+
+.info-text{
+    margin-top:5px;
+    color:#00ff8866;
+    font-size:8px;
+    text-align:center;
+    letter-spacing: 1px;
+    border-top: 1px solid #00ff8811;
+    padding-top: 5px;
+}
 
 /* ===== اسکنر ===== */
 .scanner-section{
-    margin-top:15px;
-    padding-top:12px;
-    border-top: 1px solid #00ff8833;
+    margin-top:12px;
+    padding-top:10px;
+    border-top: 1px solid #00ff8822;
 }
 
 .scanner-section h2{
     color:#00ccff;
     text-align:center;
-    font-size:14px;
+    font-size:13px;
     margin-bottom:2px;
-    text-shadow: 0 0 20px rgba(0,204,255,0.2);
-    letter-spacing: 4px;
+    letter-spacing: 3px;
     font-weight: 700;
 }
 
 .scanner-section .sub{
     text-align:center;
-    color:#00ccffaa;
-    font-size:9px;
-    margin-bottom:8px;
-    letter-spacing: 2px;
+    color:#00ccff66;
+    font-size:8px;
+    margin-bottom:6px;
+    letter-spacing: 1px;
 }
 
 .scanner-section textarea{
-    height:55px;
+    height:50px;
 }
 
 .scanner-section .buttons{
     display:flex;
-    gap:4px;
-    margin-top:6px;
+    gap:3px;
+    margin-top:5px;
     flex-wrap:wrap;
 }
 
 .scanner-section button{
     flex:1;
-    min-width:65px;
-    border: 1px solid #00ff8844;
-    border-radius:5px;
-    padding:5px 6px;
+    min-width:55px;
+    border: 1px solid #00ff8822;
+    border-radius:4px;
+    padding:4px 5px;
     color:#00ff88;
     cursor:pointer;
-    font-size:10px;
+    font-size:9px;
     font-family: 'Orbitron', 'Arial', sans-serif;
-    transition: all 0.3s ease;
-    background: rgba(0,255,136,0.03);
-    letter-spacing: 1px;
+    transition: all 0.15s ease;
+    background: rgba(0,255,136,0.01);
+    letter-spacing: 0.5px;
 }
 
 .scanner-section button:hover:not(:disabled){
-    background: rgba(0,255,136,0.08);
-    border-color: #00ff88;
-    box-shadow: 0 0 20px rgba(0,255,136,0.1);
+    background: rgba(0,255,136,0.04);
+    border-color: #00ff8844;
 }
 
 .scanner-section button:disabled{
@@ -592,112 +530,109 @@ textarea.checking{
     cursor:not-allowed;
 }
 
-.scanner-section .parse{ border-color: #0066ff88; color: #66aaff; background: rgba(0,102,255,0.03); }
-.scanner-section .parse:hover:not(:disabled){ background: rgba(0,102,255,0.08); border-color: #0066ff; box-shadow: 0 0 20px rgba(0,102,255,0.1); }
+.scanner-section .parse{ border-color: #0066ff44; color: #66aaff; }
+.scanner-section .parse:hover:not(:disabled){ background: rgba(0,102,255,0.04); border-color: #0066ff66; }
 
-.scanner-section .scan{ border-color: #00ff8888; color: #00ff88; background: rgba(0,255,136,0.03); }
-.scanner-section .scan:hover:not(:disabled){ background: rgba(0,255,136,0.08); border-color: #00ff88; box-shadow: 0 0 20px rgba(0,255,136,0.1); }
+.scanner-section .scan{ border-color: #00ff8844; color: #00ff88; }
+.scanner-section .scan:hover:not(:disabled){ background: rgba(0,255,136,0.04); border-color: #00ff8866; }
 
-.scanner-section .clear{ border-color: #666688; color: #8888aa; background: rgba(100,100,136,0.03); }
-.scanner-section .clear:hover:not(:disabled){ background: rgba(100,100,136,0.08); border-color: #8888aa; box-shadow: 0 0 20px rgba(100,100,136,0.05); }
+.scanner-section .clear{ border-color: #66668844; color: #8888aa; }
+.scanner-section .clear:hover:not(:disabled){ background: rgba(100,100,136,0.04); border-color: #8888aa66; }
 
 .scanner-section .status{
-    margin:4px 0;
-    padding:4px 8px;
-    border-radius:5px;
+    margin:3px 0;
+    padding:3px 6px;
+    border-radius:4px;
     text-align:center;
-    font-size:10px;
-    min-height:24px;
+    font-size:9px;
+    min-height:20px;
     border: 1px solid transparent;
 }
 
-.scanner-section .info{ background: rgba(0,100,200,0.06); color: #66aaff; border-color: #0066ff33; }
-.scanner-section .ok{ background: rgba(0,255,136,0.06); color: #00ff88; border-color: #00ff8833; }
-.scanner-section .err{ background: rgba(255,51,85,0.06); color: #ff3355; border-color: #ff335533; }
-.scanner-section .loading{ background: rgba(0,100,200,0.06); color: #66aaff; border-color: #0066ff33; }
+.scanner-section .info{ background: rgba(0,100,200,0.04); color: #66aaff; border-color: #0066ff22; }
+.scanner-section .ok{ background: rgba(0,255,136,0.04); color: #00ff88; border-color: #00ff8822; }
+.scanner-section .err{ background: rgba(255,51,85,0.04); color: #ff3355; border-color: #ff335522; }
+.scanner-section .loading{ background: rgba(0,100,200,0.04); color: #66aaff; border-color: #0066ff22; }
 
 .scanner-section .count{
     text-align:center;
-    color:#00ff88aa;
-    font-size:9px;
-    margin:3px 0;
-    letter-spacing: 1px;
+    color:#00ff8866;
+    font-size:8px;
+    margin:2px 0;
+    letter-spacing: 0.5px;
 }
 
 .scanner-section .progress{
-    height:3px;
-    background: rgba(0,255,136,0.1);
+    height:2px;
+    background: rgba(0,255,136,0.05);
     border-radius:2px;
     overflow:hidden;
     display:none;
-    margin:4px 0;
-    border: 1px solid #00ff8833;
+    margin:3px 0;
 }
 .scanner-section .progress div{
     height:100%;
     width:0;
     background: #00ff88;
-    box-shadow: 0 0 20px rgba(0,255,136,0.3);
-    transition:.2s;
+    transition:.15s;
 }
 
 .scanner-section .stats-grid{
     display:none;
     grid-template-columns:repeat(4,1fr);
-    gap:3px;
-    margin-top:5px;
+    gap:2px;
+    margin-top:4px;
 }
 
 .scanner-section .stat{
-    background: rgba(0,255,136,0.02);
-    border: 1px solid #00ff8833;
-    border-radius:4px;
-    padding:3px;
+    background: rgba(0,255,136,0.01);
+    border: 1px solid #00ff8822;
+    border-radius:3px;
+    padding:2px;
     text-align:center;
 }
 
 .scanner-section .stat b{
     display:block;
     color:#00ff88;
-    font-size:12px;
-    text-shadow: 0 0 20px rgba(0,255,136,0.2);
+    font-size:11px;
 }
 
 .scanner-section .stat span{
-    color:#00ff88aa;
-    font-size:7px;
-    letter-spacing: 1px;
+    color:#00ff8866;
+    font-size:6px;
+    letter-spacing: 0.5px;
 }
 
 .scanner-section .wallet{
-    margin-top:4px;
-    border: 1px solid #00ff8833;
-    border-radius:5px;
-    background: rgba(0,255,136,0.02);
+    margin-top:3px;
+    border: 1px solid #00ff8822;
+    border-radius:4px;
+    background: rgba(0,255,136,0.01);
     overflow:hidden;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
 }
 
 .scanner-section .wallet.has-balance{
-    border-color: #00ff88;
-    box-shadow: 0 0 30px rgba(0,255,136,0.08);
+    border-color: #00ff8844;
+    box-shadow: 0 0 20px rgba(0,255,136,0.03);
 }
 
 .scanner-section .wallet-head{
-    padding:4px 8px;
-    background: rgba(0,255,136,0.03);
+    padding:3px 6px;
+    background: rgba(0,255,136,0.01);
     display:flex;
     align-items:center;
-    gap:4px;
-    font-size:9px;
+    gap:3px;
+    font-size:8px;
     flex-wrap:wrap;
-    border-bottom: 1px solid #00ff8833;
+    border-bottom: 1px solid #00ff8811;
 }
 
 .scanner-section .num{
     color:#ffbb33;
     font-weight:700;
-    font-size:9px;
+    font-size:8px;
 }
 
 .scanner-section .addr{
@@ -707,53 +642,53 @@ textarea.checking{
     color:#00ccff;
     word-break:break-all;
     flex:1;
-    font-size:9px;
+    font-size:8px;
 }
 
 .scanner-section .wstatus{
-    font-size:8px;
+    font-size:7px;
     white-space:nowrap;
-    color:#00ff88aa;
+    color:#00ff8866;
 }
 
 .scanner-section .status-light{
     display:inline-block;
-    width:6px;
-    height:6px;
+    width:5px;
+    height:5px;
     border-radius:50%;
     margin-right:2px;
     flex-shrink:0;
 }
 
-.scanner-section .status-light.green{ background:#00ff88; box-shadow: 0 0 12px #00ff8866; }
+.scanner-section .status-light.green{ background:#00ff88; }
 .scanner-section .status-light.gray{ background:#445566; }
-.scanner-section .status-light.yellow{ background:#ffbb33; box-shadow: 0 0 12px #ffbb3366; }
-.scanner-section .status-light.red{ background:#ff3355; box-shadow: 0 0 12px #ff335566; }
+.scanner-section .status-light.yellow{ background:#ffbb33; }
+.scanner-section .status-light.red{ background:#ff3355; }
 
-.scanner-section .networks{ padding:2px 6px; }
+.scanner-section .networks{ padding:2px 4px; }
 .scanner-section .net{
     display:flex;
     align-items:center;
-    gap:3px;
-    padding:2px 4px;
+    gap:2px;
+    padding:2px 3px;
     border-bottom: 1px solid #00ff8811;
-    min-height:18px;
+    min-height:16px;
     flex-wrap:wrap;
-    font-size:8px;
+    font-size:7px;
 }
 .scanner-section .net:last-child{ border-bottom:0; }
 
 .scanner-section .netname{
-    width:50px;
+    width:40px;
     color:#88ddbb;
-    font-size:8px;
+    font-size:7px;
     white-space:nowrap;
     font-family: 'Courier New', monospace;
 }
 
 .scanner-section .native{
     color:#ffbb33;
-    font:8px monospace;
+    font:7px monospace;
     direction:ltr;
     white-space:nowrap;
 }
@@ -766,11 +701,11 @@ textarea.checking{
 }
 
 .scanner-section .token{
-    background: rgba(0,255,136,0.05);
-    border: 1px solid #00ff8833;
-    border-radius:3px;
-    padding:1px 4px;
-    font-size:7px;
+    background: rgba(0,255,136,0.02);
+    border: 1px solid #00ff8822;
+    border-radius:2px;
+    padding:1px 3px;
+    font-size:6px;
     direction:ltr;
     white-space:nowrap;
     font-family: 'Courier New', monospace;
@@ -779,18 +714,17 @@ textarea.checking{
 .scanner-section .token b{ color:#ffbb33; }
 .scanner-section .token small{ color:#88ddbb; }
 
-.scanner-section .nothing{ color:#445566; font-size:7px; }
-.scanner-section .retry{ color:#ffbb33; font-size:7px; }
-.scanner-section .fail{ color:#ff3355; font-size:7px; }
+.scanner-section .nothing{ color:#445566; font-size:6px; }
+.scanner-section .retry{ color:#ffbb33; font-size:6px; }
+.scanner-section .fail{ color:#ff3355; font-size:6px; }
 
 .scanner-section .error-list{
     color:#ff3355;
-    font-size:8px;
-    margin-top:3px;
+    font-size:7px;
+    margin-top:2px;
     font-family: 'Courier New', monospace;
 }
 
-/* ===== عبارت و کپی ===== */
 .scanner-section .mnemonic-row {
     display:flex;
     flex-direction:column;
@@ -798,89 +732,73 @@ textarea.checking{
     gap:2px;
     width:100%;
     margin-top:2px;
-    padding:0 6px 4px 6px;
+    padding:0 4px 3px 4px;
 }
 
 .scanner-section .mnemonic-text {
     color:#ffbb33;
-    font-size:8px;
+    font-size:7px;
     font-family: 'Courier New', monospace;
     word-break:break-all;
-    background: rgba(0,0,0,0.3);
-    padding:2px 6px;
-    border-radius:3px;
-    border: 1px solid #ffbb3344;
+    background: rgba(0,0,0,0.2);
+    padding:1px 5px;
+    border-radius:2px;
+    border: 1px solid #ffbb3322;
     width:100%;
     cursor:pointer;
-    transition: all 0.3s ease;
 }
 
 .scanner-section .mnemonic-text:hover {
-    border-color: #ffbb33;
-    box-shadow: 0 0 20px rgba(255,187,51,0.1);
+    border-color: #ffbb3344;
 }
 
 .scanner-section .mnemonic-copy-btn {
-    background: rgba(255,187,51,0.05);
-    border: 1px solid #ffbb3344;
-    border-radius:3px;
+    background: rgba(255,187,51,0.03);
+    border: 1px solid #ffbb3322;
+    border-radius:2px;
     color:#ffbb33;
-    padding:1px 8px;
-    font-size:7px;
+    padding:1px 6px;
+    font-size:6px;
     font-family: 'Orbitron', 'Arial', sans-serif;
     cursor:pointer;
-    transition: all 0.3s ease;
-    letter-spacing: 1px;
+    transition: all 0.15s ease;
+    letter-spacing: 0.5px;
 }
 
 .scanner-section .mnemonic-copy-btn:hover {
-    background: rgba(255,187,51,0.1);
-    border-color: #ffbb33;
-    box-shadow: 0 0 20px rgba(255,187,51,0.1);
+    background: rgba(255,187,51,0.06);
+    border-color: #ffbb3344;
 }
 
-/* ===== اطلاعات ===== */
-.info-text{
-    margin-top:6px;
-    color:#00ff88aa;
-    font-size:9px;
-    text-align:center;
-    letter-spacing: 2px;
-    border-top: 1px solid #00ff8811;
-    padding-top: 6px;
-}
-
-/* ===== ریسپانسیو ===== */
 @media(max-width:600px){
     .scanner-section .stats-grid{
         grid-template-columns:repeat(2,1fr);
     }
     .scanner-section .netname{
-        width:40px;
+        width:35px;
     }
     .scanner-section button{
-        min-width:55px;
-        font-size:9px;
+        min-width:50px;
+        font-size:8px;
     }
     .list-box{
         min-width:100%;
     }
     .btn-group button{
-        font-size:10px;
-        padding:5px 3px;
+        font-size:9px;
+        padding:4px 3px;
     }
     .methods-grid{
-        grid-template-columns:repeat(auto-fill, minmax(120px, 1fr));
+        grid-template-columns:repeat(auto-fill, minmax(110px, 1fr));
     }
 }
 
 @media(max-width:400px){
-    body{ padding:5px 3px; }
-    .container{ padding:8px; }
-    h1{ font-size:15px; }
-    textarea{ font-size:10px; height:45px; }
-    .scanner-section textarea{ height:40px; }
-    .scanner-section .addr{ font-size:8px; }
+    body{ padding:4px 2px; }
+    .container{ padding:6px; }
+    h1{ font-size:14px; }
+    textarea{ font-size:9px; height:40px; }
+    .scanner-section textarea{ height:35px; }
 }
 </style>
 </head>
@@ -889,7 +807,6 @@ textarea.checking{
 
 <div class="container">
 
-    <!-- ترمینال هدر -->
     <div class="terminal-header">
         <div class="terminal-dots">
             <span class="terminal-dot red"></span>
@@ -914,32 +831,28 @@ textarea.checking{
 
     <div class="btn-group">
         <button class="btn-random" id="randomBtn" onclick="setRandomMnemonic()" disabled>🎲 تصادفی</button>
-        <button class="btn-primary" onclick="generateAddress()">🔍 نمایش آدرس</button>
+        <button class="btn-primary" onclick="generateAddress()">🔍 نمایش</button>
         <button class="btn-start" id="autoBtn" onclick="toggleAutoFind()" disabled>🚀 شروع</button>
         <button class="btn-clear-all" onclick="clearAllData()">🗑 پاک</button>
     </div>
 
-    <!-- ===== بخش انتخاب روش ===== -->
     <div class="methods-section">
         <div class="title">📌 انتخاب روش‌های تولید عبارت</div>
-        <div class="methods-grid" id="methodsGrid">
-            <!-- روش‌ها توسط جاوااسکریپت ساخته می‌شوند -->
-        </div>
+        <div class="methods-grid" id="methodsGrid"></div>
         <div class="method-actions">
-            <button class="select-all" onclick="selectAllMethods()">✅ انتخاب همه</button>
-            <button class="deselect-all" onclick="deselectAllMethods()">❌ حذف همه</button>
+            <button onclick="selectAllMethods()">✅ انتخاب همه</button>
+            <button onclick="deselectAllMethods()">❌ حذف همه</button>
         </div>
     </div>
 
-    <div id="counter" class="counter" style="color:#00ff88;text-align:center;font-size:11px;min-height:20px;margin-top:5px;font-family:'Courier New',monospace;"></div>
-    <div id="error" class="error" style="margin-top:4px;color:#ff3355;text-align:center;font-size:11px;min-height:18px;font-family:'Courier New',monospace;"></div>
+    <div id="counter" class="counter"></div>
+    <div id="error" class="error"></div>
 
     <div id="result" class="result">
         <div class="label">► آدرس کیف پول (با Checksum):</div>
         <div id="address" class="address"></div>
     </div>
 
-    <!-- لیست‌های جداگانه -->
     <div class="lists-container">
         <div id="addressListBox" class="list-box addresses">
             <div class="title">🔗 آدرس‌ها <span class="count" id="addressCount">(0)</span></div>
@@ -963,10 +876,9 @@ textarea.checking{
 
 </div>
 
-<!-- ===== اسکنر ===== -->
 <div class="container scanner-section">
 
-    <div class="terminal-header" style="margin-bottom:6px;">
+    <div class="terminal-header" style="margin-bottom:4px;">
         <div class="terminal-dots">
             <span class="terminal-dot red"></span>
             <span class="terminal-dot yellow"></span>
@@ -1028,7 +940,6 @@ let shuffledWords = [];
 let shuffleIndex = 0;
 let wordFrequency = {};
 
-// ===== تعریف روش‌ها (بدون روش ترتیبی) =====
 const methodDefinitions = [
     { id: 'complex1', name: 'ترکیبی شافل', badge: 'پیچیده', badgeClass: 'complex' },
     { id: 'complex2', name: 'بر اساس وزن', badge: 'پیچیده', badgeClass: 'complex' },
@@ -1105,7 +1016,6 @@ function toggleMethod(id) {
     } else {
         selectedMethods.delete(id);
     }
-    // به‌روزرسانی کلاس active
     const items = document.querySelectorAll('.method-item');
     methodDefinitions.forEach((method, index) => {
         if (selectedMethods.has(method.id)) {
@@ -1255,7 +1165,6 @@ function getRandomIndex(usedIndices, max, attempts = 100) {
 // روش‌های تصادفی
 // ============================================================
 
-// روش ۱: ترکیبی از شافل و انتخاب تصادفی
 function getRandomWordsComplex1() {
     if (fileWords.length === 0) return null;
     let result = [], used = new Set();
@@ -1267,7 +1176,6 @@ function getRandomWordsComplex1() {
     return result;
 }
 
-// روش ۲: بر اساس وزن
 function getRandomWordsComplex2() {
     if (fileWords.length === 0) return null;
     let result = [], used = new Set();
@@ -1294,7 +1202,6 @@ function getRandomWordsComplex2() {
     return result;
 }
 
-// روش ۳: ترکیبی با الگو
 function getRandomWordsComplex3() {
     if (fileWords.length === 0) return null;
     let method = Math.floor(Math.random() * 3);
@@ -1327,7 +1234,6 @@ function getRandomWordsComplex3() {
     return result;
 }
 
-// روش ۴: شافل و جابجایی
 function getRandomWordsComplex4() {
     if (fileWords.length === 0) return null;
     let tempList = [...fileWords];
@@ -1354,7 +1260,6 @@ function getRandomWordsComplex4() {
     return result;
 }
 
-// روش ۵: مبتدی - انتخاب ساده
 function getRandomWordsBeginner1() {
     if (fileWords.length === 0) return null;
     let result = [], used = new Set();
@@ -1366,7 +1271,6 @@ function getRandomWordsBeginner1() {
     return result;
 }
 
-// روش ۶: مبتدی - سه بخشی
 function getRandomWordsBeginner2() {
     if (fileWords.length === 0) return null;
     let result = [], used = new Set();
@@ -1394,7 +1298,6 @@ function getRandomWordsBeginner2() {
     return result;
 }
 
-// روش ۷: مبتدی - فاصله متغیر
 function getRandomWordsBeginner3() {
     if (fileWords.length === 0) return null;
     let result = [], used = new Set();
@@ -1414,7 +1317,6 @@ function getRandomWordsBeginner3() {
     return result;
 }
 
-// روش ۸: متوسط - Fisher-Yates
 function getRandomWordsMedium1() {
     if (fileWords.length < 12) return null;
     let list = [...fileWords];
@@ -1425,7 +1327,6 @@ function getRandomWordsMedium1() {
     return list.slice(0, 12);
 }
 
-// روش ۹: متوسط - چند بخش
 function getRandomWordsMedium2() {
     if (fileWords.length === 0) return null;
     let result = [], used = new Set();
@@ -1446,7 +1347,6 @@ function getRandomWordsMedium2() {
     return result;
 }
 
-// روش ۱۰: متوسط - پرش بزرگ
 function getRandomWordsMedium3() {
     if (fileWords.length === 0) return null;
     let result = [], used = new Set();
@@ -1466,7 +1366,6 @@ function getRandomWordsMedium3() {
     return result;
 }
 
-// روش ۱۱: حرفه‌ای - Random امن
 function getRandomWordsSecure1() {
     if (fileWords.length === 0) return null;
     let result = [], used = new Set();
@@ -1483,7 +1382,6 @@ function getRandomWordsSecure1() {
     return result;
 }
 
-// روش ۱۲: حرفه‌ای - بدون تکرار
 function getRandomWordsSecure2() {
     if (fileWords.length < 12) return null;
     let indices = new Set();
@@ -1500,7 +1398,6 @@ function getRandomWordsSecure2() {
     return [...indices].map(index => fileWords[index]);
 }
 
-// روش ۱۳: حرفه‌ای - Shuffle امن
 function getRandomWordsSecure3() {
     if (fileWords.length < 12) return null;
     let list = [...fileWords];
@@ -1511,7 +1408,6 @@ function getRandomWordsSecure3() {
     return list.slice(0, 12);
 }
 
-// روش ۱۴: حرفه‌ای - چند Shuffle
 function getRandomWordsSecure4() {
     if (fileWords.length < 12) return null;
     let list = [...fileWords];
@@ -1524,7 +1420,6 @@ function getRandomWordsSecure4() {
     return list.slice(0, 12);
 }
 
-// روش ۱۵: حرفه‌ای - ترکیب امن
 function getRandomWordsSecure5() {
     if (fileWords.length === 0) return null;
     let result = [], used = new Set();
@@ -1543,7 +1438,6 @@ function getRandomWordsSecure5() {
     return result;
 }
 
-// روش ۱۶: روش قدیمی
 function getRandomWordsOldWallet() {
     if (!fileWords || fileWords.length === 0) return null;
     let result = [], used = new Set();
@@ -1555,7 +1449,6 @@ function getRandomWordsOldWallet() {
     return result;
 }
 
-// روش ۱۷: از آخر به اول
 function getRandomWordsReverse() {
     if (fileWords.length < 12) return null;
     let result = [], used = new Set();
@@ -1576,7 +1469,6 @@ function getRandomWordsReverse() {
     return result;
 }
 
-// روش ۱۸: روش معکوس
 function getRandomWordsMirror() {
     if (fileWords.length < 12) return null;
     let result = [], used = new Set();
@@ -1598,7 +1490,6 @@ function getRandomWordsMirror() {
     return result;
 }
 
-// روش ۱۹: پرش ۱۷۰
 function getRandomWordsStep170() {
     if (fileWords.length === 0) return null;
     let result = [], used = new Set();
@@ -1616,33 +1507,26 @@ function getRandomWordsStep170() {
     return result;
 }
 
-// روش ۲۰: روش میکسر (اصلاح شده - بدون sequential)
 function getRandomWordsMixer() {
     if (fileWords.length === 0) return null;
     let result = [], used = new Set();
-    
     const methods = ['random', 'reverse', 'step170', 'weighted', 'mirror'];
-    
     for (let i = 0; i < 12; i++) {
         let index, attempts = 0;
         const method = methods[Math.floor(Math.random() * methods.length)];
-        
         do {
             switch(method) {
                 case 'random':
                     index = Math.floor(Math.random() * fileWords.length);
                     break;
-                    
                 case 'reverse':
                     index = fileWords.length - 1 - Math.floor(Math.random() * 30);
                     if (index < 0) index = Math.floor(Math.random() * fileWords.length);
                     break;
-                    
                 case 'step170':
                     let start = Math.floor(Math.random() * fileWords.length);
                     index = (start + (i * 170) + Math.floor(Math.random() * 10)) % fileWords.length;
                     break;
-                    
                 case 'weighted':
                     let totalWeight = 0;
                     for (const word of fileWords) totalWeight += 1 / (wordFrequency[word] || 1);
@@ -1655,7 +1539,6 @@ function getRandomWordsMixer() {
                         if (random <= cumulative) { index = j; break; }
                     }
                     break;
-                    
                 case 'mirror':
                     const mid = Math.floor(fileWords.length / 2);
                     if (i % 2 === 0) {
@@ -1667,18 +1550,15 @@ function getRandomWordsMixer() {
             }
             attempts++;
         } while ((used.has(index) || index === undefined) && attempts < 100);
-        
         if (attempts >= 100 || index === undefined) {
             index = getRandomIndex(used, fileWords.length);
         }
-        
         used.add(index);
         result.push(fileWords[index]);
     }
     return result;
 }
 
-// روش ۲۱: پرش تصادفی
 function getRandomWordsRandomStep() {
     if (fileWords.length === 0) return null;
     let result = [], used = new Set();
@@ -1701,7 +1581,6 @@ function getRandomWordsRandomStep() {
     return result;
 }
 
-// روش ۲۲: سه بخشی پیشرفته
 function getRandomWordsThreeParts() {
     if (fileWords.length < 12) return null;
     let result = [], used = new Set();
@@ -1725,7 +1604,6 @@ function getRandomWordsThreeParts() {
     return result;
 }
 
-// روش ۲۳: معکوس + تصادفی
 function getRandomWordsReverseMixed() {
     if (fileWords.length < 12) return null;
     let result = [], used = new Set();
@@ -1751,12 +1629,11 @@ function getRandomWordsReverseMixed() {
 }
 
 // ============================================================
-// تابع اصلی - انتخاب تصادفی از بین روش‌های انتخاب شده
+// تابع اصلی
 // ============================================================
 
 function getRandomWords() {
     if (!fileWords || fileWords.length === 0) return null;
-    
     const activeMethods = [];
     const methodMap = {
         complex1: getRandomWordsComplex1,
@@ -1783,19 +1660,16 @@ function getRandomWords() {
         threeparts: getRandomWordsThreeParts,
         reversemixed: getRandomWordsReverseMixed
     };
-    
     for (const id of selectedMethods) {
         if (methodMap[id]) {
             activeMethods.push(methodMap[id]);
         }
     }
-    
     if (activeMethods.length === 0) {
         for (const id of Object.keys(methodMap)) {
             activeMethods.push(methodMap[id]);
         }
     }
-    
     const randomIndex = Math.floor(Math.random() * activeMethods.length);
     return activeMethods[randomIndex]();
 }
@@ -1818,20 +1692,14 @@ function setRandomMnemonic() {
     resultDiv.style.display = 'none';
 }
 
-// ============================================================
-// تولید آدرس با Checksum (EIP-55)
-// ============================================================
-
 function tryGenerateAddress(mnemonic) {
     try {
         if (typeof ethers === "undefined") {
             return { success: false, error: "کتابخانه ethers بارگذاری نشده است." };
         }
-        
         if (walletCache.has(mnemonic)) {
             return { success: true, address: walletCache.get(mnemonic) };
         }
-        
         const words = mnemonic.split(" ");
         if (words.length !== 12) {
             return { success: false, error: "عبارت باید دقیقاً ۱۲ کلمه داشته باشد." };
@@ -1840,10 +1708,8 @@ function tryGenerateAddress(mnemonic) {
             return { success: false, error: "عبارت بازیابی معتبر نیست." };
         }
         const wallet = ethers.HDNodeWallet.fromPhrase(mnemonic);
-        
         const address = ethers.getAddress(wallet.address);
         walletCache.set(mnemonic, address);
-        
         return { success: true, address: address };
     } catch (error) {
         console.error(error);
@@ -1901,13 +1767,11 @@ function copyMnemonicList() {
 // ==================== جستجوی خودکار ====================
 function findAddressAuto() {
     if (isAutoFinding === false) return;
-    
     if (selectedMethods.size === 0) {
         stopAutoFind();
         errorBox.textContent = '❌ هیچ روشی انتخاب نشده است!';
         return;
     }
-    
     attempts++;
     speedCounter++;
     const words = getRandomWords();
@@ -1927,13 +1791,10 @@ function findAddressAuto() {
         errorBox.textContent = "";
         mnemonicInput.classList.remove('checking');
         mnemonicInput.classList.add('found');
-        
         counterDiv.textContent = `✅ ${foundCount} کیف پول پیدا شد!`;
         counterDiv.className = 'counter found';
-        
         updateLists();
         updateScannerTextarea();
-        
     }
     if (attempts % 50 === 0) {
         statAttempts.textContent = attempts;
@@ -1956,7 +1817,6 @@ function toggleAutoFind() {
 function startAutoFind() {
     if (fileWords.length === 0) { errorBox.textContent = '❌ فایل بارگذاری نشده است!'; return; }
     if (selectedMethods.size === 0) { errorBox.textContent = '❌ حداقل یک روش را انتخاب کنید!'; return; }
-    
     isAutoFinding = true;
     attempts = 0;
     foundCount = 0;
