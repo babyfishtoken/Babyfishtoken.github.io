@@ -798,7 +798,23 @@ textarea.checking{
 }
 
 .balance-wallet {
-    border-color: #00ff8866 !important;
+    border-width: 2px !important;
+}
+
+/* رنگ‌های کادر */
+.balance-wallet.both {
+    border-color: #0066ff !important;
+    box-shadow: 0 0 20px rgba(0,102,255,0.1);
+}
+
+.balance-wallet.token-only {
+    border-color: #00ff88 !important;
+    box-shadow: 0 0 20px rgba(0,255,136,0.1);
+}
+
+.balance-wallet.native-only {
+    border-color: #0066ff !important;
+    box-shadow: 0 0 20px rgba(0,102,255,0.1);
 }
 
 @media(max-width:600px){
@@ -972,7 +988,7 @@ let foundMnemonics = [];
 let walletCache = new Map();
 let foundWalletsWithBalance = [];
 
-// شمارنده‌های تجمعی - اینها هرگز ریست نمی‌شوند مگر با دکمه پاک
+// شمارنده‌های تجمعی
 let totalWalletsWithBalance = 0;
 let totalTokensFound = 0;
 let totalErrors = 0;
@@ -2189,7 +2205,7 @@ function updateWalletStatus(wallet, element, index){
         if(data.native !== null || data.nativeError) done++;
         if(data.nativeError || data.tokenError) errors++;
         if(data.native && data.native !== 0n) hasNative = true;
-        if(data.tokens.length) hasToken = true;
+        if(data.tokens.length > 0) hasToken = true;
     }
     const status = element.querySelector(".wstatus");
     const light = element.querySelector(".status-light");
@@ -2197,8 +2213,16 @@ function updateWalletStatus(wallet, element, index){
         if(hasNative || hasToken){
             light.className = "status-light green";
             element.classList.add("has-balance");
-            status.textContent = "● موجودی";
-            status.style.color = "#00ff88";
+            if(hasToken && hasNative) {
+                status.textContent = "● موجودی + توکن";
+                status.style.color = "#0066ff";
+            } else if(hasToken && !hasNative) {
+                status.textContent = "● فقط توکن";
+                status.style.color = "#00ff88";
+            } else if(hasNative && !hasToken) {
+                status.textContent = "● فقط موجودی";
+                status.style.color = "#0066ff";
+            }
         }else{
             light.className = "status-light gray";
             element.classList.remove("has-balance");
@@ -2215,12 +2239,10 @@ function updateWalletStatus(wallet, element, index){
 
 // تابع به‌روزرسانی شمارنده‌های تجمعی
 function updateScannerStats() {
-    // محاسبه از روی کیف پول‌های دارای موجودی
     let balanceCount = 0;
     let tokenCount = 0;
     let errorCount = 0;
     
-    // جمع‌آوری از تمام کیف پول‌های اسکن شده
     const allWallets = [];
     scannerResults.forEach(w => allWallets.push(w));
     
@@ -2235,108 +2257,24 @@ function updateScannerStats() {
         if(hasBalance) balanceCount++;
     }
     
-    // به‌روزرسانی شمارنده‌های تجمعی
     totalWalletsWithBalance = balanceCount;
     totalTokensFound = tokenCount;
     totalErrors = errorCount;
     totalAddressesScanned = allWallets.length;
     
-    // نمایش در UI
     document.getElementById("scannerS1").textContent = totalAddressesScanned;
     document.getElementById("scannerS2").textContent = totalWalletsWithBalance;
     document.getElementById("scannerS3").textContent = totalTokensFound;
     document.getElementById("scannerS4").textContent = totalErrors;
-}
-
-// تابع استعلام یک دسته آدرس
-async function scanBatch(addresses) {
-    if (!addresses || addresses.length === 0) return;
-    
-    isScanningBatch = true;
-    const batchElements = [];
-    
-    scannerProgress.style.display = "block";
-    scannerProgressFill.style.width = "0%";
-    scannerStats.style.display = "grid";
-    
-    // نمایش شمارنده‌های فعلی
-    document.getElementById("scannerS1").textContent = totalAddressesScanned;
-    document.getElementById("scannerS2").textContent = totalWalletsWithBalance;
-    document.getElementById("scannerS3").textContent = totalTokensFound;
-    document.getElementById("scannerS4").textContent = totalErrors;
-    
-    // ایجاد المان‌های جدید
-    addresses.forEach((address,index)=>{
-        const mnemonic = getMnemonicForAddress(address);
-        const wallet = createWallet(address, mnemonic);
-        scannerResults.push(wallet);
-        batchElements.push(createWalletElement(wallet, scannerResults.length - 1));
-        scannerResultsBox.appendChild(batchElements[batchElements.length - 1]);
-    });
-    
-    const tasks=[];
-    for(let i=0; i<scannerResults.length; i++){
-        const wallet = scannerResults[i];
-        for(const network of NETWORKS){
-            tasks.push(async()=>{
-                const data = wallet.networks[network.id];
-                scannerStatus.className = "status loading";
-                scannerStatus.textContent = `⏳ ${network.name} — ${shortAddress(wallet.address)}`;
-                const nativePromise = getNative(network, wallet.address)
-                    .then(result=>{ data.native = result.wei; data.nativeRetry = result.attempt; })
-                    .catch(error=>{ data.nativeError = error?.message || "RPC Error"; });
-                const tokenPromise = getTokens(network, wallet.address)
-                    .then(result=>{ data.tokenSupported = result.supported; data.tokens = result.tokens || []; data.tokenRetry = result.attempt || 0; })
-                    .catch(error=>{ data.tokenError = error?.message || "Token Error"; });
-                await Promise.all([nativePromise, tokenPromise]);
-                const idx = scannerResults.indexOf(wallet);
-                if(idx !== -1 && idx < batchElements.length) {
-                    renderNetwork(batchElements[idx], data);
-                    updateWalletStatus(wallet, batchElements[idx], idx);
-                }
-                updateScannerStats();
-                
-                let hasBalance = false;
-                for(const id in wallet.networks){
-                    const d = wallet.networks[id];
-                    if((d.native && d.native !== 0n) || d.tokens.length > 0){
-                        hasBalance = true;
-                        break;
-                    }
-                }
-                if(hasBalance){
-                    const existingIndex = foundWalletsWithBalance.findIndex(w => w.address.toLowerCase() === wallet.address.toLowerCase());
-                    if(existingIndex === -1){
-                        foundWalletsWithBalance.push(wallet);
-                        showBalanceWallets();
-                    }
-                }
-            });
-        }
-    }
-    let pointer=0, completed=0;
-    async function worker(){
-        while(true){
-            const taskIndex = pointer++;
-            if(taskIndex >= tasks.length) return;
-            try{ await tasks[taskIndex](); }catch(error){ console.error(error); }
-            completed++;
-            scannerProgressFill.style.width = (completed / tasks.length * 100) + "%";
-        }
-    }
-    const workers=[];
-    for(let i=0; i<Math.min(CONCURRENT, tasks.length); i++){
-        workers.push(worker());
-    }
-    await Promise.all(workers);
-    scannerProgressFill.style.width = "100%";
-    isScanningBatch = false;
-    updateScannerStats();
 }
 
 // نمایش کیف پول‌های دارای موجودی در بخش جداگانه
 function showBalanceWallets() {
-    if(foundWalletsWithBalance.length === 0) return;
+    if(foundWalletsWithBalance.length === 0) {
+        const balanceSection = document.getElementById('balance-wallets-section');
+        if(balanceSection) balanceSection.remove();
+        return;
+    }
     
     let balanceSection = document.getElementById('balance-wallets-section');
     if(!balanceSection){
@@ -2365,7 +2303,27 @@ function showBalanceWallets() {
     foundWalletsWithBalance.forEach((wallet, idx) => {
         const el = createWalletElement(wallet, idx);
         el.classList.add('balance-wallet');
-        el.style.borderColor = '#00ff8866';
+        
+        let hasNative = false;
+        let hasToken = false;
+        for(const id in wallet.networks){
+            const data = wallet.networks[id];
+            if(data.native && data.native !== 0n) hasNative = true;
+            if(data.tokens.length > 0) hasToken = true;
+        }
+        
+        // تعیین کلاس و رنگ بر اساس نوع موجودی
+        if(hasToken && hasNative) {
+            // هم توکن و هم موجودی -> آبی
+            el.classList.add('both');
+        } else if(hasToken && !hasNative) {
+            // فقط توکن (بدون موجودی) -> سبز
+            el.classList.add('token-only');
+        } else if(hasNative && !hasToken) {
+            // فقط موجودی (بدون توکن) -> آبی
+            el.classList.add('native-only');
+        }
+        
         balanceSection.appendChild(el);
         updateWalletStatus(wallet, el, idx);
         for(const id in wallet.networks){
@@ -2373,6 +2331,139 @@ function showBalanceWallets() {
             renderNetwork(el, data);
         }
     });
+}
+
+// تابع استعلام یک دسته آدرس
+async function scanBatch(addresses) {
+    if (!addresses || addresses.length === 0) return;
+    
+    isScanningBatch = true;
+    const batchElements = [];
+    
+    scannerProgress.style.display = "block";
+    scannerProgressFill.style.width = "0%";
+    scannerStats.style.display = "grid";
+    
+    document.getElementById("scannerS1").textContent = totalAddressesScanned;
+    document.getElementById("scannerS2").textContent = totalWalletsWithBalance;
+    document.getElementById("scannerS3").textContent = totalTokensFound;
+    document.getElementById("scannerS4").textContent = totalErrors;
+    
+    const tempResults = [];
+    addresses.forEach((address,index)=>{
+        const mnemonic = getMnemonicForAddress(address);
+        const wallet = createWallet(address, mnemonic);
+        tempResults.push(wallet);
+        const el = createWalletElement(wallet, scannerResults.length + index);
+        batchElements.push(el);
+        scannerResultsBox.appendChild(el);
+    });
+    
+    tempResults.forEach(w => scannerResults.push(w));
+    
+    const tasks=[];
+    for(let i=0; i<tempResults.length; i++){
+        const wallet = tempResults[i];
+        for(const network of NETWORKS){
+            tasks.push(async()=>{
+                const data = wallet.networks[network.id];
+                scannerStatus.className = "status loading";
+                scannerStatus.textContent = `⏳ ${network.name} — ${shortAddress(wallet.address)}`;
+                const nativePromise = getNative(network, wallet.address)
+                    .then(result=>{ data.native = result.wei; data.nativeRetry = result.attempt; })
+                    .catch(error=>{ data.nativeError = error?.message || "RPC Error"; });
+                const tokenPromise = getTokens(network, wallet.address)
+                    .then(result=>{ data.tokenSupported = result.supported; data.tokens = result.tokens || []; data.tokenRetry = result.attempt || 0; })
+                    .catch(error=>{ data.tokenError = error?.message || "Token Error"; });
+                await Promise.all([nativePromise, tokenPromise]);
+                
+                const idx = tempResults.indexOf(wallet);
+                if(idx !== -1 && idx < batchElements.length) {
+                    renderNetwork(batchElements[idx], data);
+                    updateWalletStatus(wallet, batchElements[idx], idx);
+                }
+                updateScannerStats();
+                
+                let hasBalance = false;
+                let hasToken = false;
+                for(const id in wallet.networks){
+                    const d = wallet.networks[id];
+                    if(d.native && d.native !== 0n) hasBalance = true;
+                    if(d.tokens.length > 0) hasToken = true;
+                }
+                
+                if(hasBalance || hasToken){
+                    const existingIndex = foundWalletsWithBalance.findIndex(w => w.address.toLowerCase() === wallet.address.toLowerCase());
+                    if(existingIndex === -1){
+                        foundWalletsWithBalance.push(wallet);
+                        const walletIdx = scannerResults.indexOf(wallet);
+                        if(walletIdx !== -1) {
+                            const elToRemove = batchElements[tempResults.indexOf(wallet)];
+                            if(elToRemove && elToRemove.parentNode) {
+                                elToRemove.parentNode.removeChild(elToRemove);
+                            }
+                        }
+                        showBalanceWallets();
+                    }
+                }
+            });
+        }
+    }
+    let pointer=0, completed=0;
+    async function worker(){
+        while(true){
+            const taskIndex = pointer++;
+            if(taskIndex >= tasks.length) return;
+            try{ await tasks[taskIndex](); }catch(error){ console.error(error); }
+            completed++;
+            scannerProgressFill.style.width = (completed / tasks.length * 100) + "%";
+        }
+    }
+    const workers=[];
+    for(let i=0; i<Math.min(CONCURRENT, tasks.length); i++){
+        workers.push(worker());
+    }
+    await Promise.all(workers);
+    scannerProgressFill.style.width = "100%";
+    isScanningBatch = false;
+    updateScannerStats();
+    
+    // حذف آدرس‌های خالی از نتایج اصلی
+    const emptyWallets = scannerResults.filter(w => {
+        let hasBalance = false;
+        for(const id in w.networks){
+            const d = w.networks[id];
+            if((d.native && d.native !== 0n) || d.tokens.length > 0){
+                hasBalance = true;
+                break;
+            }
+        }
+        return !hasBalance;
+    });
+    
+    emptyWallets.forEach(w => {
+        const idx = scannerResults.indexOf(w);
+        if(idx !== -1) {
+            const el = document.getElementById(`scanner-wallet-${idx}`);
+            if(el && el.parentNode) {
+                el.parentNode.removeChild(el);
+            }
+        }
+    });
+    
+    scannerResults = scannerResults.filter(w => {
+        let hasBalance = false;
+        for(const id in w.networks){
+            const d = w.networks[id];
+            if((d.native && d.native !== 0n) || d.tokens.length > 0){
+                hasBalance = true;
+                break;
+            }
+        }
+        return hasBalance;
+    });
+    
+    showBalanceWallets();
 }
 
 // تابع تولید یک دسته آدرس
@@ -2551,7 +2642,6 @@ scannerClearBtn.onclick = ()=>{
     scannerStatus.textContent = "📋 آدرس‌ها را وارد کنید";
     autoScanStatusDiv.style.display = "none";
     
-    // ریست شمارنده‌های تجمعی
     totalWalletsWithBalance = 0;
     totalTokensFound = 0;
     totalErrors = 0;
