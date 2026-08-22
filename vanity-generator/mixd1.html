@@ -972,10 +972,11 @@ let foundMnemonics = [];
 let walletCache = new Map();
 let foundWalletsWithBalance = [];
 
-// شمارنده‌های تجمعی
+// شمارنده‌های تجمعی - اینها هرگز ریست نمی‌شوند مگر با دکمه پاک
 let totalWalletsWithBalance = 0;
 let totalTokensFound = 0;
 let totalErrors = 0;
+let totalAddressesScanned = 0;
 
 let shuffledWords = [];
 let shuffleIndex = 0;
@@ -1126,6 +1127,7 @@ function clearAllData() {
     totalWalletsWithBalance = 0;
     totalTokensFound = 0;
     totalErrors = 0;
+    totalAddressesScanned = 0;
     
     document.getElementById('scannerAddresses').value = '';
     document.getElementById('scannerCount').textContent = 'تعداد آدرس‌ها: 0';
@@ -2211,29 +2213,39 @@ function updateWalletStatus(wallet, element, index){
     }
 }
 
-function updateScannerStats(){
-    let walletsWithBalance = 0;
+// تابع به‌روزرسانی شمارنده‌های تجمعی
+function updateScannerStats() {
+    // محاسبه از روی کیف پول‌های دارای موجودی
+    let balanceCount = 0;
     let tokenCount = 0;
-    let errors = 0;
+    let errorCount = 0;
     
-    for(const wallet of scannerResults){
+    // جمع‌آوری از تمام کیف پول‌های اسکن شده
+    const allWallets = [];
+    scannerResults.forEach(w => allWallets.push(w));
+    
+    for(const wallet of allWallets) {
         let hasBalance = false;
-        for(const id in wallet.networks){
+        for(const id in wallet.networks) {
             const data = wallet.networks[id];
             if(data.native !== null && data.native !== 0n) hasBalance = true;
             tokenCount += data.tokens.length;
-            if(data.nativeError || data.tokenError) errors++;
+            if(data.nativeError || data.tokenError) errorCount++;
         }
-        if(hasBalance) walletsWithBalance++;
+        if(hasBalance) balanceCount++;
     }
     
-    totalWalletsWithBalance = walletsWithBalance;
+    // به‌روزرسانی شمارنده‌های تجمعی
+    totalWalletsWithBalance = balanceCount;
     totalTokensFound = tokenCount;
-    totalErrors = errors;
+    totalErrors = errorCount;
+    totalAddressesScanned = allWallets.length;
     
-    document.getElementById("scannerS2").textContent = walletsWithBalance;
-    document.getElementById("scannerS3").textContent = tokenCount;
-    document.getElementById("scannerS4").textContent = errors;
+    // نمایش در UI
+    document.getElementById("scannerS1").textContent = totalAddressesScanned;
+    document.getElementById("scannerS2").textContent = totalWalletsWithBalance;
+    document.getElementById("scannerS3").textContent = totalTokensFound;
+    document.getElementById("scannerS4").textContent = totalErrors;
 }
 
 // تابع استعلام یک دسته آدرس
@@ -2241,23 +2253,24 @@ async function scanBatch(addresses) {
     if (!addresses || addresses.length === 0) return;
     
     isScanningBatch = true;
-    const batchResults = [];
     const batchElements = [];
     
-    scannerResults = [];
     scannerProgress.style.display = "block";
     scannerProgressFill.style.width = "0%";
     scannerStats.style.display = "grid";
-    document.getElementById("scannerS1").textContent = scannerResults.length + addresses.length;
+    
+    // نمایش شمارنده‌های فعلی
+    document.getElementById("scannerS1").textContent = totalAddressesScanned;
     document.getElementById("scannerS2").textContent = totalWalletsWithBalance;
     document.getElementById("scannerS3").textContent = totalTokensFound;
     document.getElementById("scannerS4").textContent = totalErrors;
     
+    // ایجاد المان‌های جدید
     addresses.forEach((address,index)=>{
         const mnemonic = getMnemonicForAddress(address);
         const wallet = createWallet(address, mnemonic);
         scannerResults.push(wallet);
-        batchElements.push(createWalletElement(wallet, index));
+        batchElements.push(createWalletElement(wallet, scannerResults.length - 1));
         scannerResultsBox.appendChild(batchElements[batchElements.length - 1]);
     });
     
@@ -2276,8 +2289,11 @@ async function scanBatch(addresses) {
                     .then(result=>{ data.tokenSupported = result.supported; data.tokens = result.tokens || []; data.tokenRetry = result.attempt || 0; })
                     .catch(error=>{ data.tokenError = error?.message || "Token Error"; });
                 await Promise.all([nativePromise, tokenPromise]);
-                renderNetwork(batchElements[i], data);
-                updateWalletStatus(wallet, batchElements[i], i);
+                const idx = scannerResults.indexOf(wallet);
+                if(idx !== -1 && idx < batchElements.length) {
+                    renderNetwork(batchElements[idx], data);
+                    updateWalletStatus(wallet, batchElements[idx], idx);
+                }
                 updateScannerStats();
                 
                 let hasBalance = false;
@@ -2481,7 +2497,9 @@ function startAutoScan() {
     totalWalletsWithBalance = 0;
     totalTokensFound = 0;
     totalErrors = 0;
+    totalAddressesScanned = 0;
     foundWalletsWithBalance = [];
+    scannerResults = [];
     
     isAutoScanRunning = true;
     autoScanStopRequested = false;
@@ -2496,7 +2514,6 @@ function startAutoScan() {
     
     // پاک کردن نتایج قبلی
     scannerResultsBox.innerHTML = '';
-    scannerResults = [];
     document.getElementById("scannerS1").textContent = "0";
     document.getElementById("scannerS2").textContent = "0";
     document.getElementById("scannerS3").textContent = "0";
@@ -2538,6 +2555,7 @@ scannerClearBtn.onclick = ()=>{
     totalWalletsWithBalance = 0;
     totalTokensFound = 0;
     totalErrors = 0;
+    totalAddressesScanned = 0;
     
     const balanceSection = document.getElementById('balance-wallets-section');
     if(balanceSection) balanceSection.remove();
