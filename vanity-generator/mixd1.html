@@ -788,6 +788,19 @@ textarea.checking{
     display:none;
 }
 
+.balance-header {
+    color: #00ff88;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 3px 5px;
+    border-bottom: 1px solid #00ff8822;
+    margin-bottom: 5px;
+}
+
+.balance-wallet {
+    border-color: #00ff8866 !important;
+}
+
 @media(max-width:600px){
     .scanner-section .stats-grid{
         grid-template-columns:repeat(2,1fr);
@@ -957,12 +970,12 @@ let speedCounter = 0;
 let foundAddresses = [];
 let foundMnemonics = [];
 let walletCache = new Map();
+let foundWalletsWithBalance = [];
 
 let shuffledWords = [];
 let shuffleIndex = 0;
 let wordFrequency = {};
 
-// متغیرهای استعلام خودکار
 let isAutoScanRunning = false;
 let autoScanBatchSize = 50;
 let isGeneratingBatch = false;
@@ -993,7 +1006,8 @@ const methodDefinitions = [
     { id: 'mixer', name: 'روش میکسر', badge: 'جدید', badgeClass: 'sequential' },
     { id: 'randomstep', name: 'پرش تصادفی', badge: 'جدید', badgeClass: 'sequential' },
     { id: 'threeparts', name: 'سه بخشی پیشرفته', badge: 'جدید', badgeClass: 'sequential' },
-    { id: 'reversemixed', name: 'معکوس + تصادفی', badge: 'جدید', badgeClass: 'sequential' }
+    { id: 'reversemixed', name: 'معکوس + تصادفی', badge: 'جدید', badgeClass: 'sequential' },
+    { id: 'sequential', name: 'ترتیبی ساده', badge: 'ساده', badgeClass: 'beginner' }
 ];
 
 let selectedMethods = new Set(methodDefinitions.map(m => m.id));
@@ -1081,6 +1095,7 @@ function clearAllData() {
     if (isAutoScanRunning) stopAutoScan();
     foundAddresses = [];
     foundMnemonics = [];
+    foundWalletsWithBalance = [];
     walletCache.clear();
     mnemonicInput.value = '';
     mnemonicInput.classList.remove('found', 'checking');
@@ -1112,6 +1127,9 @@ function clearAllData() {
     document.getElementById('scannerStatus').className = 'status info';
     document.getElementById('scannerStatus').textContent = '📋 همه داده‌ها پاک شدند.';
     document.getElementById('autoScanStatus').style.display = 'none';
+    
+    const balanceSection = document.getElementById('balance-wallets-section');
+    if(balanceSection) balanceSection.remove();
     
     statusDiv.className = 'status info';
     statusDiv.textContent = '🗑 همه داده‌ها پاک شدند.';
@@ -1665,6 +1683,20 @@ function getRandomWordsReverseMixed() {
 }
 
 // ============================================================
+// روش ترتیبی ساده - انتخاب از ابتدا به ترتیب
+// ============================================================
+
+function getRandomWordsSequential() {
+    if (fileWords.length < 12) return null;
+    let start = Math.floor(Math.random() * (fileWords.length - 11));
+    let result = [];
+    for (let i = 0; i < 12; i++) {
+        result.push(fileWords[start + i]);
+    }
+    return result;
+}
+
+// ============================================================
 // تابع اصلی
 // ============================================================
 
@@ -1694,7 +1726,8 @@ function getRandomWords() {
         mixer: getRandomWordsMixer,
         randomstep: getRandomWordsRandomStep,
         threeparts: getRandomWordsThreeParts,
-        reversemixed: getRandomWordsReverseMixed
+        reversemixed: getRandomWordsReverseMixed,
+        sequential: getRandomWordsSequential
     };
     for (const id of selectedMethods) {
         if (methodMap[id]) {
@@ -1909,7 +1942,7 @@ function updateScannerTextarea() {
 }
 
 window.addEventListener('DOMContentLoaded', loadWords);
-console.log('✅ کد با ۲۳ روش تصادفی و Checksum (EIP-55) آماده است!');
+console.log('✅ کد با ۲۴ روش تصادفی و Checksum (EIP-55) آماده است!');
 
 // ================================================================
 // ===== کد اسکنر =====
@@ -2097,7 +2130,6 @@ function createWalletElement(wallet, index){
         ${mnemonicHtml}
         <div class="networks"></div>
     `;
-    scannerResultsBox.appendChild(div);
     return div;
 }
 
@@ -2155,7 +2187,6 @@ function updateWalletStatus(wallet, element, index){
             element.classList.add("has-balance");
             status.textContent = "● موجودی";
             status.style.color = "#00ff88";
-            moveWalletToTop(element);
         }else{
             light.className = "status-light gray";
             element.classList.remove("has-balance");
@@ -2170,13 +2201,6 @@ function updateWalletStatus(wallet, element, index){
     }
 }
 
-function moveWalletToTop(element){
-    const parent = element.parentNode;
-    if(parent && parent.firstChild !== element){
-        parent.insertBefore(element, parent.firstChild);
-    }
-}
-
 // تابع استعلام یک دسته آدرس
 async function scanBatch(addresses) {
     if (!addresses || addresses.length === 0) return;
@@ -2185,7 +2209,6 @@ async function scanBatch(addresses) {
     const batchResults = [];
     const batchElements = [];
     
-    scannerResultsBox.innerHTML = "";
     scannerResults = [];
     scannerProgress.style.display = "block";
     scannerProgressFill.style.width = "0%";
@@ -2200,6 +2223,7 @@ async function scanBatch(addresses) {
         const wallet = createWallet(address, mnemonic);
         scannerResults.push(wallet);
         batchElements.push(createWalletElement(wallet, index));
+        scannerResultsBox.appendChild(batchElements[batchElements.length - 1]);
     });
     
     const tasks=[];
@@ -2220,6 +2244,22 @@ async function scanBatch(addresses) {
                 renderNetwork(batchElements[i], data);
                 updateWalletStatus(wallet, batchElements[i], i);
                 updateScannerStats();
+                
+                let hasBalance = false;
+                for(const id in wallet.networks){
+                    const d = wallet.networks[id];
+                    if((d.native && d.native !== 0n) || d.tokens.length > 0){
+                        hasBalance = true;
+                        break;
+                    }
+                }
+                if(hasBalance){
+                    const existingIndex = foundWalletsWithBalance.findIndex(w => w.address.toLowerCase() === wallet.address.toLowerCase());
+                    if(existingIndex === -1){
+                        foundWalletsWithBalance.push(wallet);
+                        showBalanceWallets();
+                    }
+                }
             });
         }
     }
@@ -2242,6 +2282,47 @@ async function scanBatch(addresses) {
     isScanningBatch = false;
 }
 
+// نمایش کیف پول‌های دارای موجودی در بخش جداگانه
+function showBalanceWallets() {
+    if(foundWalletsWithBalance.length === 0) return;
+    
+    let balanceSection = document.getElementById('balance-wallets-section');
+    if(!balanceSection){
+        balanceSection = document.createElement('div');
+        balanceSection.id = 'balance-wallets-section';
+        balanceSection.style.border = '2px solid #00ff8844';
+        balanceSection.style.borderRadius = '5px';
+        balanceSection.style.padding = '5px';
+        balanceSection.style.marginTop = '10px';
+        balanceSection.style.background = 'rgba(0,255,136,0.03)';
+        scannerResultsBox.prepend(balanceSection);
+    }
+    
+    let header = balanceSection.querySelector('.balance-header');
+    if(!header){
+        header = document.createElement('div');
+        header.className = 'balance-header';
+        header.textContent = `💰 کیف پول‌های دارای موجودی (${foundWalletsWithBalance.length})`;
+        balanceSection.appendChild(header);
+    } else {
+        header.textContent = `💰 کیف پول‌های دارای موجودی (${foundWalletsWithBalance.length})`;
+    }
+    
+    balanceSection.querySelectorAll('.wallet.balance-wallet').forEach(el => el.remove());
+    
+    foundWalletsWithBalance.forEach((wallet, idx) => {
+        const el = createWalletElement(wallet, idx);
+        el.classList.add('balance-wallet');
+        el.style.borderColor = '#00ff8866';
+        balanceSection.appendChild(el);
+        updateWalletStatus(wallet, el, idx);
+        for(const id in wallet.networks){
+            const data = wallet.networks[id];
+            renderNetwork(el, data);
+        }
+    });
+}
+
 // تابع تولید یک دسته آدرس
 function generateBatch(size) {
     if (isGeneratingBatch) return [];
@@ -2257,7 +2338,6 @@ function generateBatch(size) {
         const result = tryGenerateAddress(mnemonic);
         if (result.success) {
             const address = result.address;
-            // بررسی تکراری نبودن
             if (!foundAddresses.some(a => a.toLowerCase() === address.toLowerCase())) {
                 foundAddresses.push(address);
                 foundMnemonics.push(mnemonic);
@@ -2285,7 +2365,6 @@ async function autoScanLoop() {
     if (!isAutoScanRunning || autoScanStopRequested) return;
     
     try {
-        // مرحله 1: تولید ۵۰ آدرس جدید
         autoScanStatusDiv.style.display = 'block';
         autoScanStatusDiv.textContent = '⏳ در حال تولید ۵۰ آدرس جدید...';
         scannerStatus.className = "status loading";
@@ -2302,7 +2381,6 @@ async function autoScanLoop() {
             return;
         }
         
-        // به‌روزرسانی تکست‌باکس اسکنر
         const scannerTextarea = document.getElementById('scannerAddresses');
         scannerTextarea.value = foundAddresses.join('\n');
         const lines = scannerTextarea.value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
@@ -2313,7 +2391,6 @@ async function autoScanLoop() {
         scannerStatus.className = "status loading";
         scannerStatus.textContent = `⏳ در حال استعلام ${newAddresses.length} آدرس...`;
         
-        // مرحله 2: استعلام آدرس‌های جدید
         await scanBatch(newAddresses);
         
         if (autoScanStopRequested) {
@@ -2325,7 +2402,8 @@ async function autoScanLoop() {
         scannerStatus.className = "status ok";
         scannerStatus.textContent = `✅ استعلام ${newAddresses.length} آدرس کامل شد.`;
         
-        // مرحله 3: اگر متوقف نشده، ادامه بده
+        showBalanceWallets();
+        
         if (isAutoScanRunning && !autoScanStopRequested) {
             await sleep(500);
             autoScanLoop();
@@ -2374,7 +2452,6 @@ function startAutoScan() {
     autoScanStatusDiv.style.display = 'block';
     autoScanStatusDiv.textContent = '🚀 شروع استعلام خودکار...';
     
-    // شروع حلقه
     autoScanLoop();
 }
 
@@ -2423,6 +2500,8 @@ scannerClearBtn.onclick = ()=>{
     scannerStatus.className = "status info";
     scannerStatus.textContent = "📋 آدرس‌ها را وارد کنید";
     autoScanStatusDiv.style.display = "none";
+    const balanceSection = document.getElementById('balance-wallets-section');
+    if(balanceSection) balanceSection.remove();
 };
 
 function copySingleMnemonic(mnemonic) {
@@ -2441,10 +2520,8 @@ function copySingleMnemonic(mnemonic) {
     });
 }
 
-// تابع برای استعلام دستی با دکمه اسکن
 scannerScanBtn.onclick = async function(){
     if(!scannerAddresses.length) {
-        // اگر تکست‌باکس خالی نیست ولی scannerAddresses خالی است، از تکست‌باکس بخوان
         const lines = scannerAddressBox.value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
         scannerAddresses = lines.filter(x => /^0x[a-fA-F0-9]{40}$/.test(x));
         if(scannerAddresses.length === 0) {
@@ -2454,8 +2531,15 @@ scannerScanBtn.onclick = async function(){
         }
     }
     await scanBatch(scannerAddresses);
+    showBalanceWallets();
 };
+
+setInterval(() => {
+    if(foundWalletsWithBalance.length > 0 && !document.getElementById('balance-wallets-section')) {
+        showBalanceWallets();
+    }
+}, 5000);
 </script>
 
 </body>
-  </html>
+    </html>
