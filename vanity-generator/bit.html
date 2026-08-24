@@ -1,309 +1,271 @@
 <!DOCTYPE html>
-<html dir="rtl" lang="fa">
+<html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bitcoin Mnemonic → Address</title>
 
-    <title>تبدیل عبارت ۱۲ کلمه‌ای به آدرس بیت‌کوین</title>
+<style>
+* {
+    box-sizing: border-box;
+}
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Tahoma, Arial, sans-serif;
+    background: linear-gradient(135deg, #111827, #1e40af);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+}
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
+.box {
+    width: 100%;
+    max-width: 760px;
+    background: #fff;
+    border-radius: 18px;
+    padding: 25px;
+    box-shadow: 0 15px 50px rgba(0,0,0,.3);
+}
 
-        .container {
-            background: #fff;
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 750px;
-            width: 100%;
-            box-shadow: 0 20px 60px rgba(0,0,0,.3);
-        }
+h1 {
+    text-align: center;
+    margin: 0 0 8px;
+    color: #172554;
+    font-size: 24px;
+}
 
-        h1 {
-            color: #1e3c72;
-            text-align: center;
-            margin-bottom: 10px;
-            font-size: 24px;
-        }
+.sub {
+    text-align: center;
+    color: #666;
+    font-size: 13px;
+    margin-bottom: 22px;
+}
 
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 25px;
-            font-size: 14px;
-        }
+.warning {
+    background: #fff7d6;
+    border: 1px solid #f1c40f;
+    color: #795600;
+    padding: 12px;
+    border-radius: 10px;
+    line-height: 1.7;
+    font-size: 13px;
+    margin-bottom: 20px;
+}
 
-        .warning {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            border-radius: 10px;
-            padding: 12px 15px;
-            margin-bottom: 20px;
-            color: #856404;
-            font-size: 13px;
-            line-height: 1.7;
-        }
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #333;
+}
 
-        label {
-            display: block;
-            font-weight: 600;
-            color: #2d3436;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
+textarea {
+    width: 100%;
+    min-height: 100px;
+    resize: vertical;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    padding: 13px;
+    font-family: monospace;
+    font-size: 15px;
+    direction: ltr;
+    text-align: left;
+}
 
-        textarea {
-            width: 100%;
-            min-height: 95px;
-            padding: 14px;
-            border: 2px solid #dfe6e9;
-            border-radius: 12px;
-            font-size: 15px;
-            font-family: monospace;
-            direction: ltr;
-            text-align: left;
-            resize: vertical;
-        }
+textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+}
 
-        textarea:focus {
-            outline: none;
-            border-color: #2a5298;
-            box-shadow: 0 0 0 3px rgba(42,82,152,.1);
-        }
+.example {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #777;
+}
 
-        .example {
-            margin-top: 8px;
-            font-size: 13px;
-            color: #636e72;
-        }
+.example span {
+    color: #2563eb;
+    cursor: pointer;
+    text-decoration: underline;
+}
 
-        .example span {
-            color: #2a5298;
-            cursor: pointer;
-            text-decoration: underline;
-        }
+button {
+    border: 0;
+    border-radius: 9px;
+    cursor: pointer;
+}
 
-        button.main-btn {
-            width: 100%;
-            padding: 14px;
-            margin-top: 15px;
-            background: linear-gradient(135deg,#1e3c72,#2a5298);
-            color: white;
-            border: 0;
-            border-radius: 12px;
-            font-size: 17px;
-            font-weight: 600;
-            cursor: pointer;
-        }
+#generate {
+    width: 100%;
+    margin-top: 15px;
+    padding: 14px;
+    background: linear-gradient(135deg,#1d4ed8,#2563eb);
+    color: #fff;
+    font-size: 17px;
+    font-weight: bold;
+}
 
-        button.main-btn:disabled {
-            opacity: .6;
-            cursor: not-allowed;
-        }
+#generate:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
 
-        .status {
-            display: none;
-            margin-bottom: 18px;
-            padding: 10px 12px;
-            border-radius: 9px;
-            font-size: 13px;
-        }
+.status {
+    display: none;
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 9px;
+    font-size: 13px;
+}
 
-        .status.show {
-            display: block;
-        }
+.status.show {
+    display: block;
+}
 
-        .status.loading {
-            background: #e8f0fe;
-            color: #1e3c72;
-        }
+.status.ok {
+    background: #dcfce7;
+    color: #166534;
+}
 
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-        }
+.status.err {
+    background: #fee2e2;
+    color: #991b1b;
+}
 
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-        }
+.error {
+    display: none;
+    margin-top: 15px;
+    padding: 11px;
+    border-radius: 9px;
+    background: #fee2e2;
+    color: #991b1b;
+    font-size: 13px;
+}
 
-        .error {
-            display: none;
-            margin-top: 15px;
-            padding: 12px;
-            background: #ffe6e6;
-            color: #c0392b;
-            border-radius: 10px;
-            font-size: 14px;
-        }
+.error.show {
+    display: block;
+}
 
-        .error.show {
-            display: block;
-        }
+.results {
+    display: none;
+    margin-top: 20px;
+}
 
-        .results {
-            display: none;
-            margin-top: 22px;
-        }
+.results.show {
+    display: block;
+}
 
-        .results.show {
-            display: block;
-        }
+.card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+}
 
-        .result {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 12px;
-            border: 1px solid #e1e5e8;
-        }
+.title {
+    font-weight: bold;
+    color: #1e293b;
+    margin-bottom: 5px;
+}
 
-        .result-title {
-            font-weight: 700;
-            color: #2d3436;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
+.path {
+    font-family: monospace;
+    direction: ltr;
+    text-align: left;
+    color: #64748b;
+    font-size: 11px;
+    margin-bottom: 8px;
+}
 
-        .path {
-            direction: ltr;
-            text-align: left;
-            font-family: monospace;
-            color: #777;
-            font-size: 11px;
-            margin-bottom: 8px;
-        }
+.address {
+    background: white;
+    border: 1px solid #dbe2ea;
+    border-radius: 8px;
+    padding: 11px;
+    font-family: monospace;
+    direction: ltr;
+    text-align: left;
+    word-break: break-all;
+    color: #1d4ed8;
+    font-size: 14px;
+    user-select: all;
+}
 
-        .address {
-            background: #fff;
-            border: 1px solid #dfe6e9;
-            border-radius: 8px;
-            padding: 11px;
-            direction: ltr;
-            text-align: left;
-            word-break: break-all;
-            font-family: monospace;
-            font-size: 14px;
-            color: #1e3c72;
-            user-select: all;
-        }
+.copy {
+    margin-top: 8px;
+    background: #059669;
+    color: white;
+    padding: 7px 13px;
+    font-size: 12px;
+}
 
-        .copy {
-            margin-top: 8px;
-            padding: 7px 14px;
-            border: 0;
-            border-radius: 7px;
-            background: #00b894;
-            color: white;
-            cursor: pointer;
-            font-size: 12px;
-        }
+.info {
+    background: #f1f5f9;
+    padding: 12px;
+    border-radius: 9px;
+    color: #475569;
+    font-size: 12px;
+    line-height: 2;
+}
 
-        .copy:hover {
-            background: #00a381;
-        }
-
-        .info {
-            margin-top: 18px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 12px;
-            color: #636e72;
-            font-size: 12px;
-            line-height: 1.8;
-        }
-
-        .loader {
-            display: inline-block;
-            width: 17px;
-            height: 17px;
-            border: 3px solid rgba(255,255,255,.35);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin .8s linear infinite;
-            vertical-align: middle;
-            margin-left: 7px;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-    </style>
+.loading {
+    text-align: center;
+}
+</style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="box">
 
-    <h1>🔐 تبدیل عبارت به آدرس بیت‌کوین</h1>
+    <h1>₿ تبدیل عبارت به آدرس بیت‌کوین</h1>
 
-    <div class="subtitle">
-        BIP-39 / BIP-44 / BIP-84 / BIP-86
+    <div class="sub">
+        BIP-39 → BIP-32 → BIP-44 / BIP-84 / BIP-86
     </div>
 
     <div class="warning">
-        ⚠️ <strong>هشدار امنیتی:</strong>
-        عبارت بازیابی خود را فقط در محیطی وارد کنید که به آن اعتماد دارید.
-        این صفحه عبارت را به سرور ارسال نمی‌کند؛ با این حال کتابخانه‌ها از CDN اینترنتی بارگذاری می‌شوند.
+        ⚠️ برای آزمایش از عبارت نمونه استفاده کنید.
+        عبارت بازیابی واقعی را داخل صفحات وب وارد نکنید مگر اینکه خودتان کد و کتابخانه‌ها را بررسی کرده باشید.
     </div>
 
     <div id="status" class="status loading">
-        ⏳ در حال بارگذاری کتابخانه‌ها...
+        ⏳ در حال بارگذاری...
     </div>
 
-    <label for="mnemonic">
-        عبارت ۱۲ کلمه‌ای BIP-39:
-    </label>
+    <label>عبارت ۱۲ کلمه‌ای:</label>
 
-    <textarea
-        id="mnemonic"
+    <textarea id="mnemonic"
         spellcheck="false"
-        autocomplete="off"
-        placeholder="abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about">abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about</textarea>
+        autocomplete="off">abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about</textarea>
 
     <div class="example">
-        💡
-        <span onclick="setExample()">استفاده از عبارت نمونه</span>
+        مثال:
+        <span onclick="example()">abandon ... about</span>
     </div>
 
-    <button
-        id="convertBtn"
-        class="main-btn"
-        onclick="convertMnemonic()"
-        disabled>
-        تبدیل به آدرس بیت‌کوین
+    <button id="generate" disabled>
+        تبدیل به آدرس
     </button>
 
     <div id="error" class="error"></div>
 
     <div id="results" class="results">
-        <div id="resultContainer"></div>
+        <div id="cards"></div>
 
         <div class="info">
-            <strong>مسیرهای استفاده‌شده:</strong><br>
-            Legacy / P2PKH:
-            <span dir="ltr">m/44'/0'/0'/0/0</span>
-            <br>
-            Native SegWit / P2WPKH:
-            <span dir="ltr">m/84'/0'/0'/0/0</span>
-            <br>
-            Taproot / P2TR:
+            <b>مسیرها:</b><br>
+            Legacy:
+            <span dir="ltr">m/44'/0'/0'/0/0</span><br>
+
+            Native SegWit:
+            <span dir="ltr">m/84'/0'/0'/0/0</span><br>
+
+            Taproot:
             <span dir="ltr">m/86'/0'/0'/0/0</span>
         </div>
     </div>
@@ -314,79 +276,95 @@
 <script type="module">
 
 /*
-========================================================
-    کتابخانه‌ها
-========================================================
+====================================================
+ کتابخانه‌ها
+====================================================
 */
 
 import * as bip39 from
-    "https://esm.sh/bip39@3.1.0";
+"https://esm.sh/bip39@3.1.0";
 
-import { BIP32Factory } from
-    "https://esm.sh/bip32@5.0.0";
+import BIP32Factory from
+"https://esm.sh/bip32@5.0.0";
 
 import * as ecc from
-    "https://esm.sh/tiny-secp256k1@2.2.3";
+"https://esm.sh/tiny-secp256k1@2.2.3";
 
 import * as bitcoin from
-    "https://esm.sh/bitcoinjs-lib@6.1.7";
+"https://esm.sh/bitcoinjs-lib@7.0.1";
 
 
 /*
-========================================================
-    ساخت BIP32
-========================================================
+====================================================
+ ساخت BIP32
+====================================================
 */
 
 const bip32 = BIP32Factory(ecc);
 
 
 /*
-========================================================
-    عناصر صفحه
-========================================================
+====================================================
+ عناصر HTML
+====================================================
 */
 
-const status = document.getElementById("status");
-const convertBtn = document.getElementById("convertBtn");
-const mnemonicInput = document.getElementById("mnemonic");
-const results = document.getElementById("results");
-const resultContainer = document.getElementById("resultContainer");
-const errorBox = document.getElementById("error");
+const status =
+document.getElementById("status");
+
+const generateButton =
+document.getElementById("generate");
+
+const mnemonicInput =
+document.getElementById("mnemonic");
+
+const errorBox =
+document.getElementById("error");
+
+const resultsBox =
+document.getElementById("results");
+
+const cards =
+document.getElementById("cards");
 
 
 /*
-========================================================
-    بررسی کتابخانه‌ها
-========================================================
+====================================================
+ آماده شدن
+====================================================
 */
 
 try {
 
+    /*
+    یک بررسی ساده
+    */
+
     if (
         !bip39 ||
         !bip32 ||
-        !bitcoin ||
-        !bitcoin.payments
+        !bitcoin
     ) {
-        throw new Error("کتابخانه‌ها به‌درستی بارگذاری نشدند.");
+        throw new Error(
+            "کتابخانه‌ها بارگذاری نشدند."
+        );
     }
 
     status.textContent =
-        "✅ کتابخانه‌ها با موفقیت بارگذاری شدند.";
+        "✅ آماده است";
 
     status.className =
-        "status show success";
+        "status show ok";
 
-    convertBtn.disabled = false;
+    generateButton.disabled = false;
 
 } catch (e) {
 
     status.textContent =
-        "❌ خطا در بارگذاری کتابخانه‌ها.";
+        "❌ خطا در بارگذاری کتابخانه‌ها";
 
     status.className =
-        "status show error";
+        "status show err";
 
     showError(e.message);
 
@@ -394,15 +372,15 @@ try {
 
 
 /*
-========================================================
-    تبدیل Mnemonic به سه نوع آدرس
-========================================================
+====================================================
+ تولید آدرس‌ها
+====================================================
 */
 
 function generateAddresses(mnemonic) {
 
     /*
-        تولید Seed از BIP-39
+    BIP39
     */
 
     const seed =
@@ -410,7 +388,7 @@ function generateAddresses(mnemonic) {
 
 
     /*
-        شبکه اصلی بیت‌کوین
+    Bitcoin mainnet
     */
 
     const network =
@@ -418,110 +396,90 @@ function generateAddresses(mnemonic) {
 
 
     /*
-        ساخت ریشه HD Wallet
+    BIP32 master node
     */
 
     const root =
-        bip32.fromSeed(seed, network);
+        bip32.fromSeed(
+            seed,
+            network
+        );
 
 
     /*
-        ================================================
-        1. Legacy
-        BIP-44
-        P2PKH
-        ================================================
+    ================================================
+    LEGACY
+    ================================================
     */
 
-    const legacyNode =
+    const legacy =
         root.derivePath(
             "m/44'/0'/0'/0/0"
         );
 
     const legacyAddress =
         bitcoin.payments.p2pkh({
-            pubkey: legacyNode.publicKey,
-            network: network
+            pubkey: legacy.publicKey,
+            network
         }).address;
 
 
     /*
-        ================================================
-        2. Native SegWit
-        BIP-84
-        P2WPKH
-        ================================================
+    ================================================
+    NATIVE SEGWIT
+    ================================================
     */
 
-    const segwitNode =
+    const segwit =
         root.derivePath(
             "m/84'/0'/0'/0/0"
         );
 
     const segwitAddress =
         bitcoin.payments.p2wpkh({
-            pubkey: segwitNode.publicKey,
-            network: network
+            pubkey: segwit.publicKey,
+            network
         }).address;
 
 
     /*
-        ================================================
-        3. Taproot
-        BIP-86
-        P2TR
-        ================================================
+    ================================================
+    TAPROOT
+    ================================================
     */
 
-    const taprootNode =
+    const taproot =
         root.derivePath(
             "m/86'/0'/0'/0/0"
         );
 
 
     /*
-        Taproot از x-only public key استفاده می‌کند.
-        public key فشرده 33 بایتی است:
-        02/03 + 32 bytes
+    کلید عمومی فشرده:
+    
+    02/03 + X
 
-        برای Taproot فقط 32 بایت X گرفته می‌شود.
+    برای Taproot فقط X استفاده می‌شود.
     */
 
-    const internalPubkey =
-        taprootNode.publicKey.slice(1, 33);
+    const xOnly =
+        taproot.publicKey.slice(1,33);
 
-
-    /*
-        bitcoinjs-lib خودش tweak مربوط
-        به Taproot را انجام می‌دهد.
-    */
 
     const taprootAddress =
         bitcoin.payments.p2tr({
-            internalPubkey: internalPubkey,
-            network: network
+            internalPubkey: xOnly,
+            network
         }).address;
 
 
     return {
 
-        legacy: {
-            title: "Legacy (P2PKH)",
-            path: "m/44'/0'/0'/0/0",
-            address: legacyAddress
-        },
+        legacy: legacyAddress,
 
-        segwit: {
-            title: "Native SegWit (P2WPKH)",
-            path: "m/84'/0'/0'/0/0",
-            address: segwitAddress
-        },
+        segwit: segwitAddress,
 
-        taproot: {
-            title: "Taproot (P2TR)",
-            path: "m/86'/0'/0'/0/0",
-            address: taprootAddress
-        }
+        taproot: taprootAddress
 
     };
 
@@ -529,80 +487,67 @@ function generateAddresses(mnemonic) {
 
 
 /*
-========================================================
-    تبدیل
-========================================================
+====================================================
+ کلیک روی دکمه
+====================================================
 */
 
-window.convertMnemonic = function () {
+generateButton.addEventListener(
+    "click",
+    function () {
 
-    hideError();
+        hideError();
 
-    results.classList.remove("show");
-    resultContainer.innerHTML = "";
+        resultsBox.classList.remove("show");
 
-    const mnemonic =
-        mnemonicInput.value
-            .trim()
-            .replace(/\s+/g, " ");
+        cards.innerHTML = "";
 
 
-    /*
-        بررسی خالی بودن
-    */
+        /*
+        گرفتن عبارت
+        */
 
-    if (!mnemonic) {
-
-        showError(
-            "لطفاً عبارت ۱۲ کلمه‌ای را وارد کنید."
-        );
-
-        return;
-    }
+        const mnemonic =
+            mnemonicInput.value
+                .trim()
+                .replace(/\s+/g," ");
 
 
-    /*
+        /*
         تعداد کلمات
-    */
+        */
 
-    const words =
-        mnemonic.split(" ");
-
-    if (words.length !== 12) {
-
-        showError(
-            `تعداد کلمات ${words.length} است؛ باید دقیقاً ۱۲ کلمه باشد.`
-        );
-
-        return;
-    }
+        const wordCount =
+            mnemonic
+                ? mnemonic.split(" ").length
+                : 0;
 
 
-    /*
-        بررسی BIP-39
-    */
+        if (wordCount !== 12) {
 
-    if (!bip39.validateMnemonic(mnemonic)) {
+            showError(
+                "عبارت باید دقیقاً ۱۲ کلمه داشته باشد."
+            );
 
-        showError(
-            "این عبارت BIP-39 معتبر نیست. کلمات یا checksum صحیح نیست."
-        );
-
-        return;
-    }
+            return;
+        }
 
 
-    convertBtn.disabled = true;
+        /*
+        اعتبارسنجی BIP39
+        */
 
-    convertBtn.innerHTML =
-        'در حال پردازش <span class="loader"></span>';
+        if (
+            !bip39.validateMnemonic(mnemonic)
+        ) {
 
+            showError(
+                "عبارت BIP-39 معتبر نیست."
+            );
 
-    /*
-        اجرای محاسبات بعد از آزاد شدن UI
-    */
+            return;
+        }
 
-    setTimeout(() => {
 
         try {
 
@@ -611,26 +556,31 @@ window.convertMnemonic = function () {
 
 
             /*
-                ساخت نتیجه
+            نمایش
             */
 
-            createResult(
-                addresses.legacy,
-                "legacy"
-            );
-
-            createResult(
-                addresses.segwit,
-                "segwit"
-            );
-
-            createResult(
-                addresses.taproot,
-                "taproot"
+            addCard(
+                "Legacy (P2PKH)",
+                "m/44'/0'/0'/0/0",
+                addresses.legacy
             );
 
 
-            results.classList.add("show");
+            addCard(
+                "Native SegWit (P2WPKH)",
+                "m/84'/0'/0'/0/0",
+                addresses.segwit
+            );
+
+
+            addCard(
+                "Taproot (P2TR)",
+                "m/86'/0'/0'/0/0",
+                addresses.taproot
+            );
+
+
+            resultsBox.classList.add("show");
 
 
         } catch (e) {
@@ -638,143 +588,133 @@ window.convertMnemonic = function () {
             console.error(e);
 
             showError(
-                e.message ||
-                "خطا در تولید آدرس."
+                "خطا در تولید آدرس: " +
+                e.message
             );
-
-        } finally {
-
-            convertBtn.disabled = false;
-
-            convertBtn.textContent =
-                "تبدیل به آدرس بیت‌کوین";
 
         }
 
-    }, 50);
-
-};
+    }
+);
 
 
 /*
-========================================================
-    نمایش نتیجه
-========================================================
+====================================================
+ ساخت کارت آدرس
+====================================================
 */
 
-function createResult(data, type) {
+function addCard(
+    title,
+    path,
+    address
+) {
 
-    const div =
+    const card =
         document.createElement("div");
 
-    div.className = "result";
+    card.className = "card";
 
 
-    const title =
+    const titleElement =
         document.createElement("div");
 
-    title.className =
-        "result-title";
+    titleElement.className = "title";
 
-    title.textContent =
-        data.title;
+    titleElement.textContent =
+        title;
 
 
-    const path =
+    const pathElement =
         document.createElement("div");
 
-    path.className = "path";
+    pathElement.className = "path";
 
-    path.textContent =
-        "Derivation Path: " + data.path;
+    pathElement.textContent =
+        path;
 
 
-    const address =
+    const addressElement =
         document.createElement("div");
 
-    address.className =
+    addressElement.className =
         "address";
 
-    address.textContent =
-        data.address;
+    addressElement.textContent =
+        address;
 
 
-    const copy =
+    const copyButton =
         document.createElement("button");
 
-    copy.className = "copy";
+    copyButton.className = "copy";
 
-    copy.textContent =
-        "📋 کپی آدرس";
+    copyButton.textContent =
+        "📋 کپی";
 
 
-    copy.onclick = async function () {
+    copyButton.addEventListener(
+        "click",
+        async function () {
 
-        try {
+            try {
 
-            await navigator.clipboard.writeText(
-                data.address
+                await navigator.clipboard.writeText(
+                    address
+                );
+
+                copyButton.textContent =
+                    "✅ کپی شد";
+
+            } catch {
+
+                const temp =
+                    document.createElement("textarea");
+
+                temp.value =
+                    address;
+
+                document.body.appendChild(temp);
+
+                temp.select();
+
+                document.execCommand("copy");
+
+                temp.remove();
+
+                copyButton.textContent =
+                    "✅ کپی شد";
+            }
+
+
+            setTimeout(
+                () => {
+                    copyButton.textContent =
+                        "📋 کپی";
+                },
+                1500
             );
 
-            copy.textContent =
-                "✅ کپی شد";
-
-            setTimeout(() => {
-
-                copy.textContent =
-                    "📋 کپی آدرس";
-
-            }, 1500);
-
-        } catch {
-
-            /*
-                روش جایگزین
-            */
-
-            const temp =
-                document.createElement("textarea");
-
-            temp.value =
-                data.address;
-
-            document.body.appendChild(temp);
-
-            temp.select();
-
-            document.execCommand("copy");
-
-            temp.remove();
-
-            copy.textContent =
-                "✅ کپی شد";
-
-            setTimeout(() => {
-
-                copy.textContent =
-                    "📋 کپی آدرس";
-
-            }, 1500);
-
         }
+    );
 
-    };
 
+    card.appendChild(titleElement);
 
-    div.appendChild(title);
-    div.appendChild(path);
-    div.appendChild(address);
-    div.appendChild(copy);
+    card.appendChild(pathElement);
 
-    resultContainer.appendChild(div);
+    card.appendChild(addressElement);
 
+    card.appendChild(copyButton);
+
+    cards.appendChild(card);
 }
 
 
 /*
-========================================================
-    خطا
-========================================================
+====================================================
+ نمایش خطا
+====================================================
 */
 
 function showError(message) {
@@ -795,19 +735,19 @@ function hideError() {
 
 
 /*
-========================================================
-    عبارت نمونه
-========================================================
+====================================================
+ عبارت نمونه
+====================================================
 */
 
-window.setExample = function () {
+window.example = function () {
 
     mnemonicInput.value =
         "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 
-    results.classList.remove("show");
+    resultsBox.classList.remove("show");
 
-    resultContainer.innerHTML = "";
+    cards.innerHTML = "";
 
     hideError();
 
@@ -815,18 +755,18 @@ window.setExample = function () {
 
 
 /*
-========================================================
-    Enter / تغییر متن
-========================================================
+====================================================
+ پاک کردن نتیجه هنگام تغییر عبارت
+====================================================
 */
 
 mnemonicInput.addEventListener(
     "input",
     function () {
 
-        hideError();
+        resultsBox.classList.remove("show");
 
-        results.classList.remove("show");
+        hideError();
 
     }
 );
