@@ -2,274 +2,150 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bitcoin BIP39 Address Generator</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>تبدیل BIP39 به آدرس بیت کوین</title>
 
 <style>
-* {
-    box-sizing: border-box;
+body{
+    margin:0;
+    padding:20px;
+    min-height:100vh;
+    background:#1e3c72;
+    font-family:Tahoma,Arial,sans-serif;
+    display:flex;
+    justify-content:center;
+    align-items:center;
 }
 
-body {
-    margin: 0;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #172554, #2563eb);
-    font-family: Tahoma, Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 15px;
+.box{
+    width:100%;
+    max-width:650px;
+    background:white;
+    padding:25px;
+    border-radius:18px;
+    box-shadow:0 15px 50px rgba(0,0,0,.3);
 }
 
-.container {
-    width: 100%;
-    max-width: 760px;
-    background: white;
-    border-radius: 20px;
-    padding: 25px;
-    box-shadow: 0 20px 60px rgba(0,0,0,.3);
+h2{
+    text-align:center;
+    color:#1e3c72;
 }
 
-h1 {
-    text-align: center;
-    color: #172554;
-    margin: 0 0 8px;
-    font-size: 24px;
+textarea{
+    width:100%;
+    height:100px;
+    box-sizing:border-box;
+    padding:12px;
+    border:2px solid #ddd;
+    border-radius:10px;
+    font-family:monospace;
+    font-size:15px;
+    direction:ltr;
+    text-align:left;
+    resize:vertical;
 }
 
-.subtitle {
-    text-align: center;
-    color: #777;
-    font-size: 13px;
-    margin-bottom: 22px;
+button{
+    width:100%;
+    margin-top:15px;
+    padding:14px;
+    border:0;
+    border-radius:10px;
+    background:#2563eb;
+    color:white;
+    font-size:17px;
+    font-weight:bold;
+    cursor:pointer;
 }
 
-.warning {
-    background: #fff7d6;
-    border: 1px solid #f0c36d;
-    color: #795600;
-    padding: 12px;
-    border-radius: 10px;
-    line-height: 1.8;
-    font-size: 13px;
-    margin-bottom: 20px;
+button:active{
+    transform:scale(.99);
 }
 
-.status {
-    display: block;
-    padding: 10px;
-    border-radius: 9px;
-    margin-bottom: 15px;
-    font-size: 13px;
-    background: #e5e7eb;
-    color: #374151;
+.error{
+    display:none;
+    margin-top:15px;
+    padding:12px;
+    border-radius:10px;
+    background:#fee2e2;
+    color:#991b1b;
 }
 
-.status.success {
-    background: #dcfce7;
-    color: #166534;
+.error.show{
+    display:block;
 }
 
-.status.error {
-    background: #fee2e2;
-    color: #991b1b;
+.result{
+    display:none;
+    margin-top:20px;
+    background:#f1f5f9;
+    padding:15px;
+    border-radius:12px;
 }
 
-label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 8px;
-    color: #333;
+.result.show{
+    display:block;
 }
 
-textarea {
-    width: 100%;
-    min-height: 100px;
-    padding: 13px;
-    border: 2px solid #d1d5db;
-    border-radius: 10px;
-    resize: vertical;
-    font-family: monospace;
-    font-size: 15px;
-    direction: ltr;
-    text-align: left;
+.address{
+    margin-top:8px;
+    background:white;
+    border:1px solid #ddd;
+    border-radius:8px;
+    padding:12px;
+    direction:ltr;
+    text-align:left;
+    word-break:break-all;
+    font-family:monospace;
+    color:#1d4ed8;
+    user-select:all;
 }
 
-textarea:focus {
-    outline: none;
-    border-color: #2563eb;
+.copy{
+    width:auto;
+    padding:8px 15px;
+    font-size:13px;
+    background:#059669;
 }
 
-.example {
-    margin-top: 8px;
-    font-size: 12px;
-    color: #777;
-}
-
-.example span {
-    color: #2563eb;
-    cursor: pointer;
-    text-decoration: underline;
-}
-
-#convertBtn {
-    width: 100%;
-    margin-top: 15px;
-    padding: 14px;
-    border: none;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #1d4ed8, #2563eb);
-    color: white;
-    font-size: 17px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-#convertBtn:active {
-    transform: scale(.99);
-}
-
-.error {
-    display: none;
-    margin-top: 15px;
-    padding: 12px;
-    border-radius: 10px;
-    background: #fee2e2;
-    color: #991b1b;
-    font-size: 13px;
-    line-height: 1.7;
-}
-
-.error.show {
-    display: block;
-}
-
-.results {
-    display: none;
-    margin-top: 20px;
-}
-
-.results.show {
-    display: block;
-}
-
-.result-card {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 15px;
-    margin-bottom: 12px;
-}
-
-.result-title {
-    font-weight: bold;
-    color: #1e293b;
-    margin-bottom: 6px;
-}
-
-.result-path {
-    font-family: monospace;
-    direction: ltr;
-    text-align: left;
-    font-size: 11px;
-    color: #64748b;
-    margin-bottom: 8px;
-}
-
-.address {
-    background: white;
-    border: 1px solid #dbe2e8;
-    border-radius: 8px;
-    padding: 12px;
-    direction: ltr;
-    text-align: left;
-    word-break: break-all;
-    font-family: monospace;
-    font-size: 14px;
-    color: #1d4ed8;
-    user-select: all;
-}
-
-.copy {
-    margin-top: 8px;
-    padding: 7px 14px;
-    background: #059669;
-    border: none;
-    color: white;
-    border-radius: 7px;
-    cursor: pointer;
-}
-
-.info {
-    background: #f1f5f9;
-    border-radius: 10px;
-    padding: 12px;
-    color: #475569;
-    font-size: 12px;
-    line-height: 2;
+.status{
+    text-align:center;
+    font-size:13px;
+    color:#555;
+    margin-bottom:15px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="box">
 
-    <h1>₿ تبدیل عبارت BIP-39 به آدرس</h1>
+<h2>₿ تبدیل عبارت BIP-39 به آدرس بیت‌کوین</h2>
 
-    <div class="subtitle">
-        Bitcoin Mainnet • BIP-44 / BIP-84 / BIP-86
-    </div>
+<div id="status" class="status">
+در حال بارگذاری...
+</div>
 
-    <div class="warning">
-        ⚠️ برای تست از عبارت نمونه استفاده کنید.
-        عبارت واقعی بازیابی کیف پول را در صفحات ناشناس وارد نکنید.
-    </div>
+<textarea id="mnemonic" spellcheck="false">abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about</textarea>
 
-    <div id="status" class="status">
-        ⏳ در حال آماده‌سازی...
-    </div>
+<button id="convert">
+تبدیل به آدرس بیت‌کوین
+</button>
 
-    <label for="mnemonic">
-        عبارت ۱۲ کلمه‌ای:
-    </label>
+<div id="error" class="error"></div>
 
-    <textarea
-        id="mnemonic"
-        spellcheck="false"
-        autocomplete="off"
-        placeholder="abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about">abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about</textarea>
+<div id="result" class="result">
 
-    <div class="example">
-        💡
-        <span id="exampleBtn">استفاده از عبارت نمونه</span>
-    </div>
+    <b>آدرس Legacy بیت‌کوین:</b>
 
-    <!-- دکمه عمداً از ابتدا فعال است -->
-    <button id="convertBtn">
-        تبدیل به آدرس بیت‌کوین
+    <div id="address" class="address"></div>
+
+    <button id="copy" class="copy">
+        📋 کپی آدرس
     </button>
 
-    <div id="error" class="error"></div>
-
-    <div id="results" class="results">
-        <div id="resultContainer"></div>
-
-        <div class="info">
-            <b>مسیرهای مشتق‌سازی:</b><br>
-
-            Legacy:
-            <span dir="ltr">m/44'/0'/0'/0/0</span>
-            <br>
-
-            Native SegWit:
-            <span dir="ltr">m/84'/0'/0'/0/0</span>
-            <br>
-
-            Taproot:
-            <span dir="ltr">m/86'/0'/0'/0/0</span>
-        </div>
-    </div>
+</div>
 
 </div>
 
@@ -277,581 +153,759 @@ textarea:focus {
 <script type="module">
 
 /*
-==================================================
-  IMPORT
-==================================================
+========================================================
+کتابخانه‌ها
+========================================================
 */
 
 import * as bip39 from
 "https://esm.sh/bip39@3.1.0";
 
-import { BIP32Factory } from
-"https://esm.sh/bip32@5.0.0";
+import { secp256k1 } from
+"https://esm.sh/@noble/curves@1.9.7/secp256k1";
 
-import * as ecc from
-"https://esm.sh/tiny-secp256k1@2.2.3";
-
-import * as bitcoin from
-"https://esm.sh/bitcoinjs-lib@6.1.7";
-
-
-/*
-==================================================
-  ساخت BIP32
-==================================================
-*/
-
-const bip32 = BIP32Factory(ecc);
+import {
+    sha256,
+    ripemd160,
+    hmac
+} from
+"https://esm.sh/@noble/hashes@1.8.0";
 
 
 /*
-==================================================
-  HTML ELEMENTS
-==================================================
+========================================================
+عناصر
+========================================================
 */
-
-const status =
-document.getElementById("status");
-
-const button =
-document.getElementById("convertBtn");
 
 const input =
 document.getElementById("mnemonic");
 
-const errorBox =
+const convert =
+document.getElementById("convert");
+
+const error =
 document.getElementById("error");
 
-const results =
-document.getElementById("results");
+const result =
+document.getElementById("result");
 
-const resultContainer =
-document.getElementById("resultContainer");
+const addressElement =
+document.getElementById("address");
 
-const exampleButton =
-document.getElementById("exampleBtn");
+const copy =
+document.getElementById("copy");
+
+const status =
+document.getElementById("status");
+
+
+status.textContent =
+"✅ آماده است";
 
 
 /*
-==================================================
-  کتابخانه‌ها
-==================================================
+========================================================
+اعداد بزرگ
+========================================================
 */
 
-try {
+const N =
+BigInt(
+"0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141"
+);
 
-    if (
-        typeof bip39.mnemonicToSeedSync !== "function"
-    ) {
-        throw new Error(
-            "BIP39 به درستی بارگذاری نشده است."
-        );
+
+/*
+========================================================
+بایت → عدد
+========================================================
+*/
+
+function bytesToBigInt(bytes){
+
+    let hex = "";
+
+    for(const b of bytes){
+
+        hex +=
+        b.toString(16).padStart(2,"0");
+
     }
 
-    if (
-        typeof bip32.fromSeed !== "function"
-    ) {
-        throw new Error(
-            "BIP32 به درستی بارگذاری نشده است."
+    return BigInt("0x" + hex);
+}
+
+
+/*
+========================================================
+عدد → 32 بایت
+========================================================
+*/
+
+function bigIntTo32Bytes(num){
+
+    let hex =
+    num.toString(16).padStart(64,"0");
+
+    const out =
+    new Uint8Array(32);
+
+    for(let i=0;i<32;i++){
+
+        out[i] =
+        parseInt(
+            hex.substring(i*2,i*2+2),
+            16
         );
+
     }
 
-    if (
-        !bitcoin.payments
-    ) {
-        throw new Error(
-            "bitcoinjs-lib به درستی بارگذاری نشده است."
-        );
-    }
-
-    status.textContent =
-        "✅ کتابخانه‌ها با موفقیت آماده شدند.";
-
-    status.className =
-        "status success";
+    return out;
+}
 
 
-} catch (error) {
+/*
+========================================================
+HMAC-SHA512
+========================================================
+*/
 
-    status.textContent =
-        "❌ خطا در آماده‌سازی کتابخانه‌ها";
+function hmac512(key,data){
 
-    status.className =
-        "status error";
-
-    showError(error.message);
+    return hmac(
+        sha512,
+        key,
+        data
+    );
 
 }
 
 
 /*
-==================================================
-  تابع تولید آدرس
-==================================================
+========================================================
+SHA512
+========================================================
 */
 
-function generateAddresses(mnemonic) {
-
-    /*
-    BIP39
-    */
-
-    const seed =
-        bip39.mnemonicToSeedSync(mnemonic);
+import {
+    sha512
+} from
+"https://esm.sh/@noble/hashes@1.8.0";
 
 
-    /*
-    Bitcoin Mainnet
-    */
+/*
+========================================================
+BIP32 Master Key
+========================================================
+*/
 
-    const network =
-        bitcoin.networks.bitcoin;
+function masterKey(seed){
 
+    const I =
+    hmac512(
+        new TextEncoder().encode(
+            "Bitcoin seed"
+        ),
+        seed
+    );
 
-    /*
-    Master Key
-    */
+    const IL =
+    I.slice(0,32);
 
-    const root =
-        bip32.fromSeed(
-            seed,
-            network
+    const IR =
+    I.slice(32,64);
+
+    const privateKey =
+    bytesToBigInt(IL);
+
+    if(
+        privateKey === 0n ||
+        privateKey >= N
+    ){
+
+        throw new Error(
+            "Master key نامعتبر است."
         );
 
-
-    /*
-    ==============================================
-    Legacy
-    ==============================================
-    */
-
-    const legacyNode =
-        root.derivePath(
-            "m/44'/0'/0'/0/0"
-        );
-
-
-    const legacy =
-        bitcoin.payments.p2pkh({
-            pubkey: legacyNode.publicKey,
-            network: network
-        }).address;
-
-
-    /*
-    ==============================================
-    Native SegWit
-    ==============================================
-    */
-
-    const segwitNode =
-        root.derivePath(
-            "m/84'/0'/0'/0/0"
-        );
-
-
-    const segwit =
-        bitcoin.payments.p2wpkh({
-            pubkey: segwitNode.publicKey,
-            network: network
-        }).address;
-
-
-    /*
-    ==============================================
-    Taproot
-    ==============================================
-    */
-
-    const taprootNode =
-        root.derivePath(
-            "m/86'/0'/0'/0/0"
-        );
-
-
-    /*
-    Public key:
-    02/03 + X
-
-    Taproot فقط X را می‌خواهد.
-    */
-
-    const xOnly =
-        taprootNode.publicKey.slice(1, 33);
-
-
-    const taproot =
-        bitcoin.payments.p2tr({
-            internalPubkey: xOnly,
-            network: network
-        }).address;
-
+    }
 
     return {
-        legacy,
-        segwit,
-        taproot
+        key: privateKey,
+        chainCode: IR
     };
 }
 
 
 /*
-==================================================
-  دکمه تبدیل
-==================================================
+========================================================
+BIP32 Child Key
+========================================================
 */
 
-button.addEventListener(
-    "click",
-    function () {
+function deriveChild(parent,index){
 
-        hideError();
+    const indexBytes =
+    new Uint8Array(4);
 
-        results.classList.remove("show");
+    indexBytes[0] =
+    (index >>> 24) & 255;
 
-        resultContainer.innerHTML = "";
+    indexBytes[1] =
+    (index >>> 16) & 255;
 
+    indexBytes[2] =
+    (index >>> 8) & 255;
+
+    indexBytes[3] =
+    index & 255;
+
+
+    /*
+    Hardened
+    */
+
+    let data;
+
+    if(index >= 0x80000000){
+
+        const key =
+        bigIntTo32Bytes(
+            parent.key
+        );
+
+        data =
+        new Uint8Array(
+            1 + 32 + 4
+        );
+
+        data[0] = 0;
+
+        data.set(
+            key,
+            1
+        );
+
+        data.set(
+            indexBytes,
+            33
+        );
+
+    }else{
 
         /*
-        گرفتن عبارت
+        Public key compressed
         */
 
-        const mnemonic =
-            input.value
-                .trim()
-                .replace(/\s+/g, " ");
-
-
-        /*
-        خالی
-        */
-
-        if (!mnemonic) {
-
-            showError(
-                "لطفاً عبارت را وارد کنید."
+        const pub =
+        secp256k1
+            .getPublicKey(
+                bigIntTo32Bytes(parent.key),
+                true
             );
 
-            return;
-        }
+        data =
+        new Uint8Array(
+            33 + 4
+        );
 
+        data.set(
+            pub,
+            0
+        );
 
-        /*
-        تعداد کلمات
-        */
-
-        const words =
-            mnemonic.split(" ");
-
-
-        if (words.length !== 12) {
-
-            showError(
-                "عبارت باید دقیقاً ۱۲ کلمه داشته باشد. تعداد فعلی: " +
-                words.length
-            );
-
-            return;
-        }
-
-
-        /*
-        BIP39 validation
-        */
-
-        let valid = false;
-
-        try {
-
-            valid =
-                bip39.validateMnemonic(
-                    mnemonic
-                );
-
-        } catch (e) {
-
-            showError(
-                "خطا در بررسی BIP-39: " +
-                e.message
-            );
-
-            return;
-        }
-
-
-        if (!valid) {
-
-            showError(
-                "عبارت BIP-39 معتبر نیست. کلمات یا checksum صحیح نیست."
-            );
-
-            return;
-        }
-
-
-        /*
-        تولید
-        */
-
-        try {
-
-            button.disabled = true;
-
-            button.textContent =
-                "⏳ در حال تولید آدرس...";
-
-
-            /*
-            کمی تأخیر برای UI
-            */
-
-            setTimeout(() => {
-
-                try {
-
-                    const addresses =
-                        generateAddresses(
-                            mnemonic
-                        );
-
-
-                    createCard(
-                        "Legacy (P2PKH)",
-                        "m/44'/0'/0'/0/0",
-                        addresses.legacy
-                    );
-
-
-                    createCard(
-                        "Native SegWit (P2WPKH)",
-                        "m/84'/0'/0'/0/0",
-                        addresses.segwit
-                    );
-
-
-                    createCard(
-                        "Taproot (P2TR)",
-                        "m/86'/0'/0'/0/0",
-                        addresses.taproot
-                    );
-
-
-                    results.classList.add("show");
-
-
-                } catch (error) {
-
-                    console.error(error);
-
-                    showError(
-                        "خطا در تولید آدرس: " +
-                        error.message
-                    );
-
-                } finally {
-
-                    button.disabled = false;
-
-                    button.textContent =
-                        "تبدیل به آدرس بیت‌کوین";
-
-                }
-
-            }, 30);
-
-
-        } catch (error) {
-
-            button.disabled = false;
-
-            button.textContent =
-                "تبدیل به آدرس بیت‌کوین";
-
-            showError(error.message);
-        }
+        data.set(
+            indexBytes,
+            33
+        );
 
     }
-);
+
+
+    const I =
+    hmac512(
+        parent.chainCode,
+        data
+    );
+
+    const IL =
+    I.slice(0,32);
+
+    const IR =
+    I.slice(32,64);
+
+
+    const childInt =
+    (
+        bytesToBigInt(IL)
+        +
+        parent.key
+    ) % N;
+
+
+    if(
+        bytesToBigInt(IL) >= N ||
+        childInt === 0n
+    ){
+
+        throw new Error(
+            "Child key نامعتبر است."
+        );
+
+    }
+
+
+    return {
+        key: childInt,
+        chainCode: IR
+    };
+}
 
 
 /*
-==================================================
-  ساخت کارت
-==================================================
+========================================================
+مشتق‌سازی مسیر
+m/44'/0'/0'/0/0
+========================================================
 */
 
-function createCard(
-    title,
-    path,
-    address
-) {
+function derivePath(root){
 
-    const card =
-        document.createElement("div");
+    /*
+    44'
+    */
 
-    card.className =
-        "result-card";
-
-
-    const titleElement =
-        document.createElement("div");
-
-    titleElement.className =
-        "result-title";
-
-    titleElement.textContent =
-        title;
+    let node =
+    deriveChild(
+        root,
+        44 + 0x80000000
+    );
 
 
-    const pathElement =
-        document.createElement("div");
+    /*
+    0'
+    */
 
-    pathElement.className =
-        "result-path";
+    node =
+    deriveChild(
+        node,
+        0 + 0x80000000
+    );
 
-    pathElement.textContent =
-        path;
+
+    /*
+    0'
+    */
+
+    node =
+    deriveChild(
+        node,
+        0 + 0x80000000
+    );
 
 
-    const addressElement =
-        document.createElement("div");
+    /*
+    0
+    */
 
-    addressElement.className =
-        "address";
+    node =
+    deriveChild(
+        node,
+        0
+    );
 
-    addressElement.textContent =
+
+    /*
+    0
+    */
+
+    node =
+    deriveChild(
+        node,
+        0
+    );
+
+
+    return node;
+}
+
+
+/*
+========================================================
+Base58
+========================================================
+*/
+
+const ALPHABET =
+"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+
+
+function base58(bytes){
+
+    let num = 0n;
+
+    for(const b of bytes){
+
+        num =
+        num * 256n +
+        BigInt(b);
+
+    }
+
+    let output = "";
+
+    while(num > 0n){
+
+        const remainder =
+        Number(num % 58n);
+
+        output =
+        ALPHABET[remainder] +
+        output;
+
+        num =
+        num / 58n;
+    }
+
+
+    /*
+    صفرهای ابتدای بایت‌ها
+    */
+
+    for(const b of bytes){
+
+        if(b === 0){
+
+            output =
+            "1" + output;
+
+        }else{
+
+            break;
+
+        }
+
+    }
+
+    return output;
+}
+
+
+/*
+========================================================
+Hash160
+RIPEMD160(SHA256(pubkey))
+========================================================
+*/
+
+function hash160(data){
+
+    return ripemd160(
+        sha256(data)
+    );
+
+}
+
+
+/*
+========================================================
+Base58Check
+========================================================
+*/
+
+function base58Check(version,payload){
+
+    const data =
+    new Uint8Array(
+        1 + payload.length
+    );
+
+    data[0] =
+    version;
+
+    data.set(
+        payload,
+        1
+    );
+
+
+    const hash =
+    sha256(
+        sha256(data)
+    );
+
+
+    const full =
+    new Uint8Array(
+        data.length + 4
+    );
+
+    full.set(
+        data,
+        0
+    );
+
+    full.set(
+        hash.slice(0,4),
+        data.length
+    );
+
+
+    return base58(full);
+}
+
+
+/*
+========================================================
+Private Key → Legacy Bitcoin Address
+========================================================
+*/
+
+function privateKeyToAddress(privateKey){
+
+    /*
+    compressed public key
+    */
+
+    const publicKey =
+    secp256k1.getPublicKey(
+        bigIntTo32Bytes(privateKey),
+        true
+    );
+
+
+    /*
+    HASH160
+    */
+
+    const hashed =
+    hash160(publicKey);
+
+
+    /*
+    Mainnet P2PKH version = 0x00
+    */
+
+    return base58Check(
+        0x00,
+        hashed
+    );
+}
+
+
+/*
+========================================================
+دکمه تبدیل
+========================================================
+*/
+
+convert.addEventListener(
+"click",
+function(){
+
+    error.classList.remove("show");
+
+    result.classList.remove("show");
+
+    addressElement.textContent = "";
+
+
+    /*
+    عبارت
+    */
+
+    const mnemonic =
+    input.value
+        .trim()
+        .replace(/\s+/g," ");
+
+
+    /*
+    تعداد کلمات
+    */
+
+    const words =
+    mnemonic.split(" ");
+
+
+    if(words.length !== 12){
+
+        showError(
+            "عبارت باید دقیقاً ۱۲ کلمه باشد."
+        );
+
+        return;
+    }
+
+
+    /*
+    BIP39
+    */
+
+    let valid;
+
+    try{
+
+        valid =
+        bip39.validateMnemonic(
+            mnemonic
+        );
+
+    }catch(e){
+
+        showError(
+            e.message
+        );
+
+        return;
+    }
+
+
+    if(!valid){
+
+        showError(
+            "عبارت BIP-39 معتبر نیست یا checksum آن صحیح نیست."
+        );
+
+        return;
+    }
+
+
+    try{
+
+        /*
+        Seed
+        */
+
+        const seed =
+        bip39.mnemonicToSeedSync(
+            mnemonic
+        );
+
+
+        /*
+        Master
+        */
+
+        const root =
+        masterKey(seed);
+
+
+        /*
+        BIP44
+        */
+
+        const child =
+        derivePath(root);
+
+
+        /*
+        آدرس
+        */
+
+        const address =
+        privateKeyToAddress(
+            child.key
+        );
+
+
+        addressElement.textContent =
         address;
 
 
-    const copyButton =
-        document.createElement("button");
-
-    copyButton.className =
-        "copy";
-
-    copyButton.textContent =
-        "📋 کپی";
-
-
-    copyButton.addEventListener(
-        "click",
-        async function () {
-
-            try {
-
-                await navigator.clipboard.writeText(
-                    address
-                );
-
-            } catch {
-
-                const temp =
-                    document.createElement(
-                        "textarea"
-                    );
-
-                temp.value =
-                    address;
-
-                document.body.appendChild(
-                    temp
-                );
-
-                temp.select();
-
-                document.execCommand(
-                    "copy"
-                );
-
-                temp.remove();
-            }
-
-            copyButton.textContent =
-                "✅ کپی شد";
-
-            setTimeout(
-                function () {
-
-                    copyButton.textContent =
-                        "📋 کپی";
-
-                },
-                1500
-            );
-
-        }
-    );
-
-
-    card.appendChild(
-        titleElement
-    );
-
-    card.appendChild(
-        pathElement
-    );
-
-    card.appendChild(
-        addressElement
-    );
-
-    card.appendChild(
-        copyButton
-    );
-
-    resultContainer.appendChild(
-        card
-    );
-}
-
-
-/*
-==================================================
-  خطا
-==================================================
-*/
-
-function showError(message) {
-
-    errorBox.textContent =
-        "❌ " + message;
-
-    errorBox.classList.add("show");
-}
-
-
-function hideError() {
-
-    errorBox.textContent = "";
-
-    errorBox.classList.remove("show");
-}
-
-
-/*
-==================================================
-  مثال
-==================================================
-*/
-
-exampleButton.addEventListener(
-    "click",
-    function () {
-
-        input.value =
-            "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-
-        hideError();
-
-        results.classList.remove(
+        result.classList.add(
             "show"
         );
 
-        resultContainer.innerHTML = "";
+
+    }catch(e){
+
+        console.error(e);
+
+        showError(
+            "خطا: " + e.message
+        );
+
     }
-);
+
+});
+
+
+/*
+========================================================
+خطا
+========================================================
+*/
+
+function showError(message){
+
+    error.textContent =
+    "❌ " + message;
+
+    error.classList.add(
+        "show"
+    );
+
+}
+
+
+/*
+========================================================
+کپی
+========================================================
+*/
+
+copy.addEventListener(
+"click",
+async function(){
+
+    const address =
+    addressElement.textContent;
+
+    if(!address) return;
+
+    try{
+
+        await navigator.clipboard.writeText(
+            address
+        );
+
+    }catch{
+
+        const t =
+        document.createElement(
+            "textarea"
+        );
+
+        t.value =
+        address;
+
+        document.body.appendChild(t);
+
+        t.select();
+
+        document.execCommand(
+            "copy"
+        );
+
+        t.remove();
+
+    }
+
+    copy.textContent =
+    "✅ کپی شد";
+
+    setTimeout(
+        ()=>{
+            copy.textContent =
+            "📋 کپی آدرس";
+        },
+        1500
+    );
+
+});
 
 </script>
 
 </body>
-                </html>
+    </html>
