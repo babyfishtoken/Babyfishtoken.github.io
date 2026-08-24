@@ -6,12 +6,7 @@
     <title>تبدیل عبارت ۱۲ کلمه‌ای به آدرس بیت‌کوین</title>
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #1e3c72, #2a5298);
@@ -21,30 +16,26 @@
             align-items: center;
             padding: 20px;
         }
-        
         .container {
             background: white;
             border-radius: 20px;
             padding: 40px;
             max-width: 700px;
             width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
-        
         h1 {
             color: #1e3c72;
             text-align: center;
             margin-bottom: 10px;
             font-size: 24px;
         }
-        
         .subtitle {
             text-align: center;
             color: #666;
             margin-bottom: 30px;
             font-size: 14px;
         }
-        
         .warning {
             background: #fff3cd;
             border: 1px solid #ffc107;
@@ -55,11 +46,7 @@
             font-size: 14px;
             line-height: 1.6;
         }
-        
-        .warning strong {
-            color: #d63031;
-        }
-        
+        .warning strong { color: #d63031; }
         label {
             display: block;
             font-weight: 600;
@@ -67,7 +54,6 @@
             margin-bottom: 8px;
             font-size: 14px;
         }
-        
         textarea {
             width: 100%;
             padding: 14px;
@@ -81,13 +67,11 @@
             direction: ltr;
             text-align: left;
         }
-        
         textarea:focus {
             outline: none;
             border-color: #2a5298;
-            box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
+            box-shadow: 0 0 0 3px rgba(42,82,152,0.1);
         }
-        
         button {
             width: 100%;
             padding: 14px;
@@ -101,22 +85,15 @@
             transition: transform 0.2s, box-shadow 0.2s;
             margin-top: 15px;
         }
-        
         button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(42, 82, 152, 0.4);
+            box-shadow: 0 8px 25px rgba(42,82,152,0.4);
         }
-        
-        button:active {
-            transform: translateY(0);
-        }
-        
         button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
         }
-        
         .result-section {
             margin-top: 25px;
             padding: 20px;
@@ -124,24 +101,20 @@
             border-radius: 12px;
             display: none;
         }
-        
         .result-section.show {
             display: block;
             animation: fadeIn 0.5s ease;
         }
-        
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
         .result-label {
             font-size: 13px;
             color: #636e72;
             margin-bottom: 5px;
             font-weight: 600;
         }
-        
         .result-address {
             font-family: 'Courier New', monospace;
             font-size: 18px;
@@ -153,7 +126,6 @@
             border: 1px solid #dfe6e9;
             user-select: all;
         }
-        
         .copy-btn {
             margin-top: 12px;
             padding: 8px 20px;
@@ -166,11 +138,7 @@
             transition: background 0.3s;
             width: auto;
         }
-        
-        .copy-btn:hover {
-            background: #00a381;
-        }
-        
+        .copy-btn:hover { background: #00a381; }
         .error-message {
             color: #d63031;
             background: #ffeaa7;
@@ -180,27 +148,18 @@
             display: none;
             font-size: 14px;
         }
-        
-        .error-message.show {
-            display: block;
-        }
-        
+        .error-message.show { display: block; }
         .example {
             margin-top: 10px;
             font-size: 13px;
             color: #636e72;
         }
-        
         .example span {
             color: #2a5298;
             cursor: pointer;
             text-decoration: underline;
         }
-        
-        .example span:hover {
-            color: #1e3c72;
-        }
-        
+        .example span:hover { color: #1e3c72; }
         .loader {
             display: inline-block;
             width: 20px;
@@ -212,10 +171,21 @@
             vertical-align: middle;
             margin-left: 10px;
         }
-        
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        .status {
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: #dfe6e9;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #2d3436;
+            display: none;
+        }
+        .status.show { display: block; }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
     </style>
 </head>
 <body>
@@ -224,13 +194,12 @@
         <h1>🔐 تبدیل به آدرس بیت‌کوین</h1>
         <p class="subtitle">عبارت ۱۲ کلمه‌ای (BIP-39) را وارد کنید</p>
 
-        <!-- هشدار امنیتی -->
         <div class="warning">
-            ⚠️ <strong>هشدار امنیتی:</strong> این ابزار <strong>آفلاین</strong> است و عبارت شما به هیچ سروری ارسال نمی‌شود. 
-            با این حال، برای عبارت‌های واقعی از محیط‌های امن و آفلاین استفاده کنید.
+            ⚠️ <strong>هشدار امنیتی:</strong> این ابزار <strong>آفلاین</strong> است و عبارت شما به هیچ سروری ارسال نمی‌شود.
         </div>
 
-        <!-- ورودی -->
+        <div id="statusMessage" class="status">⏳ در حال بارگذاری کتابخانه‌ها...</div>
+
         <label for="mnemonic">عبارت ۱۲ کلمه‌ای:</label>
         <textarea id="mnemonic" placeholder="مثال: abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about">abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about</textarea>
         
@@ -238,15 +207,12 @@
             💡 مثال: <span onclick="setExample()">کلیک برای پر کردن</span>
         </div>
 
-        <!-- دکمه تبدیل -->
         <button id="convertBtn" onclick="convertMnemonic()">
             تبدیل به آدرس بیت‌کوین
         </button>
 
-        <!-- خطا -->
         <div id="errorMessage" class="error-message"></div>
 
-        <!-- نتیجه -->
         <div id="resultSection" class="result-section">
             <div class="result-label">✅ آدرس بیت‌کوین (Bech32):</div>
             <div id="resultAddress" class="result-address"></div>
@@ -258,33 +224,62 @@
         </div>
     </div>
 
-    <!-- ===== کتابخانه‌های جاوااسکریپت ===== -->
-    <script src="https://cdn.jsdelivr.net/npm/bip39@3.1.0/dist/bip39.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bitcoinjs-lib@6.1.3/dist/bitcoinjs-lib.min.js"></script>
+    <!-- ===== بارگذاری کتابخانه‌ها با روش مطمئن ===== -->
+    <script src="https://unpkg.com/bip39@3.1.0/dist/bip39.min.js"></script>
+    <script src="https://unpkg.com/bitcoinjs-lib@6.1.3/dist/bitcoinjs-lib.min.js"></script>
 
     <script>
         // ============================================
-        //  تابع اصلی تبدیل عبارت به آدرس بیت‌کوین
+        //  بررسی بارگذاری کتابخانه‌ها
+        // ============================================
+        let librariesLoaded = false;
+
+        function checkLibraries() {
+            const status = document.getElementById('statusMessage');
+            
+            if (typeof bip39 !== 'undefined' && typeof bitcoinjs !== 'undefined') {
+                status.textContent = '✅ کتابخانه‌ها با موفقیت بارگذاری شدند';
+                status.className = 'status show success';
+                librariesLoaded = true;
+                document.getElementById('convertBtn').disabled = false;
+                return true;
+            } else {
+                status.textContent = '❌ خطا در بارگذاری کتابخانه‌ها. لطفاً اتصال اینترنت را بررسی کنید.';
+                status.className = 'status show error';
+                document.getElementById('convertBtn').disabled = true;
+                return false;
+            }
+        }
+
+        // ============================================
+        //  تابع اصلی تبدیل
         // ============================================
         function mnemonicToBitcoinAddress(mnemonic) {
-            // ۱. اعتبارسنجی عبارت
+            // بررسی بارگذاری کتابخانه‌ها
+            if (typeof bip39 === 'undefined') {
+                throw new Error('کتابخانه bip39 بارگذاری نشده است. لطفاً اتصال اینترنت را بررسی کنید.');
+            }
+            if (typeof bitcoinjs === 'undefined') {
+                throw new Error('کتابخانه bitcoinjs-lib بارگذاری نشده است.');
+            }
+
+            // اعتبارسنجی عبارت
             if (!bip39.validateMnemonic(mnemonic)) {
                 throw new Error('عبارت ۱۲ کلمه‌ای نامعتبر است. لطفاً کلمات را با فاصله جدا کنید.');
             }
 
-            // ۲. تولید Seed از عبارت
+            // تولید Seed
             const seed = bip39.mnemonicToSeedSync(mnemonic);
 
-            // ۳. ایجاد کیف پول HD با بیت‌کوین
+            // ایجاد کیف پول HD
             const network = bitcoinjs.networks.bitcoin;
             const root = bitcoinjs.bip32.fromSeed(seed, network);
 
-            // ۴. مسیر مشتق‌سازی استاندارد BIP-44
-            // m/44'/0'/0'/0/0
+            // مسیر مشتق‌سازی BIP-44
             const path = "m/44'/0'/0'/0/0";
             const child = root.derivePath(path);
 
-            // ۵. استخراج آدرس (P2WPKH - Bech32)
+            // تولید آدرس (P2WPKH - Bech32)
             const { address } = bitcoinjs.payments.p2wpkh({
                 pubkey: child.publicKey,
                 network: network
@@ -297,52 +292,46 @@
         //  مدیریت UI
         // ============================================
         function convertMnemonic() {
+            // بررسی بارگذاری کتابخانه‌ها
+            if (!checkLibraries()) {
+                return;
+            }
+
             const input = document.getElementById('mnemonic');
             const btn = document.getElementById('convertBtn');
             const errorDiv = document.getElementById('errorMessage');
             const resultSection = document.getElementById('resultSection');
             const resultAddress = document.getElementById('resultAddress');
 
-            // پنهان کردن نتایج قبلی
             resultSection.classList.remove('show');
             errorDiv.classList.remove('show');
             errorDiv.textContent = '';
 
             const mnemonic = input.value.trim();
 
-            // بررسی خالی بودن
             if (!mnemonic) {
                 showError('لطفاً عبارت ۱۲ کلمه‌ای را وارد کنید.');
                 return;
             }
 
-            // بررسی تعداد کلمات
             const wordCount = mnemonic.split(/\s+/).length;
             if (wordCount !== 12) {
                 showError(`تعداد کلمات وارد شده ${wordCount} است، در حالی که باید دقیقاً ۱۲ کلمه باشد.`);
                 return;
             }
 
-            // غیرفعال کردن دکمه و نمایش بارگذاری
             btn.disabled = true;
             btn.innerHTML = 'در حال پردازش <span class="loader"></span>';
 
-            // استفاده از setTimeout برای عدم مسدود شدن UI
             setTimeout(() => {
                 try {
                     const address = mnemonicToBitcoinAddress(mnemonic);
-                    
-                    // نمایش نتیجه
                     resultAddress.textContent = address;
                     resultSection.classList.add('show');
-                    
-                    // پاک کردن خطا
                     errorDiv.classList.remove('show');
-                    
                 } catch (error) {
-                    showError(error.message || 'خطا در تبدیل عبارت. لطفاً دوباره تلاش کنید.');
+                    showError(error.message || 'خطا در تبدیل عبارت.');
                 } finally {
-                    // فعال کردن مجدد دکمه
                     btn.disabled = false;
                     btn.innerHTML = 'تبدیل به آدرس بیت‌کوین';
                 }
@@ -353,8 +342,6 @@
             const errorDiv = document.getElementById('errorMessage');
             errorDiv.textContent = '❌ ' + message;
             errorDiv.classList.add('show');
-            
-            // مخفی کردن نتیجه در صورت خطا
             document.getElementById('resultSection').classList.remove('show');
         }
 
@@ -370,7 +357,7 @@
                     btn.textContent = originalText;
                 }, 2000);
             }).catch(() => {
-                // fallback برای مرورگرهای قدیمی
+                // روش جایگزین برای مرورگرهای قدیمی
                 const textarea = document.createElement('textarea');
                 textarea.value = address;
                 document.body.appendChild(textarea);
@@ -388,13 +375,16 @@
         }
 
         // ============================================
-        //  اجرای خودکار با عبارت نمونه (اختیاری)
+        //  بررسی بارگذاری هنگام شروع
         // ============================================
         window.addEventListener('load', function() {
-            // برای نمایش سریع، می‌توانید خط زیر را فعال کنید
-            // convertMnemonic();
+            // کمی تاخیر برای بارگذاری کتابخانه‌ها
+            setTimeout(checkLibraries, 500);
         });
+
+        // بررسی مجدد بعد از ۳ ثانیه
+        setTimeout(checkLibraries, 3000);
     </script>
 
 </body>
-  </html>
+</html>
