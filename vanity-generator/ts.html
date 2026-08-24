@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>تولید آدرس از کلید خصوصی</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js">
+    </script>
+</head>
+<body>
+    <h2>تبدیل کلید خصوصی به آدرس اتریوم</h2>
+    
+    <label>عدد کلید خصوصی (۰ تا n-1):</label><br>
+    <input type="text" id="privateKeyInput" style="width: 100%; direction: ltr;" 
+           placeholder="مثلاً: 1234567890123456789012345678901234567890123456789012345678901234">
+    <br><br>
+    
+    <button onclick="convertToAddress()">تبدیل</button>
+    <br><br>
+    
+    <div id="result"></div>
+
+    <script>
+        function convertToAddress() {
+            const input = document.getElementById('privateKeyInput').value.trim();
+            const resultDiv = document.getElementById('result');
+
+            // حذف کاما و فاصله
+            const cleanInput = input.replace(/,/g, '').replace(/\s/g, '');
+
+            if (!cleanInput) {
+                resultDiv.innerHTML = '❌ لطفاً یک عدد وارد کنید.';
+                return;
+            }
+
+            try {
+                // تبدیل عدد به BigNumber
+                const privateBigInt = BigInt(cleanInput);
+                
+                // بررسی محدوده (n = 2^256 - 2^32 - 2^9 - 2^8 - 2^7 - 2^6 - 2^4 - 1)
+                const n = BigInt('115792089237316195423570985008687907853269984665640564039457584007913129639935');
+                
+                if (privateBigInt >= n) {
+                    resultDiv.innerHTML = '❌ عدد باید کوچکتر از n باشد (حداکثر n-1).';
+                    return;
+                }
+                
+                if (privateBigInt < 0) {
+                    resultDiv.innerHTML = '❌ عدد نباید منفی باشد.';
+                    return;
+                }
+
+                // تبدیل به هگزادسیمال با ۶۴ کاراکتر
+                const hex = '0x' + privateBigInt.toString(16).padStart(64, '0');
+
+                // ایجاد کیف پول از کلید خصوصی با ethers.js
+                const wallet = new ethers.Wallet(hex);
+                
+                // نمایش نتیجه
+                resultDiv.innerHTML = `
+                    <strong>✅ تبدیل موفق!</strong><br><br>
+                    <strong>کلید خصوصی (هگز):</strong><br>
+                    <code style="word-break: break-all; background: #f0f0f0; padding: 8px; display: block;">${hex}</code>
+                    <br>
+                    <strong>آدرس اتریوم:</strong><br>
+                    <code style="word-break: break-all; background: #e8f5e9; padding: 8px; display: block; color: #2e7d32;">${wallet.address}</code>
+                    <br>
+                    <strong>کلید عمومی (فشرده):</strong><br>
+                    <code style="word-break: break-all; background: #f0f0f0; padding: 8px; display: block; font-size: 12px;">${wallet.publicKey}</code>
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = '❌ خطا: عدد نامعتبر است. لطفاً فقط رقم وارد کنید.';
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
