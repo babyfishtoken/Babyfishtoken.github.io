@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>BIP39 Bitcoin + Solana</title>
+<title>BIP39 Bitcoin 4 Addresses + Solana</title>
 
 <style>
 *{
@@ -20,26 +20,37 @@ body{
 }
 
 .container{
-    max-width:700px;
+    max-width:750px;
     margin:auto;
 }
 
 h1{
     text-align:center;
-    margin-bottom:25px;
+    margin:10px 0 25px;
+}
+
+label{
+    display:block;
+    margin-bottom:8px;
 }
 
 textarea{
     width:100%;
     height:120px;
     padding:15px;
+
     border:1px solid #374151;
     border-radius:12px;
+
     background:#1f2937;
     color:#fff;
+
     font-size:16px;
+    line-height:1.7;
+
     direction:ltr;
     text-align:left;
+
     resize:none;
     outline:none;
 }
@@ -50,25 +61,30 @@ textarea:focus{
 
 button{
     width:100%;
-    margin-top:15px;
     padding:15px;
+    margin-top:15px;
+
     border:0;
     border-radius:12px;
+
     background:#2563eb;
     color:white;
+
     font-size:17px;
     cursor:pointer;
 }
 
 button:disabled{
-    background:#4b5563;
+    opacity:.6;
+    cursor:not-allowed;
 }
 
 .status{
-    margin-top:15px;
-    padding:12px;
-    border-radius:10px;
     display:none;
+    margin-top:15px;
+    padding:13px;
+    border-radius:10px;
+    line-height:1.7;
 }
 
 .status.error{
@@ -84,8 +100,9 @@ button:disabled{
 }
 
 .card{
-    margin-top:20px;
-    padding:18px;
+    margin-top:18px;
+    padding:17px;
+
     background:#1f2937;
     border-radius:12px;
 }
@@ -93,45 +110,75 @@ button:disabled{
 .title{
     font-size:18px;
     font-weight:bold;
-    margin-bottom:8px;
+    margin-bottom:5px;
+}
+
+.type{
+    color:#d1d5db;
+    font-size:13px;
+    margin-bottom:4px;
 }
 
 .path{
     direction:ltr;
     text-align:left;
+
     color:#9ca3af;
+
     font-family:monospace;
-    font-size:13px;
+    font-size:12px;
+
     margin-bottom:10px;
 }
 
 .address{
-    min-height:50px;
-    padding:14px;
-    background:#111827;
-    border-radius:9px;
     direction:ltr;
     text-align:left;
+
     word-break:break-all;
+
+    background:#111827;
+
+    padding:13px;
+
+    border-radius:8px;
+
     font-family:monospace;
     font-size:14px;
-    line-height:1.6;
+
+    min-height:46px;
 }
 
 .copy{
     background:#374151;
     font-size:14px;
 }
+
+.copy:hover{
+    background:#4b5563;
+}
+
+.note{
+    color:#9ca3af;
+    font-size:12px;
+    margin-top:20px;
+    line-height:1.8;
+}
 </style>
 </head>
+
 
 <body>
 
 <div class="container">
 
-<h1>BIP-39 → Bitcoin + Solana</h1>
+<h1>
+BIP-39 → Bitcoin + Solana
+</h1>
 
-<p>عبارت ۱۲ کلمه‌ای انگلیسی BIP-39 را وارد کنید:</p>
+<label>
+عبارت ۱۲ کلمه‌ای BIP-39
+</label>
 
 <textarea
     id="mnemonic"
@@ -143,47 +190,155 @@ button:disabled{
 ></textarea>
 
 <button id="generateBtn">
-ساخت آدرس Bitcoin و Solana
+ساخت ۴ آدرس Bitcoin + آدرس Solana
 </button>
 
 <div id="status" class="status"></div>
 
 
+<!-- LEGACY -->
+
 <div class="card">
 
-    <div class="title">Bitcoin</div>
-
-    <div class="path">
-        m/84'/0'/0'/0/0
+    <div class="title">
+        Bitcoin — Legacy
     </div>
 
-    <div id="btcAddress" class="address">---</div>
+    <div class="type">
+        P2PKH — آدرس با 1 شروع می‌شود
+    </div>
+
+    <div class="path">
+        m/44'/0'/0'/0/0
+    </div>
+
+    <div id="legacy" class="address">
+        ---
+    </div>
 
     <button
         class="copy"
-        onclick="copyAddress('btcAddress')">
-        کپی آدرس Bitcoin
+        onclick="copyAddress('legacy')">
+        کپی Legacy
     </button>
 
 </div>
 
 
+<!-- NESTED SEGWIT -->
+
 <div class="card">
 
-    <div class="title">Solana</div>
+    <div class="title">
+        Bitcoin — Nested SegWit
+    </div>
+
+    <div class="type">
+        P2SH-P2WPKH — آدرس با 3 شروع می‌شود
+    </div>
+
+    <div class="path">
+        m/49'/0'/0'/0/0
+    </div>
+
+    <div id="nested" class="address">
+        ---
+    </div>
+
+    <button
+        class="copy"
+        onclick="copyAddress('nested')">
+        کپی Nested SegWit
+    </button>
+
+</div>
+
+
+<!-- NATIVE SEGWIT -->
+
+<div class="card">
+
+    <div class="title">
+        Bitcoin — Native SegWit
+    </div>
+
+    <div class="type">
+        P2WPKH — آدرس با bc1q شروع می‌شود
+    </div>
+
+    <div class="path">
+        m/84'/0'/0'/0/0
+    </div>
+
+    <div id="native" class="address">
+        ---
+    </div>
+
+    <button
+        class="copy"
+        onclick="copyAddress('native')">
+        کپی Native SegWit
+    </button>
+
+</div>
+
+
+<!-- TAPROOT -->
+
+<div class="card">
+
+    <div class="title">
+        Bitcoin — Taproot
+    </div>
+
+    <div class="type">
+        P2TR — آدرس با bc1p شروع می‌شود
+    </div>
+
+    <div class="path">
+        m/86'/0'/0'/0/0
+    </div>
+
+    <div id="taproot" class="address">
+        ---
+    </div>
+
+    <button
+        class="copy"
+        onclick="copyAddress('taproot')">
+        کپی Taproot
+    </button>
+
+</div>
+
+
+<!-- SOLANA -->
+
+<div class="card">
+
+    <div class="title">
+        Solana
+    </div>
 
     <div class="path">
         m/44'/501'/0'/0'
     </div>
 
-    <div id="solAddress" class="address">---</div>
+    <div id="solana" class="address">
+        ---
+    </div>
 
     <button
         class="copy"
-        onclick="copyAddress('solAddress')">
-        کپی آدرس Solana
+        onclick="copyAddress('solana')">
+        کپی Solana
     </button>
 
+</div>
+
+
+<div class="note">
+تمام آدرس‌ها از همان عبارت BIP-39 ساخته می‌شوند، اما مسیر مشتق‌سازی متفاوت است.
 </div>
 
 </div>
@@ -200,29 +355,44 @@ IMPORTS
 import * as bip39
 from "https://esm.sh/@scure/bip39@2.4.0";
 
-import { wordlist }
+import {
+    wordlist
+}
 from "https://esm.sh/@scure/bip39@2.4.0/wordlists/english.js";
 
-import { HDKey }
+import {
+    HDKey
+}
 from "https://esm.sh/@scure/bip32@2.0.1";
 
-import { sha256, sha512 }
-from "https://esm.sh/@noble/hashes@2.4.0/sha2.js";
+import {
+    sha256,
+    sha512
+}
+from "https://esm.sh/@noble/hashes@2.0.1/sha2.js";
 
-import { ripemd160 }
-from "https://esm.sh/@noble/hashes@2.4.0/legacy.js";
+import {
+    ripemd160
+}
+from "https://esm.sh/@noble/hashes@2.0.1/legacy.js";
 
-import { hmac }
-from "https://esm.sh/@noble/hashes@2.4.0/hmac.js";
+import {
+    hmac
+}
+from "https://esm.sh/@noble/hashes@2.0.1/hmac.js";
+
+import * as secp
+from "https://esm.sh/@noble/curves@1.9.7/secp256k1";
 
 import * as ed25519
 from "https://esm.sh/@noble/ed25519@3.0.0";
 
 import {
     bech32,
+    bech32m,
     base58
 }
-from "https://esm.sh/@scure/base@2.4.0";
+from "https://esm.sh/@scure/base@2.0.0";
 
 
 /*
@@ -240,11 +410,20 @@ const button =
 const status =
     document.getElementById("status");
 
-const btc =
-    document.getElementById("btcAddress");
+const legacy =
+    document.getElementById("legacy");
 
-const sol =
-    document.getElementById("solAddress");
+const nested =
+    document.getElementById("nested");
+
+const nativeSegwit =
+    document.getElementById("native");
+
+const taproot =
+    document.getElementById("taproot");
+
+const solana =
+    document.getElementById("solana");
 
 
 /*
@@ -253,48 +432,53 @@ STATUS
 ========================================================
 */
 
-function error(message){
+function showError(message){
 
-    status.className = "status error";
-    status.textContent = message;
+    status.className =
+        "status error";
 
+    status.textContent =
+        message;
 }
 
-function success(message){
 
-    status.className = "status success";
-    status.textContent = message;
+function showSuccess(message){
 
+    status.className =
+        "status success";
+
+    status.textContent =
+        message;
 }
 
 
 /*
 ========================================================
-SOLANA SLIP-0010
+BYTE HELPERS
 ========================================================
 */
 
-function concat(...arrays){
+function concatBytes(...arrays){
 
-    let length = 0;
+    let total = 0;
 
     for(const a of arrays){
-        length += a.length;
+        total += a.length;
     }
 
-    const out =
-        new Uint8Array(length);
+    const result =
+        new Uint8Array(total);
 
     let offset = 0;
 
     for(const a of arrays){
 
-        out.set(a,offset);
+        result.set(a,offset);
 
         offset += a.length;
     }
 
-    return out;
+    return result;
 }
 
 
@@ -310,7 +494,404 @@ function uint32BE(n){
 
 
 /*
-Master key for SLIP-0010 Ed25519
+========================================================
+BASE58CHECK
+========================================================
+*/
+
+function base58Check(payload){
+
+    const checksum =
+        sha256(
+            sha256(payload)
+        ).slice(0,4);
+
+    return base58.encode(
+        concatBytes(
+            payload,
+            checksum
+        )
+    );
+}
+
+
+/*
+========================================================
+HASH160
+========================================================
+*/
+
+function hash160(data){
+
+    return ripemd160(
+        sha256(data)
+    );
+}
+
+
+/*
+========================================================
+BITCOIN KEY
+========================================================
+*/
+
+function deriveBitcoinNode(seed,path){
+
+    const root =
+        HDKey.fromMasterSeed(seed);
+
+    const child =
+        root.derive(path);
+
+    if(!child.privateKey){
+
+        throw new Error(
+            "Bitcoin private key ساخته نشد."
+        );
+    }
+
+    return child;
+}
+
+
+/*
+========================================================
+LEGACY
+P2PKH
+
+m/44'/0'/0'/0/0
+========================================================
+*/
+
+function makeLegacy(seed){
+
+    const node =
+        deriveBitcoinNode(
+            seed,
+            "m/44'/0'/0'/0/0"
+        );
+
+    const pub =
+        node.publicKey;
+
+    const h160 =
+        hash160(pub);
+
+    /*
+    Mainnet P2PKH version = 0x00
+    */
+
+    return base58Check(
+        concatBytes(
+            new Uint8Array([0]),
+            h160
+        )
+    );
+}
+
+
+/*
+========================================================
+NESTED SEGWIT
+P2SH-P2WPKH
+
+m/49'/0'/0'/0/0
+========================================================
+*/
+
+function makeNested(seed){
+
+    const node =
+        deriveBitcoinNode(
+            seed,
+            "m/49'/0'/0'/0/0"
+        );
+
+    const pub =
+        node.publicKey;
+
+    const pubHash =
+        hash160(pub);
+
+    /*
+    Witness program:
+
+    0x00 + push(20) + HASH160(pubkey)
+    */
+
+    const redeemScript =
+        concatBytes(
+            new Uint8Array([
+                0x00,
+                0x14
+            ]),
+            pubHash
+        );
+
+    const scriptHash =
+        hash160(
+            redeemScript
+        );
+
+    /*
+    P2SH mainnet version = 0x05
+    */
+
+    return base58Check(
+        concatBytes(
+            new Uint8Array([5]),
+            scriptHash
+        )
+    );
+}
+
+
+/*
+========================================================
+NATIVE SEGWIT
+P2WPKH
+
+m/84'/0'/0'/0/0
+========================================================
+*/
+
+function makeNativeSegwit(seed){
+
+    const node =
+        deriveBitcoinNode(
+            seed,
+            "m/84'/0'/0'/0/0"
+        );
+
+    const pubHash =
+        hash160(
+            node.publicKey
+        );
+
+    /*
+    Bech32 witness v0
+    */
+
+    const words =
+        bech32.toWords(
+            pubHash
+        );
+
+    words.unshift(0);
+
+    return bech32.encode(
+        "bc",
+        words,
+        90
+    );
+}
+
+
+/*
+========================================================
+TAPROOT
+P2TR
+
+m/86'/0'/0'/0/0
+========================================================
+*/
+
+
+function taggedHash(tag,data){
+
+    const tagHash =
+        sha256(
+            new TextEncoder().encode(tag)
+        );
+
+    return sha256(
+        concatBytes(
+            tagHash,
+            tagHash,
+            data
+        )
+    );
+}
+
+
+function makeTaproot(seed){
+
+    const node =
+        deriveBitcoinNode(
+            seed,
+            "m/86'/0'/0'/0/0"
+        );
+
+    /*
+    Internal private key
+    */
+
+    let privateKey =
+        node.privateKey;
+
+
+    /*
+    Get public point
+    */
+
+    let point =
+        secp.secp256k1.ProjectivePoint
+        .fromPrivateKey(
+            privateKey
+        );
+
+
+    /*
+    BIP340 requires even-Y internal key.
+
+    If Y is odd, negate private key.
+    */
+
+    const compressed =
+        point.toRawBytes(
+            true
+        );
+
+
+    if(compressed[0] === 0x03){
+
+        const d =
+            BigInt(
+                "0x" +
+                Array.from(privateKey)
+                .map(
+                    b =>
+                    b.toString(16)
+                     .padStart(2,"0")
+                )
+                .join("")
+            );
+
+        const n =
+            secp.secp256k1.CURVE.n;
+
+        const neg =
+            (n - d) % n;
+
+        privateKey =
+            hexToBytes(
+                neg.toString(16)
+                .padStart(64,"0")
+            );
+
+        point =
+            secp.secp256k1.ProjectivePoint
+            .fromPrivateKey(
+                privateKey
+            );
+    }
+
+
+    /*
+    X-only internal public key
+    */
+
+    const internalCompressed =
+        point.toRawBytes(true);
+
+    const xOnly =
+        internalCompressed.slice(1,33);
+
+
+    /*
+    BIP86 TapTweak
+
+    tweak =
+    tagged_hash(
+        "TapTweak",
+        internal_key
+    )
+    */
+
+    const tweakBytes =
+        taggedHash(
+            "TapTweak",
+            xOnly
+        );
+
+
+    const tweak =
+        BigInt(
+            "0x" +
+            Array.from(tweakBytes)
+            .map(
+                b =>
+                b.toString(16)
+                 .padStart(2,"0")
+            )
+            .join("")
+        );
+
+
+    const n =
+        secp.secp256k1.CURVE.n;
+
+
+    if(tweak >= n){
+
+        throw new Error(
+            "Taproot tweak نامعتبر است."
+        );
+    }
+
+
+    /*
+    Q = P + tweak*G
+    */
+
+    const tweakPoint =
+        secp.secp256k1.ProjectivePoint
+        .BASE.multiply(tweak);
+
+
+    const outputPoint =
+        point.add(
+            tweakPoint
+        );
+
+
+    /*
+    X-only output key
+    */
+
+    const outputCompressed =
+        outputPoint.toRawBytes(true);
+
+    const outputX =
+        outputCompressed.slice(1,33);
+
+
+    /*
+    Taproot witness version = 1
+
+    Bech32m
+    */
+
+    const words =
+        bech32m.toWords(
+            outputX
+        );
+
+    words.unshift(1);
+
+
+    return bech32m.encode(
+        "bc",
+        words,
+        90
+    );
+}
+
+
+/*
+========================================================
+SOLANA SLIP-0010
+========================================================
 */
 
 function slip10Master(seed){
@@ -334,17 +915,13 @@ function slip10Master(seed){
 }
 
 
-/*
-Hardened child
-*/
-
 function slip10Child(parent,index){
 
     const hardened =
         (index + 0x80000000) >>> 0;
 
     const data =
-        concat(
+        concatBytes(
             new Uint8Array([0]),
             parent.key,
             uint32BE(hardened)
@@ -364,13 +941,7 @@ function slip10Child(parent,index){
 }
 
 
-/*
-Solana:
-
-m/44'/501'/0'/0'
-*/
-
-function deriveSolana(seed){
+function deriveSolanaKey(seed){
 
     let node =
         slip10Master(seed);
@@ -391,100 +962,53 @@ function deriveSolana(seed){
 }
 
 
-async function makeSolanaAddress(seed){
+async function makeSolana(seed){
 
     const privateKey =
-        deriveSolana(seed);
+        deriveSolanaKey(seed);
 
     const publicKey =
         await ed25519.getPublicKeyAsync(
             privateKey
         );
 
-    return base58.encode(publicKey);
+    return base58.encode(
+        publicKey
+    );
 }
 
 
 /*
 ========================================================
-BITCOIN BIP84
-========================================================
-
-m/84'/0'/0'/0/0
-
-Native SegWit P2WPKH
+HEX → BYTES
 ========================================================
 */
 
-function makeBitcoinAddress(seed){
+function hexToBytes(hex){
 
-    /*
-    BIP32 master
-    */
-
-    const root =
-        HDKey.fromMasterSeed(seed);
-
-
-    /*
-    BIP84
-    */
-
-    const child =
-        root.derive(
-            "m/84'/0'/0'/0/0"
-        );
-
-
-    if(!child.publicKey){
-
-        throw new Error(
-            "Bitcoin public key ساخته نشد."
-        );
+    if(hex.length % 2 !== 0){
+        hex = "0" + hex;
     }
 
-
-    /*
-    Compressed public key
-    */
-
-    const publicKey =
-        child.publicKey;
-
-
-    /*
-    HASH160
-    */
-
-    const hash160 =
-        ripemd160(
-            sha256(publicKey)
+    const result =
+        new Uint8Array(
+            hex.length / 2
         );
 
+    for(
+        let i = 0;
+        i < result.length;
+        i++
+    ){
 
-    /*
-    Native SegWit v0
+        result[i] =
+            parseInt(
+                hex.substr(i * 2,2),
+                16
+            );
+    }
 
-    witness version = 0
-    witness program = HASH160
-    */
-
-    const words =
-        bech32.toWords(hash160);
-
-    words.unshift(0);
-
-
-    /*
-    Bitcoin mainnet prefix:
-    bc
-    */
-
-    return bech32.encode(
-        "bc",
-        words,
-        90
-    );
+    return result;
 }
 
 
@@ -498,35 +1022,29 @@ async function generate(){
 
     button.disabled = true;
 
-    btc.textContent = "---";
-    sol.textContent = "---";
+    legacy.textContent = "---";
+    nested.textContent = "---";
+    nativeSegwit.textContent = "---";
+    taproot.textContent = "---";
+    solana.textContent = "---";
 
     status.className = "status";
     status.textContent = "";
 
     try{
 
-        /*
-        Normalize spaces
-        */
-
         const mnemonic =
             input.value
             .trim()
             .replace(/\s+/g," ");
 
-
         if(!mnemonic){
 
             throw new Error(
-                "عبارت را وارد کنید."
+                "عبارت ۱۲ کلمه‌ای را وارد کنید."
             );
         }
 
-
-        /*
-        Exactly 12 words
-        */
 
         const words =
             mnemonic.split(" ");
@@ -543,23 +1061,22 @@ async function generate(){
         BIP39 validation
         */
 
-        if(
-            !bip39.validateMnemonic(
+        const valid =
+            bip39.validateMnemonic(
                 mnemonic,
                 wordlist
-            )
-        ){
+            );
+
+        if(!valid){
 
             throw new Error(
-                "عبارت BIP-39 معتبر نیست یا Checksum صحیح نیست."
+                "عبارت BIP-39 معتبر نیست یا Checksum آن صحیح نیست."
             );
         }
 
 
         /*
-        BIP39 → 64-byte seed
-
-        No passphrase
+        BIP39 → Seed
         */
 
         const seed =
@@ -569,29 +1086,32 @@ async function generate(){
 
 
         /*
-        Bitcoin
+        FOUR BITCOIN ADDRESSES
         */
 
-        const bitcoinAddress =
-            makeBitcoinAddress(seed);
+        legacy.textContent =
+            makeLegacy(seed);
 
-        btc.textContent =
-            bitcoinAddress;
+        nested.textContent =
+            makeNested(seed);
+
+        nativeSegwit.textContent =
+            makeNativeSegwit(seed);
+
+        taproot.textContent =
+            makeTaproot(seed);
 
 
         /*
-        Solana
+        SOLANA
         */
 
-        const solanaAddress =
-            await makeSolanaAddress(seed);
-
-        sol.textContent =
-            solanaAddress;
+        solana.textContent =
+            await makeSolana(seed);
 
 
-        success(
-            "هر دو آدرس با موفقیت ساخته شدند."
+        showSuccess(
+            "هر ۴ آدرس Bitcoin و آدرس Solana ساخته شدند."
         );
 
     }
@@ -599,9 +1119,12 @@ async function generate(){
 
         console.error(e);
 
-        error(
+        showError(
             "خطا: " +
-            (e?.message || String(e))
+            (
+                e?.message ||
+                String(e)
+            )
         );
 
     }
@@ -658,18 +1181,25 @@ async function(id){
     }
     catch(e){
 
-        const area =
-            document.createElement("textarea");
+        const textarea =
+            document.createElement(
+                "textarea"
+            );
 
-        area.value = value;
+        textarea.value =
+            value;
 
-        document.body.appendChild(area);
+        document.body.appendChild(
+            textarea
+        );
 
-        area.select();
+        textarea.select();
 
-        document.execCommand("copy");
+        document.execCommand(
+            "copy"
+        );
 
-        area.remove();
+        textarea.remove();
 
         alert("آدرس کپی شد.");
     }
@@ -678,4 +1208,4 @@ async function(id){
 </script>
 
 </body>
-</html>
+    </html>
