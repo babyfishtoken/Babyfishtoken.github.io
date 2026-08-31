@@ -1,8 +1,12 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
 <title>BIP39 Bitcoin + Solana</title>
 
@@ -15,9 +19,14 @@
 body{
     margin:0;
     padding:20px;
+
     background:#111827;
-    color:#ffffff;
-    font-family:Arial,Tahoma,sans-serif;
+    color:#fff;
+
+    font-family:
+        Arial,
+        Tahoma,
+        sans-serif;
 }
 
 .container{
@@ -38,19 +47,22 @@ label{
 }
 
 textarea{
+
     width:100%;
     height:130px;
+
     padding:15px;
+
     resize:none;
 
     background:#1f2937;
-    color:#ffffff;
+    color:#fff;
 
     border:1px solid #374151;
     border-radius:12px;
 
-    font-family:Arial,sans-serif;
     font-size:16px;
+    line-height:1.7;
 
     direction:ltr;
     text-align:left;
@@ -63,8 +75,11 @@ textarea:focus{
 }
 
 button{
+
     width:100%;
+
     margin-top:15px;
+
     padding:15px;
 
     border:0;
@@ -74,6 +89,7 @@ button{
     color:white;
 
     font-size:17px;
+
     cursor:pointer;
 }
 
@@ -87,85 +103,116 @@ button:disabled{
 }
 
 .status{
+
     display:none;
+
     margin-top:15px;
+
     padding:13px;
+
     border-radius:10px;
+
     line-height:1.8;
 }
 
 .status.error{
+
     display:block;
+
     background:#450a0a;
+
     color:#fca5a5;
 }
 
 .status.success{
+
     display:block;
+
     background:#052e16;
+
     color:#86efac;
 }
 
 .card{
+
     margin-top:20px;
+
     padding:18px;
 
     background:#1f2937;
+
     border-radius:12px;
 }
 
 .card-title{
+
     font-size:18px;
+
     font-weight:bold;
+
     margin-bottom:8px;
 }
 
 .path{
+
     direction:ltr;
+
     text-align:left;
 
     color:#9ca3af;
+
     font-family:monospace;
+
     font-size:13px;
 
     margin-bottom:10px;
 }
 
 .address{
+
     min-height:50px;
 
     padding:14px;
 
     background:#111827;
+
     border-radius:9px;
 
     direction:ltr;
+
     text-align:left;
 
     word-break:break-all;
 
     font-family:monospace;
+
     font-size:14px;
 
     line-height:1.6;
 }
 
 .copy{
+
     background:#374151;
+
     font-size:14px;
 }
 
 .copy:hover{
+
     background:#4b5563;
 }
 
 </style>
+
 </head>
 
 
 <body>
 
+
 <div class="container">
+
 
 <h1>
 BIP-39 → Bitcoin + Solana
@@ -173,7 +220,9 @@ BIP-39 → Bitcoin + Solana
 
 
 <label for="mnemonic">
+
 عبارت ۱۲ کلمه‌ای BIP-39
+
 </label>
 
 
@@ -188,69 +237,98 @@ BIP-39 → Bitcoin + Solana
 
 
 <button id="generateBtn">
+
 ساخت هر دو آدرس
+
 </button>
 
 
-<div id="status" class="status"></div>
+<div
+    id="status"
+    class="status">
+</div>
 
 
-<!-- BITCOIN -->
+<!-- =========================
+     BITCOIN
+========================= -->
 
 <div class="card">
 
     <div class="card-title">
+
         Bitcoin
+
     </div>
 
+
     <div class="path">
+
         m/84'/0'/0'/0/0
+
     </div>
+
 
     <div
         id="btcAddress"
-        class="address"
-    >
+        class="address">
+
         ---
+
     </div>
+
 
     <button
         class="copy"
-        onclick="copyAddress('btcAddress')"
-    >
+        onclick="copyAddress('btcAddress')">
+
         کپی آدرس Bitcoin
+
     </button>
 
 </div>
 
 
-<!-- SOLANA -->
+
+<!-- =========================
+     SOLANA
+========================= -->
 
 <div class="card">
 
     <div class="card-title">
+
         Solana
+
     </div>
 
+
     <div class="path">
+
         m/44'/501'/0'/0'
+
     </div>
+
 
     <div
         id="solAddress"
-        class="address"
-    >
+        class="address">
+
         ---
+
     </div>
+
 
     <button
         class="copy"
-        onclick="copyAddress('solAddress')"
-    >
+        onclick="copyAddress('solAddress')">
+
         کپی آدرس Solana
+
     </button>
 
 </div>
+
 
 </div>
 
@@ -261,49 +339,73 @@ BIP-39 → Bitcoin + Solana
 
 /*
 ========================================================
-IMPORTS
+BIP39
 ========================================================
 */
-
 
 import * as bip39
 from "https://esm.sh/@scure/bip39@2.4.0";
 
-
-import { wordlist }
+import {
+    wordlist
+}
 from "https://esm.sh/@scure/bip39@2.4.0/wordlists/english.js";
 
 
-import { HDKey }
-from "https://esm.sh/@scure/bip32@2.4.0";
+
+/*
+========================================================
+BITCOINJS
+========================================================
+*/
+
+import * as bitcoin
+from "https://esm.sh/bitcoinjs-lib@6.1.7";
+
+import * as ecc
+from "https://esm.sh/tiny-secp256k1@2.2.3";
+
+import {
+    BIP32Factory
+}
+from "https://esm.sh/bip32@4.0.0";
 
 
-import { sha256 }
-from "https://esm.sh/@noble/hashes@2.0.1/sha2.js";
 
+/*
+========================================================
+SOLANA / ED25519
+========================================================
+*/
 
-import { sha512 }
-from "https://esm.sh/@noble/hashes@2.0.1/sha2.js";
+import {
+    sha512
+}
+from "https://esm.sh/@noble/hashes@1.8.0/sha2.js";
 
-
-import { hmac }
-from "https://esm.sh/@noble/hashes@2.0.1/hmac.js";
-
-
-import { ripemd160 }
-from "https://esm.sh/@noble/hashes@2.0.1/legacy.js";
-
+import {
+    hmac
+}
+from "https://esm.sh/@noble/hashes@1.8.0/hmac.js";
 
 import * as ed25519
 from "https://esm.sh/@noble/ed25519@3.0.0";
 
-
-import { bech32 }
+import {
+    base58
+}
 from "https://esm.sh/@scure/base@2.0.0";
 
 
-import { base58 }
-from "https://esm.sh/@scure/base@2.0.0";
+
+/*
+========================================================
+BIP32
+========================================================
+*/
+
+const bip32 =
+    BIP32Factory(ecc);
 
 
 
@@ -313,22 +415,17 @@ HTML ELEMENTS
 ========================================================
 */
 
-
 const mnemonicInput =
     document.getElementById("mnemonic");
-
 
 const generateBtn =
     document.getElementById("generateBtn");
 
-
 const status =
     document.getElementById("status");
 
-
 const btcAddress =
     document.getElementById("btcAddress");
-
 
 const solAddress =
     document.getElementById("solAddress");
@@ -341,7 +438,6 @@ STATUS
 ========================================================
 */
 
-
 function showError(message){
 
     status.className =
@@ -349,6 +445,7 @@ function showError(message){
 
     status.textContent =
         message;
+
 }
 
 
@@ -359,63 +456,7 @@ function showSuccess(message){
 
     status.textContent =
         message;
-}
 
-
-
-/*
-========================================================
-UINT32 BIG ENDIAN
-========================================================
-*/
-
-
-function uint32BE(number){
-
-    return new Uint8Array([
-
-        (number >>> 24) & 255,
-        (number >>> 16) & 255,
-        (number >>> 8) & 255,
-        number & 255
-
-    ]);
-
-}
-
-
-
-/*
-========================================================
-CONCATENATE ARRAYS
-========================================================
-*/
-
-
-function concatBytes(...arrays){
-
-    let length = 0;
-
-    for(const arr of arrays){
-
-        length += arr.length;
-
-    }
-
-    const result =
-        new Uint8Array(length);
-
-    let offset = 0;
-
-    for(const arr of arrays){
-
-        result.set(arr,offset);
-
-        offset += arr.length;
-
-    }
-
-    return result;
 }
 
 
@@ -425,28 +466,54 @@ function concatBytes(...arrays){
 SOLANA
 SLIP-0010 ED25519
 ========================================================
-
-Master:
-
-HMAC-SHA512(
-    key = "ed25519 seed",
-    data = seed
-)
-
-Child:
-
-HMAC-SHA512(
-    key = chainCode,
-    data = 0x00 || privateKey || index
-)
-
-Solana path:
-
-m/44'/501'/0'/0'
-
-All components are hardened.
-========================================================
 */
+
+
+function concatBytes(...arrays){
+
+    let length = 0;
+
+    for(const a of arrays){
+
+        length += a.length;
+
+    }
+
+    const result =
+        new Uint8Array(length);
+
+    let offset = 0;
+
+    for(const a of arrays){
+
+        result.set(a,offset);
+
+        offset += a.length;
+
+    }
+
+    return result;
+
+}
+
+
+
+function uint32BE(number){
+
+    return new Uint8Array([
+
+        (number >>> 24) & 255,
+
+        (number >>> 16) & 255,
+
+        (number >>> 8) & 255,
+
+        number & 255
+
+    ]);
+
+}
+
 
 
 function slip10Master(seed){
@@ -478,16 +545,14 @@ function slip10Master(seed){
 function slip10Child(parent,index){
 
     /*
-    Hardened index
+    Solana uses hardened derivation
     */
 
-    const HARDENED =
+    const hardened =
         (index + 0x80000000) >>> 0;
 
-
     const indexBytes =
-        uint32BE(HARDENED);
-
+        uint32BE(hardened);
 
     const data =
         concatBytes(
@@ -500,14 +565,12 @@ function slip10Child(parent,index){
 
         );
 
-
     const I =
         hmac(
             sha512,
             parent.chainCode,
             data
         );
-
 
     return {
 
@@ -521,7 +584,7 @@ function slip10Child(parent,index){
 
 
 
-function deriveSolanaKey(seed){
+function deriveSolanaPrivateKey(seed){
 
     let node =
         slip10Master(seed);
@@ -532,7 +595,10 @@ function deriveSolanaKey(seed){
     */
 
     node =
-        slip10Child(node,44);
+        slip10Child(
+            node,
+            44
+        );
 
 
     /*
@@ -540,7 +606,10 @@ function deriveSolanaKey(seed){
     */
 
     node =
-        slip10Child(node,501);
+        slip10Child(
+            node,
+            501
+        );
 
 
     /*
@@ -548,7 +617,10 @@ function deriveSolanaKey(seed){
     */
 
     node =
-        slip10Child(node,0);
+        slip10Child(
+            node,
+            0
+        );
 
 
     /*
@@ -556,7 +628,10 @@ function deriveSolanaKey(seed){
     */
 
     node =
-        slip10Child(node,0);
+        slip10Child(
+            node,
+            0
+        );
 
 
     return node.key;
@@ -565,32 +640,17 @@ function deriveSolanaKey(seed){
 
 
 
-/*
-========================================================
-SOLANA ADDRESS
-========================================================
-*/
-
-
 async function makeSolanaAddress(seed){
 
     const privateKey =
-        deriveSolanaKey(seed);
+        deriveSolanaPrivateKey(seed);
 
-
-    /*
-    Ed25519 public key
-    */
 
     const publicKey =
         await ed25519.getPublicKeyAsync(
             privateKey
         );
 
-
-    /*
-    Solana uses Base58
-    */
 
     return base58.encode(
         publicKey
@@ -603,15 +663,12 @@ async function makeSolanaAddress(seed){
 /*
 ========================================================
 BITCOIN
+BIP84
 ========================================================
-
-BIP84:
 
 m/84'/0'/0'/0/0
 
-P2WPKH:
-
-bc1...
+Native SegWit P2WPKH
 ========================================================
 */
 
@@ -619,19 +676,30 @@ bc1...
 function makeBitcoinAddress(seed){
 
     /*
-    Master BIP32 key
+    Bitcoin mainnet
     */
 
-    const root =
-        HDKey.fromMasterSeed(seed);
+    const network =
+        bitcoin.networks.bitcoin;
 
 
     /*
-    BIP84 path
+    Create BIP32 root
+    */
+
+    const root =
+        bip32.fromSeed(
+            seed,
+            network
+        );
+
+
+    /*
+    BIP84 first receiving address
     */
 
     const child =
-        root.derive(
+        root.derivePath(
             "m/84'/0'/0'/0/0"
         );
 
@@ -639,56 +707,40 @@ function makeBitcoinAddress(seed){
     if(!child.publicKey){
 
         throw new Error(
-            "Bitcoin public key ساخته نشد."
+            "کلید عمومی Bitcoin ساخته نشد."
         );
 
     }
 
 
-    const publicKey =
-        child.publicKey;
-
-
     /*
-    HASH160
-    =
-    RIPEMD160(
-        SHA256(
-            compressedPublicKey
-        )
-    )
+    P2WPKH
+
+    HASH160(public key)
     */
 
-    const hash =
-        ripemd160(
-            sha256(publicKey)
+    const payment =
+        bitcoin.payments.p2wpkh({
+
+            pubkey:
+                child.publicKey,
+
+            network:
+                network
+
+        });
+
+
+    if(!payment.address){
+
+        throw new Error(
+            "آدرس Bitcoin ساخته نشد."
         );
 
-
-    /*
-    SegWit version 0
-    */
-
-    const words =
-        bech32.toWords(hash);
+    }
 
 
-    words.unshift(0);
-
-
-    /*
-    Bitcoin mainnet prefix = bc
-    */
-
-    const address =
-        bech32.encode(
-            "bc",
-            words,
-            90
-        );
-
-
-    return address;
+    return payment.address;
 
 }
 
@@ -699,7 +751,6 @@ function makeBitcoinAddress(seed){
 GENERATE
 ========================================================
 */
-
 
 async function generate(){
 
@@ -748,7 +799,7 @@ async function generate(){
 
         /*
         -----------------------------------------------
-        CHECK 12 WORDS
+        EXACTLY 12 WORDS
         -----------------------------------------------
         */
 
@@ -767,7 +818,7 @@ async function generate(){
 
         /*
         -----------------------------------------------
-        BIP39 VALIDATION
+        BIP39 CHECKSUM
         -----------------------------------------------
         */
 
@@ -800,45 +851,45 @@ async function generate(){
 
 
         /*
-        -----------------------------------------------
+        ===============================================
         BITCOIN
-        -----------------------------------------------
+        ===============================================
         */
 
-        const bitcoin =
+        const bitcoinAddress =
             makeBitcoinAddress(
                 seed
             );
 
 
         btcAddress.textContent =
-            bitcoin;
+            bitcoinAddress;
 
 
         /*
-        -----------------------------------------------
+        ===============================================
         SOLANA
-        -----------------------------------------------
+        ===============================================
         */
 
-        const solana =
+        const solanaAddress =
             await makeSolanaAddress(
                 seed
             );
 
 
         solAddress.textContent =
-            solana;
+            solanaAddress;
 
 
         /*
-        -----------------------------------------------
+        ===============================================
         SUCCESS
-        -----------------------------------------------
+        ===============================================
         */
 
         showSuccess(
-            "هر دو آدرس با موفقیت ساخته شدند."
+            "آدرس Bitcoin و Solana با موفقیت ساخته شدند."
         );
 
     }
@@ -848,7 +899,10 @@ async function generate(){
 
         showError(
             "خطا: " +
-            (error.message || error)
+            (
+                error.message ||
+                error
+            )
         );
 
     }
@@ -869,7 +923,6 @@ BUTTON
 ========================================================
 */
 
-
 generateBtn.addEventListener(
     "click",
     generate
@@ -882,7 +935,6 @@ generateBtn.addEventListener(
 COPY
 ========================================================
 */
-
 
 window.copyAddress =
 async function(id){
@@ -956,4 +1008,5 @@ async function(id){
 </script>
 
 </body>
+
     </html>
