@@ -4,9 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>BIP39 → Bitcoin + Solana</title>
+<title>BIP39 Bitcoin + Solana</title>
 
 <style>
+
 *{
     box-sizing:border-box;
 }
@@ -15,11 +16,12 @@ body{
     margin:0;
     padding:20px;
     background:#111827;
-    color:#fff;
+    color:#ffffff;
     font-family:Arial,Tahoma,sans-serif;
 }
 
 .container{
+    width:100%;
     max-width:700px;
     margin:auto;
 }
@@ -37,17 +39,22 @@ label{
 
 textarea{
     width:100%;
-    height:120px;
-    resize:none;
+    height:130px;
     padding:15px;
-    border-radius:12px;
-    border:1px solid #374151;
+    resize:none;
+
     background:#1f2937;
-    color:#fff;
+    color:#ffffff;
+
+    border:1px solid #374151;
+    border-radius:12px;
+
+    font-family:Arial,sans-serif;
     font-size:16px;
-    line-height:1.8;
+
     direction:ltr;
     text-align:left;
+
     outline:none;
 }
 
@@ -59,10 +66,13 @@ button{
     width:100%;
     margin-top:15px;
     padding:15px;
+
     border:0;
     border-radius:12px;
+
     background:#2563eb;
-    color:#fff;
+    color:white;
+
     font-size:17px;
     cursor:pointer;
 }
@@ -77,19 +87,20 @@ button:disabled{
 }
 
 .status{
-    margin-top:15px;
-    padding:12px;
-    border-radius:10px;
     display:none;
+    margin-top:15px;
+    padding:13px;
+    border-radius:10px;
+    line-height:1.8;
 }
 
-.error{
+.status.error{
     display:block;
     background:#450a0a;
     color:#fca5a5;
 }
 
-.success{
+.status.success{
     display:block;
     background:#052e16;
     color:#86efac;
@@ -98,71 +109,97 @@ button:disabled{
 .card{
     margin-top:20px;
     padding:18px;
-    border-radius:12px;
+
     background:#1f2937;
+    border-radius:12px;
 }
 
-.title{
+.card-title{
     font-size:18px;
     font-weight:bold;
-    margin-bottom:12px;
+    margin-bottom:8px;
 }
 
 .path{
-    font-size:12px;
-    color:#9ca3af;
-    margin-bottom:10px;
     direction:ltr;
     text-align:left;
+
+    color:#9ca3af;
+    font-family:monospace;
+    font-size:13px;
+
+    margin-bottom:10px;
 }
 
 .address{
+    min-height:50px;
+
+    padding:14px;
+
+    background:#111827;
+    border-radius:9px;
+
     direction:ltr;
     text-align:left;
+
     word-break:break-all;
-    background:#111827;
-    padding:14px;
-    border-radius:9px;
+
     font-family:monospace;
     font-size:14px;
-    min-height:45px;
+
+    line-height:1.6;
 }
 
 .copy{
-    margin-top:10px;
-    padding:10px;
-    font-size:14px;
     background:#374151;
+    font-size:14px;
 }
+
+.copy:hover{
+    background:#4b5563;
+}
+
 </style>
 </head>
+
 
 <body>
 
 <div class="container">
 
-<h1>تبدیل عبارت BIP-39</h1>
+<h1>
+BIP-39 → Bitcoin + Solana
+</h1>
+
 
 <label for="mnemonic">
-عبارت ۱۲ کلمه‌ای:
+عبارت ۱۲ کلمه‌ای BIP-39
 </label>
+
 
 <textarea
     id="mnemonic"
     placeholder="word1 word2 word3 ... word12"
     autocomplete="off"
+    autocorrect="off"
+    autocapitalize="off"
     spellcheck="false"
 ></textarea>
 
+
 <button id="generateBtn">
-ساخت آدرس Bitcoin و Solana
+ساخت هر دو آدرس
 </button>
+
 
 <div id="status" class="status"></div>
 
+
+<!-- BITCOIN -->
+
 <div class="card">
 
-    <div class="title">
+    <div class="card-title">
         Bitcoin
     </div>
 
@@ -170,19 +207,28 @@ button:disabled{
         m/84'/0'/0'/0/0
     </div>
 
-    <div id="btcAddress" class="address">
+    <div
+        id="btcAddress"
+        class="address"
+    >
         ---
     </div>
 
-    <button class="copy" onclick="copyAddress('btcAddress')">
-        کپی آدرس بیت‌کوین
+    <button
+        class="copy"
+        onclick="copyAddress('btcAddress')"
+    >
+        کپی آدرس Bitcoin
     </button>
 
 </div>
 
+
+<!-- SOLANA -->
+
 <div class="card">
 
-    <div class="title">
+    <div class="card-title">
         Solana
     </div>
 
@@ -190,12 +236,18 @@ button:disabled{
         m/44'/501'/0'/0'
     </div>
 
-    <div id="solAddress" class="address">
+    <div
+        id="solAddress"
+        class="address"
+    >
         ---
     </div>
 
-    <button class="copy" onclick="copyAddress('solAddress')">
-        کپی آدرس سولانا
+    <button
+        class="copy"
+        onclick="copyAddress('solAddress')"
+    >
+        کپی آدرس Solana
     </button>
 
 </div>
@@ -203,7 +255,9 @@ button:disabled{
 </div>
 
 
+
 <script type="module">
+
 
 /*
 ========================================================
@@ -211,61 +265,74 @@ IMPORTS
 ========================================================
 */
 
+
 import * as bip39
-from "https://esm.sh/bip39@3.1.0";
+from "https://esm.sh/@scure/bip39@2.4.0";
+
+
+import { wordlist }
+from "https://esm.sh/@scure/bip39@2.4.0/wordlists/english.js";
+
 
 import { HDKey }
-from "https://esm.sh/@scure/bip32@1.7.0";
+from "https://esm.sh/@scure/bip32@2.4.0";
 
-import { secp256k1 }
-from "https://esm.sh/@noble/curves@1.9.1/secp256k1";
 
-import {
-    sha256
-}
-from "https://esm.sh/@noble/hashes@1.8.0/sha256";
+import { sha256 }
+from "https://esm.sh/@noble/hashes@2.0.1/sha2.js";
 
-import {
-    ripemd160
-}
-from "https://esm.sh/@noble/hashes@1.8.0/legacy";
 
-import {
-    bech32
-}
-from "https://esm.sh/bech32@2.0.0";
+import { sha512 }
+from "https://esm.sh/@noble/hashes@2.0.1/sha2.js";
 
-import {
-    derivePath
-}
-from "https://esm.sh/ed25519-hd-key@1.3.0";
 
-import {
-    Keypair
-}
-from "https://esm.sh/@solana/web3.js@1.98.4";
+import { hmac }
+from "https://esm.sh/@noble/hashes@2.0.1/hmac.js";
+
+
+import { ripemd160 }
+from "https://esm.sh/@noble/hashes@2.0.1/legacy.js";
+
+
+import * as ed25519
+from "https://esm.sh/@noble/ed25519@3.0.0";
+
+
+import { bech32 }
+from "https://esm.sh/@scure/base@2.0.0";
+
+
+import { base58 }
+from "https://esm.sh/@scure/base@2.0.0";
+
 
 
 /*
 ========================================================
-ELEMENTS
+HTML ELEMENTS
 ========================================================
 */
+
 
 const mnemonicInput =
     document.getElementById("mnemonic");
 
+
 const generateBtn =
     document.getElementById("generateBtn");
+
 
 const status =
     document.getElementById("status");
 
+
 const btcAddress =
     document.getElementById("btcAddress");
 
+
 const solAddress =
     document.getElementById("solAddress");
+
 
 
 /*
@@ -274,67 +341,300 @@ STATUS
 ========================================================
 */
 
+
 function showError(message){
 
-    status.className = "status error";
-    status.textContent = message;
+    status.className =
+        "status error";
 
+    status.textContent =
+        message;
 }
+
 
 function showSuccess(message){
 
-    status.className = "status success";
-    status.textContent = message;
+    status.className =
+        "status success";
 
+    status.textContent =
+        message;
 }
+
 
 
 /*
 ========================================================
-BYTE HELPERS
+UINT32 BIG ENDIAN
 ========================================================
 */
 
-function hexToBytes(hex){
 
-    const bytes = new Uint8Array(hex.length / 2);
+function uint32BE(number){
 
-    for(let i = 0; i < bytes.length; i++){
+    return new Uint8Array([
 
-        bytes[i] =
-            parseInt(
-                hex.substring(i * 2, i * 2 + 2),
-                16
-            );
+        (number >>> 24) & 255,
+        (number >>> 16) & 255,
+        (number >>> 8) & 255,
+        number & 255
 
-    }
+    ]);
 
-    return bytes;
 }
+
 
 
 /*
 ========================================================
-BITCOIN ADDRESS
+CONCATENATE ARRAYS
+========================================================
+*/
+
+
+function concatBytes(...arrays){
+
+    let length = 0;
+
+    for(const arr of arrays){
+
+        length += arr.length;
+
+    }
+
+    const result =
+        new Uint8Array(length);
+
+    let offset = 0;
+
+    for(const arr of arrays){
+
+        result.set(arr,offset);
+
+        offset += arr.length;
+
+    }
+
+    return result;
+}
+
+
+
+/*
+========================================================
+SOLANA
+SLIP-0010 ED25519
+========================================================
+
+Master:
+
+HMAC-SHA512(
+    key = "ed25519 seed",
+    data = seed
+)
+
+Child:
+
+HMAC-SHA512(
+    key = chainCode,
+    data = 0x00 || privateKey || index
+)
+
+Solana path:
+
+m/44'/501'/0'/0'
+
+All components are hardened.
+========================================================
+*/
+
+
+function slip10Master(seed){
+
+    const key =
+        new TextEncoder().encode(
+            "ed25519 seed"
+        );
+
+    const I =
+        hmac(
+            sha512,
+            key,
+            seed
+        );
+
+    return {
+
+        key:I.slice(0,32),
+
+        chainCode:I.slice(32,64)
+
+    };
+
+}
+
+
+
+function slip10Child(parent,index){
+
+    /*
+    Hardened index
+    */
+
+    const HARDENED =
+        (index + 0x80000000) >>> 0;
+
+
+    const indexBytes =
+        uint32BE(HARDENED);
+
+
+    const data =
+        concatBytes(
+
+            new Uint8Array([0]),
+
+            parent.key,
+
+            indexBytes
+
+        );
+
+
+    const I =
+        hmac(
+            sha512,
+            parent.chainCode,
+            data
+        );
+
+
+    return {
+
+        key:I.slice(0,32),
+
+        chainCode:I.slice(32,64)
+
+    };
+
+}
+
+
+
+function deriveSolanaKey(seed){
+
+    let node =
+        slip10Master(seed);
+
+
+    /*
+    m/44'
+    */
+
+    node =
+        slip10Child(node,44);
+
+
+    /*
+    m/44'/501'
+    */
+
+    node =
+        slip10Child(node,501);
+
+
+    /*
+    m/44'/501'/0'
+    */
+
+    node =
+        slip10Child(node,0);
+
+
+    /*
+    m/44'/501'/0'/0'
+    */
+
+    node =
+        slip10Child(node,0);
+
+
+    return node.key;
+
+}
+
+
+
+/*
+========================================================
+SOLANA ADDRESS
+========================================================
+*/
+
+
+async function makeSolanaAddress(seed){
+
+    const privateKey =
+        deriveSolanaKey(seed);
+
+
+    /*
+    Ed25519 public key
+    */
+
+    const publicKey =
+        await ed25519.getPublicKeyAsync(
+            privateKey
+        );
+
+
+    /*
+    Solana uses Base58
+    */
+
+    return base58.encode(
+        publicKey
+    );
+
+}
+
+
+
+/*
+========================================================
+BITCOIN
 ========================================================
 
 BIP84:
 
 m/84'/0'/0'/0/0
 
-Native SegWit P2WPKH
+P2WPKH:
+
+bc1...
 ========================================================
 */
 
+
 function makeBitcoinAddress(seed){
+
+    /*
+    Master BIP32 key
+    */
 
     const root =
         HDKey.fromMasterSeed(seed);
+
+
+    /*
+    BIP84 path
+    */
 
     const child =
         root.derive(
             "m/84'/0'/0'/0/0"
         );
+
 
     if(!child.publicKey){
 
@@ -344,30 +644,41 @@ function makeBitcoinAddress(seed){
 
     }
 
-    /*
-    Compressed public key
-    */
 
     const publicKey =
-        new Uint8Array(child.publicKey);
+        child.publicKey;
+
 
     /*
-    HASH160 = RIPEMD160(SHA256(pubkey))
+    HASH160
+    =
+    RIPEMD160(
+        SHA256(
+            compressedPublicKey
+        )
+    )
     */
 
-    const hash160 =
+    const hash =
         ripemd160(
             sha256(publicKey)
         );
 
+
     /*
-    Bitcoin Bech32 witness version 0
+    SegWit version 0
     */
 
     const words =
-        bech32.toWords(hash160);
+        bech32.toWords(hash);
+
 
     words.unshift(0);
+
+
+    /*
+    Bitcoin mainnet prefix = bc
+    */
 
     const address =
         bech32.encode(
@@ -376,45 +687,11 @@ function makeBitcoinAddress(seed){
             90
         );
 
+
     return address;
+
 }
 
-
-/*
-========================================================
-SOLANA ADDRESS
-========================================================
-
-m/44'/501'/0'/0'
-========================================================
-*/
-
-function makeSolanaAddress(seed){
-
-    const seedHex =
-        Array.from(seed)
-        .map(
-            b => b.toString(16).padStart(2,"0")
-        )
-        .join("");
-
-    const derived =
-        derivePath(
-            "m/44'/501'/0'/0'",
-            seedHex
-        );
-
-    /*
-    ed25519-hd-key returns a 32-byte private key.
-    */
-
-    const keypair =
-        Keypair.fromSeed(
-            new Uint8Array(derived.key)
-        );
-
-    return keypair.publicKey.toBase58();
-}
 
 
 /*
@@ -423,91 +700,98 @@ GENERATE
 ========================================================
 */
 
+
 async function generate(){
 
-    status.className = "status";
-    status.textContent = "";
-
-    btcAddress.textContent = "---";
-    solAddress.textContent = "---";
-
-    let mnemonic =
-        mnemonicInput.value
-        .trim()
-        .replace(/\s+/g," ");
-
-    if(!mnemonic){
-
-        showError(
-            "ابتدا عبارت ۱۲ کلمه‌ای را وارد کنید."
-        );
-
-        return;
-    }
+    generateBtn.disabled =
+        true;
 
 
-    /*
-    ----------------------------------------------------
-    WORD COUNT
-    ----------------------------------------------------
-    */
-
-    const words =
-        mnemonic.split(" ");
-
-    if(words.length !== 12){
-
-        showError(
-            "عبارت باید دقیقاً ۱۲ کلمه داشته باشد."
-        );
-
-        return;
-    }
+    btcAddress.textContent =
+        "---";
 
 
-    /*
-    ----------------------------------------------------
-    BIP39 VALIDATION
-    ----------------------------------------------------
-    */
+    solAddress.textContent =
+        "---";
+
+
+    status.className =
+        "status";
+
+
+    status.textContent =
+        "";
+
 
     try{
+
+        /*
+        -----------------------------------------------
+        READ MNEMONIC
+        -----------------------------------------------
+        */
+
+        let mnemonic =
+            mnemonicInput.value
+            .trim()
+            .replace(/\s+/g," ");
+
+
+        if(!mnemonic){
+
+            throw new Error(
+                "عبارت ۱۲ کلمه‌ای را وارد کنید."
+            );
+
+        }
+
+
+        /*
+        -----------------------------------------------
+        CHECK 12 WORDS
+        -----------------------------------------------
+        */
+
+        const words =
+            mnemonic.split(" ");
+
+
+        if(words.length !== 12){
+
+            throw new Error(
+                "عبارت باید دقیقاً ۱۲ کلمه داشته باشد."
+            );
+
+        }
+
+
+        /*
+        -----------------------------------------------
+        BIP39 VALIDATION
+        -----------------------------------------------
+        */
 
         const valid =
             bip39.validateMnemonic(
                 mnemonic,
-                bip39.wordlists.english
+                wordlist
             );
+
 
         if(!valid){
 
-            showError(
-                "عبارت BIP-39 معتبر نیست یا checksum آن صحیح نیست."
+            throw new Error(
+                "عبارت BIP-39 معتبر نیست یا Checksum آن صحیح نیست."
             );
 
-            return;
         }
 
-    }catch(error){
 
-        console.error(error);
-
-        showError(
-            "خطا در بررسی BIP-39: " +
-            error.message
-        );
-
-        return;
-    }
-
-
-    /*
-    ----------------------------------------------------
-    SEED
-    ----------------------------------------------------
-    */
-
-    try{
+        /*
+        -----------------------------------------------
+        BIP39 → SEED
+        -----------------------------------------------
+        */
 
         const seed =
             await bip39.mnemonicToSeed(
@@ -516,30 +800,42 @@ async function generate(){
 
 
         /*
-        ------------------------------------------------
+        -----------------------------------------------
         BITCOIN
-        ------------------------------------------------
+        -----------------------------------------------
         */
 
-        const btc =
-            makeBitcoinAddress(seed);
+        const bitcoin =
+            makeBitcoinAddress(
+                seed
+            );
+
 
         btcAddress.textContent =
-            btc;
+            bitcoin;
 
 
         /*
-        ------------------------------------------------
+        -----------------------------------------------
         SOLANA
-        ------------------------------------------------
+        -----------------------------------------------
         */
 
-        const sol =
-            makeSolanaAddress(seed);
+        const solana =
+            await makeSolanaAddress(
+                seed
+            );
+
 
         solAddress.textContent =
-            sol;
+            solana;
 
+
+        /*
+        -----------------------------------------------
+        SUCCESS
+        -----------------------------------------------
+        */
 
         showSuccess(
             "هر دو آدرس با موفقیت ساخته شدند."
@@ -551,13 +847,20 @@ async function generate(){
         console.error(error);
 
         showError(
-            "خطا هنگام ساخت آدرس‌ها: " +
-            error.message
+            "خطا: " +
+            (error.message || error)
         );
+
+    }
+    finally{
+
+        generateBtn.disabled =
+            false;
 
     }
 
 }
+
 
 
 /*
@@ -566,10 +869,12 @@ BUTTON
 ========================================================
 */
 
+
 generateBtn.addEventListener(
     "click",
     generate
 );
+
 
 
 /*
@@ -578,48 +883,75 @@ COPY
 ========================================================
 */
 
-window.copyAddress = async function(id){
+
+window.copyAddress =
+async function(id){
 
     const element =
         document.getElementById(id);
 
+
     const value =
         element.textContent.trim();
 
-    if(!value || value === "---")
+
+    if(
+        !value ||
+        value === "---"
+    ){
+
         return;
+
+    }
+
 
     try{
 
-        await navigator.clipboard.writeText(value);
+        await navigator.clipboard.writeText(
+            value
+        );
 
-        alert("آدرس کپی شد.");
+        alert(
+            "آدرس کپی شد."
+        );
 
     }
     catch(error){
 
-        /*
-        fallback
-        */
-
         const textarea =
-            document.createElement("textarea");
+            document.createElement(
+                "textarea"
+            );
 
-        textarea.value = value;
 
-        document.body.appendChild(textarea);
+        textarea.value =
+            value;
+
+
+        document.body.appendChild(
+            textarea
+        );
+
 
         textarea.select();
 
-        document.execCommand("copy");
+
+        document.execCommand(
+            "copy"
+        );
+
 
         textarea.remove();
 
-        alert("آدرس کپی شد.");
+
+        alert(
+            "آدرس کپی شد."
+        );
 
     }
 
 };
+
 
 </script>
 
