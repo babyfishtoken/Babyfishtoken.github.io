@@ -3,33 +3,35 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BIP39 Multi Chain Generator</title>
+
+<title>BIP39 Multi Chain Wallet Generator</title>
 
 <style>
-*{box-sizing:border-box}
+*{
+    box-sizing:border-box;
+}
 
 body{
     margin:0;
     padding:20px;
-    background:#0f141b;
+    background:#10151d;
     color:#fff;
     font-family:Arial,Tahoma,sans-serif;
 }
 
 .container{
-    width:100%;
-    max-width:900px;
+    max-width:950px;
     margin:auto;
 }
 
 h1{
     text-align:center;
-    margin:10px 0;
+    margin:5px 0 10px;
 }
 
-.info{
+.desc{
     text-align:center;
-    color:#9aa4b2;
+    color:#9ba5b4;
     margin-bottom:20px;
 }
 
@@ -38,23 +40,24 @@ textarea{
     min-height:130px;
     padding:15px;
     border-radius:12px;
-    border:1px solid #394452;
-    background:#171d26;
+    border:1px solid #3b4655;
+    background:#171e28;
     color:#fff;
     font-size:16px;
-    outline:none;
     direction:ltr;
     text-align:left;
+    outline:none;
 }
 
 textarea:focus{
-    border-color:#4388ff;
+    border-color:#4285ff;
 }
 
-button{
+#generate{
+    display:block;
     width:100%;
-    padding:16px;
     margin-top:12px;
+    padding:16px;
     border:0;
     border-radius:12px;
     background:#2878ff;
@@ -64,43 +67,42 @@ button{
     cursor:pointer;
 }
 
-button:disabled{
-    opacity:.5;
-    cursor:not-allowed;
+#generate:disabled{
+    opacity:.55;
 }
 
-.status{
+#status{
+    min-height:25px;
     text-align:center;
     margin:15px 0;
-    min-height:25px;
 }
 
-.ok{
-    color:#55dc91;
+.success{
+    color:#57df93;
 }
 
-.err{
-    color:#ff6b6b;
+.error{
+    color:#ff7070;
 }
 
 .card{
-    background:#171d26;
-    border:1px solid #303a48;
+    background:#171e28;
+    border:1px solid #303b4a;
     border-radius:12px;
     padding:15px;
     margin:12px 0;
 }
 
-.title{
-    font-weight:bold;
+.network{
     font-size:18px;
-    margin-bottom:6px;
+    font-weight:bold;
+    margin-bottom:5px;
 }
 
 .path{
     direction:ltr;
     text-align:left;
-    color:#7f8b9b;
+    color:#7f8a9b;
     font-size:12px;
     margin-bottom:9px;
 }
@@ -109,23 +111,31 @@ button:disabled{
     direction:ltr;
     text-align:left;
     word-break:break-all;
-    background:#0b0f14;
-    padding:12px;
+    background:#0b1016;
+    padding:13px;
     border-radius:8px;
     font-family:monospace;
     font-size:14px;
 }
 
+.address.error{
+    color:#ff7070;
+}
+
 .copy{
-    margin-top:8px;
+    width:100%;
+    margin-top:9px;
     padding:9px;
-    font-size:13px;
-    background:#252e3a;
+    border:0;
+    border-radius:8px;
+    background:#293441;
+    color:#fff;
+    cursor:pointer;
 }
 
 .footer{
     text-align:center;
-    color:#667180;
+    color:#687383;
     font-size:12px;
     margin-top:25px;
 }
@@ -138,25 +148,27 @@ button:disabled{
 
 <h1>Multi-Chain BIP39 Generator</h1>
 
-<div class="info">
+<div class="desc">
 عبارت ۱۲ کلمه‌ای BIP39 را وارد کنید
 </div>
 
 <textarea
-id="mnemonic"
-placeholder="word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12"
+    id="mnemonic"
+    spellcheck="false"
+    autocomplete="off"
+    placeholder="word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12"
 ></textarea>
 
-<button id="generate">
+<button id="generate" type="button">
 تولید آدرس‌ها
 </button>
 
-<div id="status" class="status"></div>
+<div id="status"></div>
 
 <div id="results"></div>
 
 <div class="footer">
-Bitcoin × 4 • Ethereum • Solana • XRP • TRON • Cardano • Sui • Stellar • ICP • Litecoin • Dogecoin
+Bitcoin ×4 • Ethereum • Solana • XRP • TRON • Cardano • Sui • Stellar • ICP • Litecoin • Dogecoin
 </div>
 
 </div>
@@ -175,8 +187,8 @@ import {
 } from "https://esm.sh/@scure/bip39@1.3.0";
 
 import {
-    english
-} from "https://esm.sh/@scure/bip39@1.3.0/wordlists/english";
+    wordlist as english
+} from "https://esm.sh/@scure/bip39@1.3.0/wordlists/english.js";
 
 import {
     HDKey
@@ -188,10 +200,7 @@ import {
 
 import {
     sha256,
-    sha224
-} from "https://esm.sh/@noble/hashes@1.4.0/sha2.js";
-
-import {
+    sha224,
     sha512
 } from "https://esm.sh/@noble/hashes@1.4.0/sha2.js";
 
@@ -203,29 +212,33 @@ import {
     blake2b
 } from "https://esm.sh/@noble/hashes@1.4.0/blake2.js";
 
-import * as ed25519
-from "https://esm.sh/@noble/ed25519@2.1.0";
+import {
+    ripemd160
+} from "https://esm.sh/@noble/hashes@1.4.0/legacy.js";
+
+import * as ed25519 from
+"https://esm.sh/@noble/ed25519@2.1.0";
 
 
 /* =========================================================
-   ED25519
+   ED25519 CONFIG
 ========================================================= */
 
 ed25519.etc.sha512Sync = (...messages) => {
 
-    let length = 0;
+    let total = 0;
 
-    for(const m of messages){
-        length += m.length;
+    for(const message of messages){
+        total += message.length;
     }
 
-    const data = new Uint8Array(length);
+    const data = new Uint8Array(total);
 
     let offset = 0;
 
-    for(const m of messages){
-        data.set(m,offset);
-        offset += m.length;
+    for(const message of messages){
+        data.set(message, offset);
+        offset += message.length;
     }
 
     return sha512(data);
@@ -236,7 +249,7 @@ ed25519.etc.sha512Sync = (...messages) => {
    DOM
 ========================================================= */
 
-const mnemonicInput =
+const input =
     document.getElementById("mnemonic");
 
 const button =
@@ -250,7 +263,7 @@ const results =
 
 
 /* =========================================================
-   HELPERS
+   BASIC HELPERS
 ========================================================= */
 
 const HARDENED = 0x80000000;
@@ -261,33 +274,36 @@ function harden(n){
 
 function concat(...arrays){
 
-    let total = 0;
+    let length = 0;
 
-    for(const a of arrays){
-        total += a.length;
+    for(const array of arrays){
+        length += array.length;
     }
 
-    const out = new Uint8Array(total);
+    const result =
+        new Uint8Array(length);
 
-    let pos = 0;
+    let offset = 0;
 
-    for(const a of arrays){
-        out.set(a,pos);
-        pos += a.length;
+    for(const array of arrays){
+        result.set(array, offset);
+        offset += array.length;
     }
 
-    return out;
+    return result;
 }
 
 function hex(bytes){
 
-    let out="";
+    let result = "";
 
-    for(const b of bytes){
-        out += b.toString(16).padStart(2,"0");
+    for(const byte of bytes){
+        result += byte
+            .toString(16)
+            .padStart(2,"0");
     }
 
-    return out;
+    return result;
 }
 
 function textBytes(text){
@@ -307,13 +323,19 @@ function hmacSha512(key,data){
         key = sha512(key);
     }
 
-    const k = new Uint8Array(BLOCK);
+    const k =
+        new Uint8Array(BLOCK);
+
     k.set(key);
 
-    const ipad = new Uint8Array(BLOCK);
-    const opad = new Uint8Array(BLOCK);
+    const ipad =
+        new Uint8Array(BLOCK);
+
+    const opad =
+        new Uint8Array(BLOCK);
 
     for(let i=0;i<BLOCK;i++){
+
         ipad[i] = k[i] ^ 0x36;
         opad[i] = k[i] ^ 0x5c;
     }
@@ -341,8 +363,11 @@ function slip10(seed,path){
             seed
         );
 
-    let key = I.slice(0,32);
-    let chain = I.slice(32);
+    let key =
+        I.slice(0,32);
+
+    let chain =
+        I.slice(32);
 
     for(const index of path){
 
@@ -364,8 +389,11 @@ function slip10(seed,path){
                 )
             );
 
-        key = I.slice(0,32);
-        chain = I.slice(32);
+        key =
+            I.slice(0,32);
+
+        chain =
+            I.slice(32);
     }
 
     return key;
@@ -383,42 +411,51 @@ const XRP58 =
 "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz";
 
 
-function base58(bytes,alphabet=BTC58){
+function base58(bytes, alphabet=BTC58){
 
-    if(bytes.length===0) return "";
+    if(bytes.length === 0){
+        return "";
+    }
 
-    let digits=[0];
+    let digits = [0];
 
     for(const byte of bytes){
 
-        let carry=byte;
+        let carry = byte;
 
-        for(let j=0;j<digits.length;j++){
+        for(let i=0;i<digits.length;i++){
 
             const value =
-                digits[j]*256 + carry;
+                digits[i] * 256 + carry;
 
-            digits[j] = value % 58;
-            carry = Math.floor(value/58);
+            digits[i] =
+                value % 58;
+
+            carry =
+                Math.floor(value / 58);
         }
 
-        while(carry>0){
+        while(carry > 0){
 
-            digits.push(carry%58);
-            carry=Math.floor(carry/58);
+            digits.push(
+                carry % 58
+            );
+
+            carry =
+                Math.floor(carry / 58);
         }
     }
 
-    let zeros=0;
+    let zeros = 0;
 
     while(
-        zeros<bytes.length &&
-        bytes[zeros]===0
+        zeros < bytes.length &&
+        bytes[zeros] === 0
     ){
         zeros++;
     }
 
-    let result="";
+    let result = "";
 
     for(let i=0;i<zeros;i++){
         result += alphabet[0];
@@ -432,16 +469,13 @@ function base58(bytes,alphabet=BTC58){
         result += alphabet[digits[i]];
     }
 
-    /*
-       digits begins with zero internally.
-       Remove the extra zero representation.
-    */
-
     if(
-        result.length>zeros &&
-        result[zeros]===alphabet[0]
+        result.length > zeros &&
+        result[zeros] === alphabet[0]
     ){
-        result=result.slice(0,zeros)+result.slice(zeros+1);
+        result =
+            result.slice(0,zeros) +
+            result.slice(zeros+1);
     }
 
     return result;
@@ -452,7 +486,10 @@ function base58(bytes,alphabet=BTC58){
    BASE58 CHECK
 ========================================================= */
 
-function base58Check(payload,alphabet=BTC58){
+function base58Check(
+    payload,
+    alphabet=BTC58
+){
 
     const checksum =
         sha256(
@@ -467,204 +504,7 @@ function base58Check(payload,alphabet=BTC58){
 
 
 /* =========================================================
-   RIPEMD160
-========================================================= */
-
-function ripemd160(message){
-
-    function rol(x,n){
-        return (
-            (x<<n) |
-            (x>>>(32-n))
-        )>>>0;
-    }
-
-    const r1=[
-        0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
-        7,4,13,1,10,6,15,3,12,0,9,5,2,14,11,8,
-        3,10,14,4,9,15,8,1,2,7,0,6,13,11,5,12,
-        1,9,11,10,0,8,12,4,13,3,7,15,14,5,6,2,
-        4,0,5,9,7,12,2,10,14,1,3,8,11,6,15,13
-    ];
-
-    const r2=[
-        5,14,7,0,9,2,11,4,13,6,15,8,1,10,3,12,
-        6,11,3,7,0,13,5,10,14,15,8,12,4,9,1,2,
-        15,5,1,3,7,14,6,9,11,8,12,2,10,0,4,13,
-        8,6,4,1,3,11,15,0,5,12,2,13,9,7,10,14,
-        12,15,10,4,1,5,8,7,6,2,13,14,0,3,9,11
-    ];
-
-    const s1=[
-        11,14,15,12,5,8,7,9,11,13,14,15,6,7,9,8,
-        7,6,8,13,11,9,7,15,7,12,15,9,11,7,13,12,
-        11,13,6,7,14,9,13,15,14,8,13,6,5,12,7,5,
-        11,12,14,15,14,15,9,8,9,14,5,6,8,6,5,12,
-        9,15,5,11,6,8,13,12,5,12,13,14,11,8,5,6
-    ];
-
-    const s2=[
-        8,9,9,11,13,15,15,5,7,7,8,11,14,14,12,6,
-        9,13,15,7,12,8,9,11,7,7,12,7,6,15,13,11,
-        9,7,15,11,8,6,6,14,12,9,12,5,14,6,8,13,
-        15,5,8,11,14,14,6,14,6,9,12,9,12,5,15,8,
-        8,5,12,9,12,5,14,6,8,13,6,5,15,13,11,11
-    ];
-
-    /*
-       Correct final RIPEMD160 rotation table.
-    */
-
-    s2[27]=7;
-    s2[28]=6;
-    s2[29]=15;
-    s2[30]=13;
-    s2[31]=11;
-
-    const K1=[
-        0x00000000,
-        0x5a827999,
-        0x6ed9eba1,
-        0x8f1bbcdc,
-        0xa953fd4e
-    ];
-
-    const K2=[
-        0x50a28be6,
-        0x5c4dd124,
-        0x6d703ef3,
-        0x7a6d76e9,
-        0x00000000
-    ];
-
-    const f=[
-        (x,y,z)=>(x^y^z)>>>0,
-        (x,y,z)=>((x&y)|(~x&z))>>>0,
-        (x,y,z)=>((x|~y)^z)>>>0,
-        (x,y,z)=>((x&z)|(y&~z))>>>0,
-        (x,y,z)=>(x^(y|~z))>>>0
-    ];
-
-    const size =
-        Math.ceil((message.length+9)/64)*64;
-
-    const data =
-        new Uint8Array(size);
-
-    data.set(message);
-
-    data[message.length]=0x80;
-
-    const bitLength =
-        message.length*8;
-
-    for(let i=0;i<8;i++){
-
-        data[size-8+i] =
-            (bitLength >>> (8*i)) & 255;
-    }
-
-    let h0=0x67452301;
-    let h1=0xefcdab89;
-    let h2=0x98badcfe;
-    let h3=0x10325476;
-    let h4=0xc3d2e1f0;
-
-    const M =
-        new Uint32Array(16);
-
-    for(
-        let offset=0;
-        offset<size;
-        offset+=64
-    ){
-
-        for(let i=0;i<16;i++){
-
-            const p=offset+i*4;
-
-            M[i]=
-                data[p] |
-                (data[p+1]<<8) |
-                (data[p+2]<<16) |
-                (data[p+3]<<24);
-        }
-
-        let A=h0,B=h1,C=h2,D=h3,E=h4;
-        let AA=h0,BB=h1,CC=h2,DD=h3,EE=h4;
-
-        for(let j=0;j<80;j++){
-
-            const r=Math.floor(j/16);
-
-            let T=
-                (
-                    rol(
-                        (
-                            A+
-                            f[r](B,C,D)+
-                            M[r1[j]]+
-                            K1[r]
-                        )>>>0,
-                        s1[j]
-                    )+
-                    E
-                )>>>0;
-
-            A=E;
-            E=D;
-            D=rol(C,10);
-            C=B;
-            B=T;
-
-            T=
-                (
-                    rol(
-                        (
-                            AA+
-                            f[4-r](BB,CC,DD)+
-                            M[r2[j]]+
-                            K2[r]
-                        )>>>0,
-                        s2[j]
-                    )+
-                    EE
-                )>>>0;
-
-            AA=EE;
-            EE=DD;
-            DD=rol(CC,10);
-            CC=BB;
-            BB=T;
-        }
-
-        const T=(h1+C+DD)>>>0;
-
-        h1=(h2+D+EE)>>>0;
-        h2=(h3+E+AA)>>>0;
-        h3=(h4+A+BB)>>>0;
-        h4=(h0+B+CC)>>>0;
-        h0=T;
-    }
-
-    const out=new Uint8Array(20);
-
-    const H=[h0,h1,h2,h3,h4];
-
-    for(let i=0;i<5;i++){
-
-        out[i*4]   = H[i]&255;
-        out[i*4+1] = (H[i]>>>8)&255;
-        out[i*4+2] = (H[i]>>>16)&255;
-        out[i*4+3] = (H[i]>>>24)&255;
-    }
-
-    return out;
-}
-
-
-/* =========================================================
-   SECP256K1
+   SECP PUBLIC KEY
 ========================================================= */
 
 function secpPublic(seed,path){
@@ -676,7 +516,9 @@ function secpPublic(seed,path){
         root.derive(path);
 
     if(!child.publicKey){
-        throw new Error("Public key unavailable");
+        throw new Error(
+            "Public key unavailable"
+        );
     }
 
     return child.publicKey;
@@ -684,25 +526,33 @@ function secpPublic(seed,path){
 
 
 /* =========================================================
-   BITCOIN P2PKH
+   HASH160
+========================================================= */
+
+function hash160(data){
+
+    return ripemd160(
+        sha256(data)
+    );
+}
+
+
+/* =========================================================
+   BITCOIN LEGACY
 ========================================================= */
 
 function bitcoinLegacy(seed){
 
-    const pub=secpPublic(
-        seed,
-        "m/44'/0'/0'/0/0"
-    );
-
-    const hash160=
-        ripemd160(
-            sha256(pub)
+    const pub =
+        secpPublic(
+            seed,
+            "m/44'/0'/0'/0/0"
         );
 
     return base58Check(
         concat(
             new Uint8Array([0x00]),
-            hash160
+            hash160(pub)
         )
     );
 }
@@ -714,31 +564,22 @@ function bitcoinLegacy(seed){
 
 function bitcoinNested(seed){
 
-    const pub=secpPublic(
-        seed,
-        "m/49'/0'/0'/0/0"
-    );
-
-    const pubHash=
-        ripemd160(
-            sha256(pub)
+    const pub =
+        secpPublic(
+            seed,
+            "m/49'/0'/0'/0/0"
         );
 
-    const redeemScript=
+    const redeem =
         concat(
             new Uint8Array([0x00,0x14]),
-            pubHash
-        );
-
-    const scriptHash=
-        ripemd160(
-            sha256(redeemScript)
+            hash160(pub)
         );
 
     return base58Check(
         concat(
             new Uint8Array([0x05]),
-            scriptHash
+            hash160(redeem)
         )
     );
 }
@@ -748,13 +589,13 @@ function bitcoinNested(seed){
    BECH32
 ========================================================= */
 
-const BECH32=
+const BECH32 =
 "qpzry9x8gf2tvdw0s3jn54khce6mua7l";
 
 
 function polymod(values){
 
-    const GENERATORS=[
+    const generator = [
         0x3b6a57b2,
         0x26508e6d,
         0x1ea119fa,
@@ -762,89 +603,100 @@ function polymod(values){
         0x2a1462b3
     ];
 
-    let chk=1;
+    let chk = 1;
 
     for(const value of values){
 
-        const top=chk>>>25;
+        const top =
+            chk >>> 25;
 
-        chk=
-            ((chk&0x1ffffff)<<5)^
+        chk =
+            ((chk & 0x1ffffff) << 5) ^
             value;
 
         for(let i=0;i<5;i++){
 
-            if((top>>>i)&1){
-                chk ^= GENERATORS[i];
+            if((top >>> i) & 1){
+                chk ^= generator[i];
             }
         }
     }
 
-    return chk>>>0;
+    return chk >>> 0;
 }
 
 
 function hrpExpand(hrp){
 
-    const ret=[];
+    const result=[];
 
-    for(const c of hrp){
-        ret.push(c.charCodeAt(0)>>5);
+    for(let i=0;i<hrp.length;i++){
+        result.push(
+            hrp.charCodeAt(i) >>> 5
+        );
     }
 
-    ret.push(0);
+    result.push(0);
 
-    for(const c of hrp){
-        ret.push(c.charCodeAt(0)&31);
+    for(let i=0;i<hrp.length;i++){
+        result.push(
+            hrp.charCodeAt(i) & 31
+        );
     }
 
-    return ret;
+    return result;
 }
 
 
-function checksum(hrp,data,constValue){
+function createChecksum(
+    hrp,
+    data,
+    constant
+){
 
-    const values=
+    const values =
         hrpExpand(hrp)
         .concat(data)
         .concat([0,0,0,0,0,0]);
 
-    const mod=
-        polymod(values)^constValue;
+    const mod =
+        polymod(values) ^ constant;
 
-    const ret=[];
+    const result=[];
 
     for(let i=0;i<6;i++){
 
-        ret.push(
-            (mod>>>(5*(5-i)))&31
+        result.push(
+            (mod >>> (5*(5-i))) & 31
         );
     }
 
-    return ret;
+    return result;
 }
 
 
 function bech32Encode(
     hrp,
     data,
-    constValue
+    constant
 ){
 
-    const full=
+    const complete =
         data.concat(
-            checksum(
+            createChecksum(
                 hrp,
                 data,
-                constValue
+                constant
             )
         );
 
-    return hrp+
-        "1"+
-        full.map(
-            x=>BECH32[x]
-        ).join("");
+    return (
+        hrp +
+        "1" +
+        complete
+            .map(x=>BECH32[x])
+            .join("")
+    );
 }
 
 
@@ -858,47 +710,46 @@ function convertBits(
     let acc=0;
     let bits=0;
 
-    const ret=[];
+    const result=[];
 
-    const maxValue=
-        (1<<toBits)-1;
+    const maxValue =
+        (1 << toBits)-1;
 
-    const maxAccBits=
-        fromBits+toBits-1;
-
-    const maxAcc=
-        (1<<maxAccBits)-1;
+    const maxAcc =
+        (1 << (fromBits+toBits-1))-1;
 
     for(const value of data){
 
         if(
-            value<0 ||
-            (value>>fromBits)!==0
+            value < 0 ||
+            (value >> fromBits) !== 0
         ){
             return null;
         }
 
-        acc=
-            ((acc<<fromBits)|value)&maxAcc;
+        acc =
+            ((acc << fromBits) | value) &
+            maxAcc;
 
-        bits+=fromBits;
+        bits += fromBits;
 
-        while(bits>=toBits){
+        while(bits >= toBits){
 
-            bits-=toBits;
+            bits -= toBits;
 
-            ret.push(
-                (acc>>bits)&maxValue
+            result.push(
+                (acc >>> bits) &
+                maxValue
             );
         }
     }
 
     if(pad){
 
-        if(bits>0){
+        if(bits > 0){
 
-            ret.push(
-                (acc<<(toBits-bits))&
+            result.push(
+                (acc << (toBits-bits)) &
                 maxValue
             );
         }
@@ -906,14 +757,15 @@ function convertBits(
     }else{
 
         if(
-            bits>=fromBits ||
-            ((acc<<(toBits-bits))&maxValue)!==0
+            bits >= fromBits ||
+            ((acc << (toBits-bits)) &
+             maxValue) !== 0
         ){
             return null;
         }
     }
 
-    return ret;
+    return result;
 }
 
 
@@ -923,17 +775,16 @@ function convertBits(
 
 function bitcoinSegwit(seed){
 
-    const pub=secpPublic(
-        seed,
-        "m/84'/0'/0'/0/0"
-    );
-
-    const program=
-        ripemd160(
-            sha256(pub)
+    const pub =
+        secpPublic(
+            seed,
+            "m/84'/0'/0'/0/0"
         );
 
-    const words=
+    const program =
+        hash160(pub);
+
+    const words =
         convertBits(
             program,
             8,
@@ -953,9 +804,9 @@ function bitcoinSegwit(seed){
    BITCOIN TAPROOT
 ========================================================= */
 
-function taggedHash(tag,message){
+function taggedHash(tag,data){
 
-    const tagHash=
+    const tagHash =
         sha256(
             textBytes(tag)
         );
@@ -964,7 +815,7 @@ function taggedHash(tag,message){
         concat(
             tagHash,
             tagHash,
-            message
+            data
         )
     );
 }
@@ -972,74 +823,85 @@ function taggedHash(tag,message){
 
 function bitcoinTaproot(seed){
 
-    const node=
+    const node =
         HDKey.fromMasterSeed(seed)
-        .derive("m/86'/0'/0'/0/0");
+        .derive(
+            "m/86'/0'/0'/0/0"
+        );
 
-    const priv=node.privateKey;
-
-    if(!priv){
+    if(!node.privateKey){
         throw new Error(
             "Private key unavailable"
         );
     }
 
-    let P=
+    let privateKey =
+        node.privateKey;
+
+    let point =
         secp256k1.ProjectivePoint
-        .fromPrivateKey(priv);
+        .fromPrivateKey(privateKey);
 
-    let compressed=
-        P.toRawBytes(true);
+    let compressed =
+        point.toRawBytes(true);
 
-    if((compressed[0]&1)!==0){
+    /*
+       BIP340 requires an even-Y internal key.
+    */
 
-        const n=
+    if((compressed[0] & 1) !== 0){
+
+        const n =
             secp256k1.CURVE.n;
 
-        const d=
+        const d =
             BigInt(
-                "0x"+hex(priv)
+                "0x"+hex(privateKey)
             );
 
-        const newD=n-d;
+        const newD =
+            n-d;
 
-        const h=
+        const h =
             newD
             .toString(16)
             .padStart(64,"0");
 
-        const bytes=
+        privateKey =
             new Uint8Array(32);
 
         for(let i=0;i<32;i++){
 
-            bytes[i]=parseInt(
-                h.slice(i*2,i*2+2),
-                16
-            );
+            privateKey[i] =
+                parseInt(
+                    h.slice(i*2,i*2+2),
+                    16
+                );
         }
 
-        P=
+        point =
             secp256k1.ProjectivePoint
-            .fromPrivateKey(bytes);
+            .fromPrivateKey(privateKey);
     }
 
-    const xOnly=
-        P.toRawBytes(true).slice(1);
+    const xOnly =
+        point
+        .toRawBytes(true)
+        .slice(1);
 
-    const tweak=
+    const tweak =
         taggedHash(
             "TapTweak",
             xOnly
         );
 
-    const tweakNum=
+    const tweakNumber =
         BigInt(
             "0x"+hex(tweak)
         );
 
     if(
-        tweakNum >=
+        tweakNumber >=
         secp256k1.CURVE.n
     ){
         throw new Error(
@@ -1047,16 +909,17 @@ function bitcoinTaproot(seed){
         );
     }
 
-    const Q=
-        P.add(
+    const Q =
+        point.add(
             secp256k1.ProjectivePoint.BASE
-            .multiply(tweakNum)
+            .multiply(tweakNumber)
         );
 
-    const qX=
-        Q.toRawBytes(true).slice(1);
+    const qX =
+        Q.toRawBytes(true)
+        .slice(1);
 
-    const words=
+    const words =
         convertBits(
             qX,
             8,
@@ -1078,25 +941,28 @@ function bitcoinTaproot(seed){
 
 function ethereum(seed){
 
-    const pub=secpPublic(
-        seed,
-        "m/44'/60'/0'/0/0"
-    );
+    const pub =
+        secpPublic(
+            seed,
+            "m/44'/60'/0'/0/0"
+        );
 
-    const point=
+    const point =
         secp256k1.ProjectivePoint
         .fromHex(pub);
 
-    const uncompressed=
+    const uncompressed =
         point.toRawBytes(false);
 
-    const hash=
+    const hash =
         keccak_256(
             uncompressed.slice(1)
         );
 
-    return "0x"+
-        hex(hash.slice(-20));
+    return (
+        "0x" +
+        hex(hash.slice(-20))
+    );
 }
 
 
@@ -1106,7 +972,7 @@ function ethereum(seed){
 
 function solana(seed){
 
-    const key=
+    const key =
         slip10(
             seed,
             [
@@ -1117,7 +983,7 @@ function solana(seed){
             ]
         );
 
-    const pub=
+    const pub =
         ed25519.getPublicKey(key);
 
     return base58(pub);
@@ -1130,15 +996,14 @@ function solana(seed){
 
 function xrp(seed){
 
-    const pub=secpPublic(
-        seed,
-        "m/44'/144'/0'/0/0"
-    );
-
-    const accountID=
-        ripemd160(
-            sha256(pub)
+    const pub =
+        secpPublic(
+            seed,
+            "m/44'/144'/0'/0/0"
         );
+
+    const accountID =
+        hash160(pub);
 
     return base58Check(
         concat(
@@ -1156,19 +1021,20 @@ function xrp(seed){
 
 function tron(seed){
 
-    const pub=secpPublic(
-        seed,
-        "m/44'/195'/0'/0/0"
-    );
+    const pub =
+        secpPublic(
+            seed,
+            "m/44'/195'/0'/0/0"
+        );
 
-    const point=
+    const point =
         secp256k1.ProjectivePoint
         .fromHex(pub);
 
-    const uncompressed=
+    const uncompressed =
         point.toRawBytes(false);
 
-    const hash=
+    const hash =
         keccak_256(
             uncompressed.slice(1)
         );
@@ -1183,115 +1049,12 @@ function tron(seed){
 
 
 /* =========================================================
-   STELLAR
-========================================================= */
-
-function crc16(data){
-
-    let crc=0;
-
-    for(const byte of data){
-
-        crc ^= byte<<8;
-
-        for(let i=0;i<8;i++){
-
-            if(crc&0x8000){
-                crc=
-                    ((crc<<1)^0x1021)&0xffff;
-            }else{
-                crc=
-                    (crc<<1)&0xffff;
-            }
-        }
-    }
-
-    return crc;
-}
-
-
-const BASE32=
-"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-
-
-function base32(data){
-
-    let buffer=0;
-    let bits=0;
-    let output="";
-
-    for(const byte of data){
-
-        buffer=
-            (buffer<<8)|byte;
-
-        bits+=8;
-
-        while(bits>=5){
-
-            bits-=5;
-
-            output+=
-                BASE32[
-                    (buffer>>bits)&31
-                ];
-        }
-    }
-
-    if(bits>0){
-
-        output+=
-            BASE32[
-                (buffer<<(5-bits))&31
-            ];
-    }
-
-    return output;
-}
-
-
-function stellar(seed){
-
-    const key=
-        slip10(
-            seed,
-            [
-                harden(44),
-                harden(148),
-                harden(0)
-            ]
-        );
-
-    const pub=
-        ed25519.getPublicKey(key);
-
-    const payload=
-        concat(
-            new Uint8Array([0x30]),
-            pub
-        );
-
-    const c=crc16(payload);
-
-    const check=
-        new Uint8Array([
-            c&255,
-            (c>>>8)&255
-        ]);
-
-    return base32(
-        concat(payload,check)
-    );
-}
-
-
-/* =========================================================
    SUI
 ========================================================= */
 
 function sui(seed){
 
-    const key=
+    const key =
         slip10(
             seed,
             [
@@ -1303,22 +1066,135 @@ function sui(seed){
             ]
         );
 
-    const pub=
+    const pub =
         ed25519.getPublicKey(key);
 
-    const data=
+    const data =
         concat(
             new Uint8Array([0x00]),
             pub
         );
 
-    const hash=
+    const digest =
         blake2b(
             data,
             {dkLen:32}
         );
 
-    return "0x"+hex(hash);
+    return "0x"+hex(digest);
+}
+
+
+/* =========================================================
+   STELLAR
+========================================================= */
+
+function crc16Xmodem(data){
+
+    let crc=0;
+
+    for(const byte of data){
+
+        crc ^= byte << 8;
+
+        for(let i=0;i<8;i++){
+
+            if(crc & 0x8000){
+
+                crc =
+                    ((crc << 1) ^ 0x1021) &
+                    0xffff;
+
+            }else{
+
+                crc =
+                    (crc << 1) &
+                    0xffff;
+            }
+        }
+    }
+
+    return crc;
+}
+
+
+const BASE32 =
+"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+
+
+function base32(data){
+
+    let buffer=0;
+    let bits=0;
+    let output="";
+
+    for(const byte of data){
+
+        buffer =
+            (buffer << 8) |
+            byte;
+
+        bits += 8;
+
+        while(bits >= 5){
+
+            bits -= 5;
+
+            output +=
+                BASE32[
+                    (buffer >>> bits) & 31
+                ];
+        }
+    }
+
+    if(bits > 0){
+
+        output +=
+            BASE32[
+                (buffer << (5-bits)) & 31
+            ];
+    }
+
+    return output;
+}
+
+
+function stellar(seed){
+
+    const key =
+        slip10(
+            seed,
+            [
+                harden(44),
+                harden(148),
+                harden(0)
+            ]
+        );
+
+    const pub =
+        ed25519.getPublicKey(key);
+
+    const payload =
+        concat(
+            new Uint8Array([0x30]),
+            pub
+        );
+
+    const crc =
+        crc16Xmodem(payload);
+
+    const checksum =
+        new Uint8Array([
+            crc & 255,
+            (crc >>> 8) & 255
+        ]);
+
+    return base32(
+        concat(
+            payload,
+            checksum
+        )
+    );
 }
 
 
@@ -1336,24 +1212,28 @@ function crc32(data){
 
         for(let i=0;i<8;i++){
 
-            if(crc&1){
-                crc=
-                    (crc>>>1)^0xedb88320;
+            if(crc & 1){
+
+                crc =
+                    (crc >>> 1) ^
+                    0xedb88320;
+
             }else{
-                crc>>>=1;
+
+                crc >>>= 1;
             }
         }
     }
 
     return (
-        crc^0xffffffff
-    )>>>0;
+        crc ^ 0xffffffff
+    ) >>> 0;
 }
 
 
 function icp(seed){
 
-    const key=
+    const key =
         slip10(
             seed,
             [
@@ -1365,10 +1245,10 @@ function icp(seed){
             ]
         );
 
-    const pub=
+    const pub =
         ed25519.getPublicKey(key);
 
-    const derPrefix=
+    const derPrefix =
         new Uint8Array([
             0x30,0x2a,
             0x30,0x05,
@@ -1378,29 +1258,30 @@ function icp(seed){
             0x00
         ]);
 
-    const der=
+    const der =
         concat(
             derPrefix,
             pub
         );
 
-    const digest=
+    const digest =
         sha224(der);
 
-    const principal=
+    const principal =
         concat(
             digest,
             new Uint8Array([0x02])
         );
 
-    const c=crc32(principal);
+    const crc =
+        crc32(principal);
 
-    const crcBytes=
+    const crcBytes =
         new Uint8Array([
-            (c>>>24)&255,
-            (c>>>16)&255,
-            (c>>>8)&255,
-            c&255
+            (crc >>> 24) & 255,
+            (crc >>> 16) & 255,
+            (crc >>> 8) & 255,
+            crc & 255
         ]);
 
     return base32(
@@ -1418,20 +1299,16 @@ function icp(seed){
 
 function litecoin(seed){
 
-    const pub=secpPublic(
-        seed,
-        "m/44'/2'/0'/0/0"
-    );
-
-    const hash=
-        ripemd160(
-            sha256(pub)
+    const pub =
+        secpPublic(
+            seed,
+            "m/44'/2'/0'/0/0"
         );
 
     return base58Check(
         concat(
             new Uint8Array([0x30]),
-            hash
+            hash160(pub)
         )
     );
 }
@@ -1443,20 +1320,16 @@ function litecoin(seed){
 
 function dogecoin(seed){
 
-    const pub=secpPublic(
-        seed,
-        "m/44'/3'/0'/0/0"
-    );
-
-    const hash=
-        ripemd160(
-            sha256(pub)
+    const pub =
+        secpPublic(
+            seed,
+            "m/44'/3'/0'/0/0"
         );
 
     return base58Check(
         concat(
             new Uint8Array([0x1e]),
-            hash
+            hash160(pub)
         )
     );
 }
@@ -1464,85 +1337,92 @@ function dogecoin(seed){
 
 /* =========================================================
    CARDANO
-   Loaded separately so it cannot break the main script.
+   Dynamic import:
+   اگر این کتابخانه مشکل داشته باشد،
+   بقیه شبکه‌ها همچنان کار می‌کنند.
 ========================================================= */
 
-async function cardano(seed,mnemonic){
+async function cardano(
+    seed,
+    mnemonic
+){
 
-    const module=
+    const module =
         await import(
             "https://esm.sh/@emurgo/cardano-serialization-lib-browser@15.0.3"
         );
 
-    const CSL=
+    const CSL =
         module.default || module;
 
-    const entropyHex=
+    const entropyHex =
         mnemonicToEntropy(
             mnemonic,
             english
         );
 
-    const entropy=
+    const entropy =
         new Uint8Array(
-            entropyHex.length/2
+            entropyHex.length / 2
         );
 
     for(let i=0;i<entropy.length;i++){
 
-        entropy[i]=parseInt(
-            entropyHex.slice(i*2,i*2+2),
-            16
-        );
+        entropy[i] =
+            parseInt(
+                entropyHex.slice(
+                    i*2,
+                    i*2+2
+                ),
+                16
+            );
     }
 
-    const root=
+    const root =
         CSL.Bip32PrivateKey
         .from_bip39_entropy(
             entropy,
             new Uint8Array()
         );
 
-    const account=
+    const account =
         root
         .derive(harden(1852))
         .derive(harden(1815))
         .derive(harden(0));
 
-    const payment=
+    const payment =
         account
         .derive(0)
         .derive(0)
         .to_public()
         .to_raw_key();
 
-    const stake=
+    const stake =
         account
         .derive(2)
         .derive(0)
         .to_public()
         .to_raw_key();
 
-    const paymentCredential=
+    const paymentCredential =
         CSL.StakeCredential
         .from_keyhash(
             payment.hash()
         );
 
-    const stakeCredential=
+    const stakeCredential =
         CSL.StakeCredential
         .from_keyhash(
             stake.hash()
         );
 
-    const network=
-        CSL.NetworkInfo
-        .mainnet()
-        .network_id();
-
-    const address=
+    const address =
         CSL.BaseAddress.new(
-            network,
+            CSL.NetworkInfo
+            .mainnet()
+            .network_id(),
+
             paymentCredential,
             stakeCredential
         );
@@ -1554,10 +1434,10 @@ async function cardano(seed,mnemonic){
 
 
 /* =========================================================
-   NETWORK LIST
+   NETWORKS
 ========================================================= */
 
-const networks=[
+const networks = [
 
     {
         name:"Bitcoin Legacy",
@@ -1647,72 +1527,128 @@ const networks=[
 
 
 /* =========================================================
-   RESULT CARD
+   ADD RESULT
 ========================================================= */
 
 function addResult(
     network,
     address,
-    error=false
+    isError=false
 ){
 
-    const card=
+    const card =
         document.createElement("div");
 
     card.className="card";
 
-    const title=
+    const title =
         document.createElement("div");
 
-    title.className="title";
-    title.textContent=network.name;
+    title.className="network";
 
-    const path=
+    title.textContent =
+        network.name;
+
+    const path =
         document.createElement("div");
 
     path.className="path";
-    path.textContent=network.path;
 
-    const box=
+    path.textContent =
+        network.path;
+
+    const box =
         document.createElement("div");
 
-    box.className=
-        "address"+
-        (error ? " err" : "");
+    box.className =
+        "address" +
+        (isError ? " error" : "");
 
-    box.textContent=address;
+    box.textContent =
+        address;
 
     card.appendChild(title);
     card.appendChild(path);
     card.appendChild(box);
 
-    if(!error){
+    if(!isError){
 
-        const copy=
+        const copy =
             document.createElement("button");
 
+        copy.type="button";
+
         copy.className="copy";
-        copy.textContent="کپی آدرس";
 
-        copy.onclick=async()=>{
+        copy.textContent =
+            "کپی آدرس";
 
-            try{
+        copy.addEventListener(
+            "click",
+            async()=>{
 
-                await navigator.clipboard.writeText(
-                    address
-                );
+                try{
 
-                copy.textContent="کپی شد ✓";
+                    await navigator
+                        .clipboard
+                        .writeText(address);
 
-                setTimeout(()=>{
-                    copy.textContent="کپی آدرس";
-                },1500);
+                    copy.textContent =
+                        "کپی شد ✓";
 
-            }catch(e){
+                    setTimeout(
+                        ()=>{
+                            copy.textContent =
+                                "کپی آدرس";
+                        },
+                        1500
+                    );
 
-                copy.textContent="کپی انجام نشد";
+                }catch(e){
+
+                    /*
+                       fallback برای بعضی
+                       مرورگرهای موبایل
+                    */
+
+                    const temp =
+                        document.createElement(
+                            "textarea"
+                        );
+
+                    temp.value=address;
+
+                    document.body
+                        .appendChild(temp);
+
+                    temp.select();
+
+                    try{
+                        document.execCommand(
+                            "copy"
+                        );
+
+                        copy.textContent =
+                            "کپی شد ✓";
+
+                    }catch(err){
+
+                        copy.textContent =
+                            "کپی نشد";
+                    }
+
+                    temp.remove();
+
+                    setTimeout(
+                        ()=>{
+                            copy.textContent =
+                                "کپی آدرس";
+                        },
+                        1500
+                    );
+                }
             }
-        };
+        );
 
         card.appendChild(copy);
     }
@@ -1722,47 +1658,55 @@ function addResult(
 
 
 /* =========================================================
-   GENERATE
+   GENERATE BUTTON
 ========================================================= */
 
 button.addEventListener(
     "click",
-    async function(){
+    async()=>{
 
         results.innerHTML="";
 
         status.textContent="";
 
-        const mnemonic=
-            mnemonicInput.value
+        const mnemonic =
+            input.value
             .trim()
             .replace(/\s+/g," ");
 
-        const words=
+        const words =
             mnemonic
             ? mnemonic.split(" ")
             : [];
 
-        if(words.length!==12){
+        /* ---------- 12 WORD CHECK ---------- */
 
-            status.innerHTML=
-                '<span class="err">باید دقیقاً ۱۲ کلمه وارد کنید.</span>';
+        if(words.length !== 12){
+
+            status.innerHTML =
+                '<span class="error">'+
+                'باید دقیقاً ۱۲ کلمه وارد کنید.'+
+                '</span>';
 
             return;
         }
 
+
+        /* ---------- BIP39 CHECK ---------- */
+
         try{
 
-            const valid=
-                validateMnemonic(
+            if(
+                !validateMnemonic(
                     mnemonic,
                     english
-                );
+                )
+            ){
 
-            if(!valid){
-
-                status.innerHTML=
-                    '<span class="err">عبارت BIP39 معتبر نیست یا checksum صحیح نیست.</span>';
+                status.innerHTML =
+                    '<span class="error">'+
+                    'عبارت BIP39 معتبر نیست یا checksum آن صحیح نیست.'+
+                    '</span>';
 
                 return;
             }
@@ -1771,35 +1715,44 @@ button.addEventListener(
 
             console.error(error);
 
-            status.innerHTML=
-                '<span class="err">خطا در بررسی عبارت BIP39</span>';
+            status.innerHTML =
+                '<span class="error">'+
+                'خطا در بررسی BIP39'+
+                '</span>';
 
             return;
         }
 
+
+        /* ---------- START ---------- */
+
         button.disabled=true;
 
-        status.innerHTML=
-            '<span class="ok">در حال تولید...</span>';
+        status.innerHTML =
+            '<span class="success">'+
+            'در حال تولید آدرس‌ها...'+
+            '</span>';
 
         try{
 
-            const seed=
+            const seed =
                 mnemonicToSeedSync(
                     mnemonic
                 );
 
             let success=0;
 
-            for(const network of networks){
+            for(
+                const network of networks
+            ){
+
+                status.textContent =
+                    "در حال تولید: " +
+                    network.name;
 
                 try{
 
-                    status.textContent=
-                        "در حال تولید: "+
-                        network.name;
-
-                    const address=
+                    const address =
                         await network.fn(
                             seed,
                             mnemonic
@@ -1822,7 +1775,7 @@ button.addEventListener(
 
                     addResult(
                         network,
-                        "خطا: "+
+                        "خطا: " +
                         (
                             error?.message ||
                             String(error)
@@ -1831,23 +1784,34 @@ button.addEventListener(
                     );
                 }
 
+                /*
+                   برای موبایل اجازه می‌دهد
+                   صفحه بین شبکه‌ها render شود.
+                */
+
                 await new Promise(
-                    resolve=>
-                        setTimeout(resolve,20)
+                    resolve =>
+                        setTimeout(
+                            resolve,
+                            10
+                        )
                 );
             }
 
-            status.innerHTML=
-                '<span class="ok">'+
+            status.innerHTML =
+                '<span class="success">'+
+                'تکمیل شد — '+
                 success+
-                ' شبکه با موفقیت تولید شد.</span>';
+                ' شبکه با موفقیت تولید شد.'+
+                '</span>';
 
         }catch(error){
 
             console.error(error);
 
-            status.innerHTML=
-                '<span class="err">خطای اصلی: '+
+            status.innerHTML =
+                '<span class="error">'+
+                'خطای اصلی: '+
                 (
                     error?.message ||
                     String(error)
@@ -1863,12 +1827,15 @@ button.addEventListener(
 
 
 /* =========================================================
-   STARTUP TEST
+   MODULE LOADED
 ========================================================= */
 
 console.log(
-    "BIP39 Generator loaded successfully"
+    "BIP39 Multi Chain Generator loaded"
 );
+
+status.textContent =
+    "آماده";
 
 </script>
 
