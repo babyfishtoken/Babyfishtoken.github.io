@@ -7,9 +7,7 @@
 <title>BIP39 Bitcoin & Solana Address Generator</title>
 
 <style>
-*{
-    box-sizing:border-box;
-}
+*{box-sizing:border-box}
 
 body{
     margin:0;
@@ -67,6 +65,7 @@ button:hover{
 
 button:disabled{
     opacity:.6;
+    cursor:not-allowed;
 }
 
 .test{
@@ -174,129 +173,47 @@ button:disabled{
 <div id="status" class="status"></div>
 
 
-<!-- LEGACY -->
+<div class="card">
+    <div class="title">Bitcoin — Legacy</div>
+    <div class="type">P2PKH — شروع با 1</div>
+    <div class="path">m/44'/0'/0'/0/0</div>
+    <div id="legacy" class="address">---</div>
+    <button class="copy" onclick="copyAddress('legacy')">کپی</button>
+</div>
+
 
 <div class="card">
-
-<div class="title">
-Bitcoin — Legacy
+    <div class="title">Bitcoin — Nested SegWit</div>
+    <div class="type">P2SH-P2WPKH — شروع با 3</div>
+    <div class="path">m/49'/0'/0'/0/0</div>
+    <div id="nested" class="address">---</div>
+    <button class="copy" onclick="copyAddress('nested')">کپی</button>
 </div>
 
-<div class="type">
-P2PKH — شروع با 1
-</div>
-
-<div class="path">
-m/44'/0'/0'/0/0
-</div>
-
-<div id="legacy" class="address">---</div>
-
-<button class="copy"
-onclick="copyAddress('legacy')">
-کپی
-</button>
-
-</div>
-
-
-<!-- NESTED -->
 
 <div class="card">
-
-<div class="title">
-Bitcoin — Nested SegWit
+    <div class="title">Bitcoin — Native SegWit</div>
+    <div class="type">P2WPKH — شروع با bc1q</div>
+    <div class="path">m/84'/0'/0'/0/0</div>
+    <div id="native" class="address">---</div>
+    <button class="copy" onclick="copyAddress('native')">کپی</button>
 </div>
 
-<div class="type">
-P2SH-P2WPKH — شروع با 3
-</div>
-
-<div class="path">
-m/49'/0'/0'/0/0
-</div>
-
-<div id="nested" class="address">---</div>
-
-<button class="copy"
-onclick="copyAddress('nested')">
-کپی
-</button>
-
-</div>
-
-
-<!-- NATIVE -->
 
 <div class="card">
-
-<div class="title">
-Bitcoin — Native SegWit
+    <div class="title">Bitcoin — Taproot</div>
+    <div class="type">P2TR — شروع با bc1p</div>
+    <div class="path">m/86'/0'/0'/0/0</div>
+    <div id="taproot" class="address">---</div>
+    <button class="copy" onclick="copyAddress('taproot')">کپی</button>
 </div>
 
-<div class="type">
-P2WPKH — شروع با bc1q
-</div>
-
-<div class="path">
-m/84'/0'/0'/0/0
-</div>
-
-<div id="native" class="address">---</div>
-
-<button class="copy"
-onclick="copyAddress('native')">
-کپی
-</button>
-
-</div>
-
-
-<!-- TAPROOT -->
 
 <div class="card">
-
-<div class="title">
-Bitcoin — Taproot
-</div>
-
-<div class="type">
-P2TR — شروع با bc1p
-</div>
-
-<div class="path">
-m/86'/0'/0'/0/0
-</div>
-
-<div id="taproot" class="address">---</div>
-
-<button class="copy"
-onclick="copyAddress('taproot')">
-کپی
-</button>
-
-</div>
-
-
-<!-- SOLANA -->
-
-<div class="card">
-
-<div class="title">
-Solana
-</div>
-
-<div class="path">
-m/44'/501'/0'/0'
-</div>
-
-<div id="solana" class="address">---</div>
-
-<button class="copy"
-onclick="copyAddress('solana')">
-کپی
-</button>
-
+    <div class="title">Solana</div>
+    <div class="path">m/44'/501'/0'/0'</div>
+    <div id="solana" class="address">---</div>
+    <button class="copy" onclick="copyAddress('solana')">کپی</button>
 </div>
 
 </div>
@@ -304,66 +221,63 @@ onclick="copyAddress('solana')">
 
 <script type="module">
 
-/* =====================================================
-   IMPORTS
-===================================================== */
+/*
+=========================================================
+LIBRARIES
+=========================================================
+*/
 
 import {
     mnemonicToSeed,
     validateMnemonic
-}
-from "https://esm.sh/@scure/bip39@1.2.1";
+} from "https://esm.sh/@scure/bip39@1.2.2";
 
 import {
     wordlist
-}
-from "https://esm.sh/@scure/bip39@1.2.1/wordlists/english.js";
+} from "https://esm.sh/@scure/bip39@1.2.2/wordlists/english";
 
 import {
     HDKey
-}
-from "https://esm.sh/@scure/bip32@1.3.0";
+} from "https://esm.sh/@scure/bip32@1.3.3";
 
 import {
-    sha256,
+    sha256
+} from "https://esm.sh/@noble/hashes@1.3.3/sha256";
+
+import {
     sha512
-}
-from "https://esm.sh/@noble/hashes@1.3.3/sha256";
-
-import {
-    ripemd160
-}
-from "https://esm.sh/@noble/hashes@1.3.3/ripemd160";
+} from "https://esm.sh/@noble/hashes@1.3.3/sha512";
 
 import {
     hmac
-}
-from "https://esm.sh/@noble/hashes@1.3.3/hmac";
+} from "https://esm.sh/@noble/hashes@1.3.3/hmac";
+
+import {
+    ripemd160
+} from "https://esm.sh/@noble/hashes@1.3.3/ripemd160";
 
 import {
     secp256k1
-}
-from "https://esm.sh/@noble/curves@1.2.0/secp256k1";
+} from "https://esm.sh/@noble/curves@1.2.0/secp256k1";
 
 import {
     bech32,
     bech32m,
     base58
-}
-from "https://esm.sh/@scure/base@1.1.5";
+} from "https://esm.sh/@scure/base@1.1.7";
 
 import {
     getPublicKey
-}
-from "https://esm.sh/@noble/ed25519@2.1.0";
+} from "https://esm.sh/@noble/ed25519@2.1.0";
 
 
-/* =====================================================
-   ELEMENTS
-===================================================== */
+/*
+=========================================================
+ELEMENTS
+=========================================================
+*/
 
-const input =
-    document.getElementById("mnemonic");
+const input = document.getElementById("mnemonic");
 
 const generateBtn =
     document.getElementById("generateBtn");
@@ -390,26 +304,28 @@ const solana =
     document.getElementById("solana");
 
 
-/* =====================================================
-   HELPERS
-===================================================== */
+/*
+=========================================================
+BYTE HELPERS
+=========================================================
+*/
 
 function concatBytes(...arrays){
 
-    let size = 0;
+    let length = 0;
 
     for(const a of arrays){
-        size += a.length;
+        length += a.length;
     }
 
     const result =
-        new Uint8Array(size);
+        new Uint8Array(length);
 
     let offset = 0;
 
     for(const a of arrays){
 
-        result.set(a,offset);
+        result.set(a, offset);
 
         offset += a.length;
     }
@@ -433,7 +349,7 @@ function bytesToHex(bytes){
 
     return Array.from(bytes)
         .map(
-            x => x.toString(16).padStart(2,"0")
+            b => b.toString(16).padStart(2,"0")
         )
         .join("");
 }
@@ -441,23 +357,27 @@ function bytesToHex(bytes){
 
 function hexToBytes(hex){
 
-    const out =
-        new Uint8Array(
-            hex.length / 2
-        );
+    const result =
+        new Uint8Array(hex.length / 2);
 
-    for(let i=0;i<out.length;i++){
+    for(let i = 0; i < result.length; i++){
 
-        out[i] =
+        result[i] =
             parseInt(
-                hex.substr(i*2,2),
+                hex.slice(i * 2, i * 2 + 2),
                 16
             );
     }
 
-    return out;
+    return result;
 }
 
+
+/*
+=========================================================
+HASH160
+=========================================================
+*/
 
 function hash160(data){
 
@@ -467,16 +387,21 @@ function hash160(data){
 }
 
 
-/* =====================================================
-   BASE58CHECK
-===================================================== */
+/*
+=========================================================
+BASE58CHECK
+=========================================================
+*/
 
 function base58Check(payload){
 
-    const checksum =
+    const hash =
         sha256(
             sha256(payload)
-        ).slice(0,4);
+        );
+
+    const checksum =
+        hash.slice(0,4);
 
     return base58.encode(
         concatBytes(
@@ -487,11 +412,13 @@ function base58Check(payload){
 }
 
 
-/* =====================================================
-   BITCOIN HD NODE
-===================================================== */
+/*
+=========================================================
+BITCOIN HD NODE
+=========================================================
+*/
 
-function bitcoinNode(seed,path){
+function bitcoinNode(seed, path){
 
     const root =
         HDKey.fromMasterSeed(seed);
@@ -500,14 +427,12 @@ function bitcoinNode(seed,path){
         root.derive(path);
 
     if(!node.privateKey){
-
         throw new Error(
             "Bitcoin private key ساخته نشد."
         );
     }
 
     if(!node.publicKey){
-
         throw new Error(
             "Bitcoin public key ساخته نشد."
         );
@@ -517,10 +442,12 @@ function bitcoinNode(seed,path){
 }
 
 
-/* =====================================================
-   LEGACY
-   P2PKH
-===================================================== */
+/*
+=========================================================
+BITCOIN LEGACY
+P2PKH
+=========================================================
+*/
 
 function makeLegacy(seed){
 
@@ -530,24 +457,24 @@ function makeLegacy(seed){
             "m/44'/0'/0'/0/0"
         );
 
-    const h160 =
-        hash160(
-            node.publicKey
-        );
+    const pubHash =
+        hash160(node.publicKey);
 
     return base58Check(
         concatBytes(
             new Uint8Array([0x00]),
-            h160
+            pubHash
         )
     );
 }
 
 
-/* =====================================================
-   NESTED SEGWIT
-   P2SH-P2WPKH
-===================================================== */
+/*
+=========================================================
+BITCOIN NESTED SEGWIT
+P2SH-P2WPKH
+=========================================================
+*/
 
 function makeNested(seed){
 
@@ -558,14 +485,12 @@ function makeNested(seed){
         );
 
     const pubHash =
-        hash160(
-            node.publicKey
-        );
+        hash160(node.publicKey);
 
     /*
-       redeemScript:
-
-       00 14 <20-byte HASH160>
+       OP_0
+       OP_PUSHBYTES_20
+       HASH160(pubkey)
     */
 
     const redeemScript =
@@ -578,12 +503,10 @@ function makeNested(seed){
         );
 
     const scriptHash =
-        hash160(
-            redeemScript
-        );
+        hash160(redeemScript);
 
     /*
-       Bitcoin P2SH mainnet version = 05
+       P2SH mainnet = 0x05
     */
 
     return base58Check(
@@ -595,10 +518,12 @@ function makeNested(seed){
 }
 
 
-/* =====================================================
-   NATIVE SEGWIT
-   P2WPKH
-===================================================== */
+/*
+=========================================================
+BITCOIN NATIVE SEGWIT
+P2WPKH
+=========================================================
+*/
 
 function makeNative(seed){
 
@@ -609,14 +534,10 @@ function makeNative(seed){
         );
 
     const pubHash =
-        hash160(
-            node.publicKey
-        );
+        hash160(node.publicKey);
 
     const words =
-        bech32.toWords(
-            pubHash
-        );
+        bech32.toWords(pubHash);
 
     words.unshift(0);
 
@@ -628,12 +549,14 @@ function makeNative(seed){
 }
 
 
-/* =====================================================
-   TAPROOT
-   BIP86
-===================================================== */
+/*
+=========================================================
+TAPROOT
+BIP86
+=========================================================
+*/
 
-function taggedHash(tag,data){
+function taggedHash(tag, data){
 
     const tagHash =
         sha256(
@@ -650,19 +573,18 @@ function taggedHash(tag,data){
 }
 
 
-function bigIntFromBytes(bytes){
+function bytesToBigInt(bytes){
 
     return BigInt(
-        "0x" +
-        bytesToHex(bytes)
+        "0x" + bytesToHex(bytes)
     );
 }
 
 
-function bigIntTo32(n){
+function bigIntToBytes32(value){
 
     let hex =
-        n.toString(16);
+        value.toString(16);
 
     hex =
         hex.padStart(64,"0");
@@ -686,51 +608,43 @@ function makeTaproot(seed){
         curve.CURVE.n;
 
     let privateKey =
-        new Uint8Array(
-            node.privateKey
-        );
+        new Uint8Array(node.privateKey);
 
 
     /*
-       Internal public key
+       P = privateKey * G
     */
 
     let point =
         curve.ProjectivePoint
-        .fromPrivateKey(
-            privateKey
-        );
-
+        .fromPrivateKey(privateKey);
 
     let compressed =
         point.toRawBytes(true);
 
 
     /*
-       BIP340 requires even Y.
+       BIP340:
+       internal public key must have even Y.
 
-       03 = odd Y
-       02 = even Y
+       02 = even
+       03 = odd
     */
 
     if(compressed[0] === 3){
 
         const d =
-            bigIntFromBytes(
-                privateKey
-            );
+            bytesToBigInt(privateKey);
 
         const neg =
-            (n - d) % n;
+            n - d;
 
         privateKey =
-            bigIntTo32(neg);
+            bigIntToBytes32(neg);
 
         point =
             curve.ProjectivePoint
-            .fromPrivateKey(
-                privateKey
-            );
+            .fromPrivateKey(privateKey);
 
         compressed =
             point.toRawBytes(true);
@@ -746,13 +660,8 @@ function makeTaproot(seed){
 
 
     /*
-       BIP86 TapTweak
-
-       tweak =
-       tagged_hash(
-           TapTweak,
-           internal_key
-       )
+       TapTweak =
+       tagged_hash("TapTweak", internalKey)
     */
 
     const tweakBytes =
@@ -762,15 +671,13 @@ function makeTaproot(seed){
         );
 
     const tweak =
-        bigIntFromBytes(
-            tweakBytes
-        );
+        bytesToBigInt(tweakBytes);
 
 
     if(tweak >= n){
 
         throw new Error(
-            "Taproot tweak خارج از محدوده است."
+            "Taproot tweak نامعتبر است."
         );
     }
 
@@ -780,15 +687,11 @@ function makeTaproot(seed){
     */
 
     const tweakPoint =
-        curve.ProjectivePoint
-        .BASE
+        curve.ProjectivePoint.BASE
         .multiply(tweak);
 
-
     const outputPoint =
-        point.add(
-            tweakPoint
-        );
+        point.add(tweakPoint);
 
 
     /*
@@ -803,17 +706,14 @@ function makeTaproot(seed){
 
 
     /*
-       Taproot = witness version 1
+       Witness version 1
        Bech32m
     */
 
     const words =
-        bech32m.toWords(
-            outputKey
-        );
+        bech32m.toWords(outputKey);
 
     words.unshift(1);
-
 
     return bech32m.encode(
         "bc",
@@ -823,18 +723,18 @@ function makeTaproot(seed){
 }
 
 
-/* =====================================================
-   SOLANA
-   SLIP-0010 ED25519
-===================================================== */
+/*
+=========================================================
+SOLANA
+SLIP-0010 ED25519
+=========================================================
+*/
 
 function slip10Master(seed){
 
     const key =
         new TextEncoder()
-        .encode(
-            "ed25519 seed"
-        );
+        .encode("ed25519 seed");
 
     const I =
         hmac(
@@ -903,19 +803,17 @@ async function makeSolana(seed){
         deriveSolana(seed);
 
     const publicKey =
-        await getPublicKey(
-            privateKey
-        );
+        await getPublicKey(privateKey);
 
-    return base58.encode(
-        publicKey
-    );
+    return base58.encode(publicKey);
 }
 
 
-/* =====================================================
-   GENERATE
-===================================================== */
+/*
+=========================================================
+GENERATE
+=========================================================
+*/
 
 async function generate(){
 
@@ -959,7 +857,7 @@ async function generate(){
 
 
         /*
-           BIP39 validation
+           BIP39 CHECKSUM
         */
 
         if(
@@ -970,55 +868,38 @@ async function generate(){
         ){
 
             throw new Error(
-                "عبارت BIP-39 معتبر نیست یا Checksum آن صحیح نیست."
+                "عبارت BIP-39 معتبر نیست یا Checksum صحیح نیست."
             );
         }
 
 
         /*
-           BIP39 → Seed
+           MNEMONIC → SEED
         */
 
         const seed =
-            await mnemonicToSeed(
-                mnemonic
-            );
+            await mnemonicToSeed(mnemonic);
 
 
         /*
-           Bitcoin #1
+           BITCOIN
         */
 
         legacy.textContent =
             makeLegacy(seed);
 
-
-        /*
-           Bitcoin #2
-        */
-
         nested.textContent =
             makeNested(seed);
 
-
-        /*
-           Bitcoin #3
-        */
-
         nativeAddress.textContent =
             makeNative(seed);
-
-
-        /*
-           Bitcoin #4
-        */
 
         taproot.textContent =
             makeTaproot(seed);
 
 
         /*
-           Solana
+           SOLANA
         */
 
         solana.textContent =
@@ -1032,33 +913,34 @@ async function generate(){
             "۴ آدرس Bitcoin و آدرس Solana با موفقیت ساخته شدند.";
 
     }
-    catch(e){
+    catch(error){
 
-        console.error(e);
+        console.error(error);
 
         status.className =
             "status error";
 
         status.textContent =
             "خطا: " +
-            (e.message || String(e));
+            (error?.message || String(error));
 
     }
     finally{
 
         generateBtn.disabled = false;
-
     }
 }
 
 
-/* =====================================================
-   TEST MNEMONIC
-===================================================== */
+/*
+=========================================================
+TEST MNEMONIC
+=========================================================
+*/
 
 testBtn.addEventListener(
     "click",
-    function(){
+    () => {
 
         input.value =
             "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
@@ -1075,9 +957,11 @@ testBtn.addEventListener(
 );
 
 
-/* =====================================================
-   GENERATE BUTTON
-===================================================== */
+/*
+=========================================================
+BUTTON
+=========================================================
+*/
 
 generateBtn.addEventListener(
     "click",
@@ -1085,23 +969,22 @@ generateBtn.addEventListener(
 );
 
 
-/* =====================================================
-   COPY
-===================================================== */
+/*
+=========================================================
+COPY
+=========================================================
+*/
 
 window.copyAddress =
 async function(id){
 
-    const el =
+    const element =
         document.getElementById(id);
 
     const value =
-        el.textContent.trim();
+        element.textContent.trim();
 
-    if(
-        !value ||
-        value === "---"
-    ){
+    if(!value || value === "---"){
         return;
     }
 
@@ -1113,24 +996,18 @@ async function(id){
         alert("آدرس کپی شد.");
 
     }
-    catch(e){
+    catch(error){
 
         const textarea =
-            document.createElement(
-                "textarea"
-            );
+            document.createElement("textarea");
 
         textarea.value = value;
 
-        document.body.appendChild(
-            textarea
-        );
+        document.body.appendChild(textarea);
 
         textarea.select();
 
-        document.execCommand(
-            "copy"
-        );
+        document.execCommand("copy");
 
         textarea.remove();
 
