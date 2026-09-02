@@ -1,0 +1,2172 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Multi Chain BIP39 Address Generator</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    padding:20px;
+    background:#111827;
+    color:#fff;
+    font-family:Arial,Tahoma,sans-serif;
+}
+
+.container{
+    width:100%;
+    max-width:800px;
+    margin:auto;
+}
+
+h1{
+    text-align:center;
+    margin:5px 0 10px;
+}
+
+.subtitle{
+    text-align:center;
+    color:#9ca3af;
+    margin-bottom:25px;
+}
+
+textarea{
+    width:100%;
+    height:115px;
+    padding:15px;
+    background:#1f2937;
+    color:#fff;
+    border:1px solid #374151;
+    border-radius:12px;
+    font-size:16px;
+    direction:ltr;
+    text-align:left;
+    resize:none;
+    outline:none;
+}
+
+textarea:focus{
+    border-color:#3b82f6;
+}
+
+button{
+    width:100%;
+    border:0;
+    border-radius:10px;
+    padding:14px;
+    margin-top:12px;
+    background:#2563eb;
+    color:#fff;
+    font-size:16px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#1d4ed8;
+}
+
+button:disabled{
+    opacity:.6;
+    cursor:not-allowed;
+}
+
+.test{
+    background:#374151;
+}
+
+.test:hover{
+    background:#4b5563;
+}
+
+.status{
+    margin-top:15px;
+    padding:12px;
+    border-radius:10px;
+    display:none;
+    line-height:1.8;
+}
+
+.success{
+    display:block;
+    background:#052e16;
+    color:#86efac;
+}
+
+.error{
+    display:block;
+    background:#450a0a;
+    color:#fca5a5;
+}
+
+.card{
+    margin-top:16px;
+    padding:17px;
+    background:#1f2937;
+    border-radius:12px;
+}
+
+.title{
+    font-size:18px;
+    font-weight:bold;
+    margin-bottom:5px;
+}
+
+.type{
+    color:#d1d5db;
+    font-size:13px;
+    margin-bottom:5px;
+}
+
+.path{
+    direction:ltr;
+    text-align:left;
+    color:#9ca3af;
+    font-family:monospace;
+    font-size:12px;
+    margin-bottom:10px;
+}
+
+.address{
+    direction:ltr;
+    text-align:left;
+    word-break:break-all;
+    background:#111827;
+    padding:13px;
+    border-radius:8px;
+    font-family:monospace;
+    font-size:14px;
+    min-height:45px;
+}
+
+.copy{
+    background:#374151;
+    font-size:13px;
+}
+
+.copy:hover{
+    background:#4b5563;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>BIP-39 Multi-Chain Address Generator</h1>
+
+<div class="subtitle">
+Bitcoin • Solana • XRP • TRON • Cardano • Sui • Stellar • ICP • Litecoin • Dogecoin
+</div>
+
+<textarea
+    id="mnemonic"
+    placeholder="12 word BIP39 mnemonic..."
+    autocomplete="off"
+    autocorrect="off"
+    autocapitalize="off"
+    spellcheck="false"
+></textarea>
+
+<button class="test" id="testBtn">
+عبارت تست استاندارد
+</button>
+
+<button id="generateBtn">
+ساخت همه آدرس‌ها
+</button>
+
+<div id="status" class="status"></div>
+
+
+<!-- =================================================
+BITCOIN LEGACY
+================================================= -->
+
+<div class="card">
+
+<div class="title">
+Bitcoin — Legacy
+</div>
+
+<div class="type">
+P2PKH
+</div>
+
+<div class="path">
+m/44'/0'/0'/0/0
+</div>
+
+<div id="btcLegacy" class="address">---</div>
+
+<button class="copy" onclick="copyAddress('btcLegacy')">
+کپی
+</button>
+
+</div>
+
+
+<!-- =================================================
+BITCOIN NESTED
+================================================= -->
+
+<div class="card">
+
+<div class="title">
+Bitcoin — Nested SegWit
+</div>
+
+<div class="type">
+P2SH-P2WPKH
+</div>
+
+<div class="path">
+m/49'/0'/0'/0/0
+</div>
+
+<div id="btcNested" class="address">---</div>
+
+<button class="copy" onclick="copyAddress('btcNested')">
+کپی
+</button>
+
+</div>
+
+
+<!-- =================================================
+BITCOIN NATIVE
+================================================= -->
+
+<div class="card">
+
+<div class="title">
+Bitcoin — Native SegWit
+</div>
+
+<div class="type">
+P2WPKH
+</div>
+
+<div class="path">
+m/84'/0'/0'/0/0
+</div>
+
+<div id="btcNative" class="address">---</div>
+
+<button class="copy" onclick="copyAddress('btcNative')">
+کپی
+</button>
+
+</div>
+
+
+<!-- =================================================
+BITCOIN TAPROOT
+================================================= -->
+
+<div class="card">
+
+<div class="title">
+Bitcoin — Taproot
+</div>
+
+<div class="type">
+P2TR
+</div>
+
+<div class="path">
+m/86'/0'/0'/0/0
+</div>
+
+<div id="btcTaproot" class="address">---</div>
+
+<button class="copy" onclick="copyAddress('btcTaproot')">
+کپی
+</button>
+
+</div>
+
+
+<!-- =================================================
+SOLANA
+================================================= -->
+
+<div class="card">
+
+<div class="title">
+Solana
+</div>
+
+<div class="type">
+Ed25519
+</div>
+
+<div class="path">
+m/44'/501'/0'/0'
+</div>
+
+<div id="solana" class="address">---</div>
+
+<button class="copy" onclick="copyAddress('solana')">
+کپی
+</button>
+
+</div>
+
+
+<!-- =================================================
+XRP
+================================================= -->
+
+<div class="card">
+
+<div class="title">
+XRP Ledger
+</div>
+
+<div class="type">
+secp256k1 / Base58
+</div>
+
+<div class="path">
+m/44'/144'/0'/0/0
+</div>
+
+<div id="xrp" class="address">---</div>
+
+<button class="copy" onclick="copyAddress('xrp')">
+کپی
+</button>
+
+</div>
+
+
+<!-- =================================================
+TRON
+================================================= -->
+
+<div class="card">
+
+<div class="title">
+TRON
+</div>
+
+<div class="type">
+TRX / Base58Check
+</div>
+
+<div class="path">
+m/44'/195'/0'/0/0
+</div>
+
+<div id="tron" class="address">---</div>
+
+<button class="copy" onclick="copyAddress('tron')">
+کپی
+</button>
+
+</div>
+
+
+<!-- =================================================
+CARDANO
+================================================= -->
+
+<div class="card">
+
+<div class="title">
+Cardano
+</div>
+
+<div class="type">
+ADA / Shelley Mainnet
+</div>
+
+<div class="path">
+m/1852'/1815'/0'/0/0
+</div>
+
+<div id="cardano" class="address">---</div>
+
+<button class="copy" onclick="copyAddress('cardano')">
+کپی
+</button>
+
+</div>
+
+
+<!-- =================================================
+SUI
+================================================= -->
+
+<div class="card">
+
+<div class="title">
+Sui
+</div>
+
+<div class="type">
+Ed25519 / Blake2b-256
+</div>
+
+<div class="path">
+m/44'/784'/0'/0'/0'
+</div>
+
+<div id="sui" class="address">---</div>
+
+<button class="copy" onclick="copyAddress('sui')">
+کپی
+</button>
+
+</div>
+
+
+<!-- =================================================
+STELLAR
+================================================= -->
+
+<div class="card">
+
+<div class="title">
+Stellar
+</div>
+
+<div class="type">
+XLM / Ed25519
+</div>
+
+<div class="path">
+m/44'/148'/0'
+</div>
+
+<div id="stellar" class="address">---</div>
+
+<button class="copy" onclick="copyAddress('stellar')">
+کپی
+</button>
+
+</div>
+
+
+<!-- =================================================
+ICP
+================================================= -->
+
+<div class="card">
+
+<div class="title">
+Internet Computer
+</div>
+
+<div class="type">
+ICP / Self-Authenticating Principal
+</div>
+
+<div class="path">
+m/44'/223'/0'/0/0
+</div>
+
+<div id="icp" class="address">---</div>
+
+<button class="copy" onclick="copyAddress('icp')">
+کپی
+</button>
+
+</div>
+
+
+<!-- =================================================
+LITECOIN
+================================================= -->
+
+<div class="card">
+
+<div class="title">
+Litecoin
+</div>
+
+<div class="type">
+LTC / P2PKH
+</div>
+
+<div class="path">
+m/44'/2'/0'/0/0
+</div>
+
+<div id="litecoin" class="address">---</div>
+
+<button class="copy" onclick="copyAddress('litecoin')">
+کپی
+</button>
+
+</div>
+
+
+<!-- =================================================
+DOGECOIN
+================================================= -->
+
+<div class="card">
+
+<div class="title">
+Dogecoin
+</div>
+
+<div class="type">
+DOGE / P2PKH
+</div>
+
+<div class="path">
+m/44'/3'/0'/0/0
+</div>
+
+<div id="dogecoin" class="address">---</div>
+
+<button class="copy" onclick="copyAddress('dogecoin')">
+کپی
+</button>
+
+</div>
+
+</div>
+
+
+<script type="module">
+
+/* =====================================================
+LIBRARIES
+===================================================== */
+
+import {
+    mnemonicToSeed,
+    mnemonicToEntropy,
+    validateMnemonic
+}
+from "https://esm.sh/@scure/bip39@1.2.2";
+
+import {
+    wordlist
+}
+from "https://esm.sh/@scure/bip39@1.2.2/wordlists/english";
+
+import {
+    HDKey
+}
+from "https://esm.sh/@scure/bip32@1.3.3";
+
+import {
+    sha256
+}
+from "https://esm.sh/@noble/hashes@1.3.3/sha256";
+
+import {
+    sha512
+}
+from "https://esm.sh/@noble/hashes@1.3.3/sha512";
+
+import {
+    ripemd160
+}
+from "https://esm.sh/@noble/hashes@1.3.3/ripemd160";
+
+import {
+    hmac
+}
+from "https://esm.sh/@noble/hashes@1.3.3/hmac";
+
+import {
+    blake2b
+}
+from "https://esm.sh/@noble/hashes@1.3.3/blake2b";
+
+import {
+    keccak_256
+}
+from "https://esm.sh/@noble/hashes@1.3.3/sha3";
+
+import {
+    secp256k1
+}
+from "https://esm.sh/@noble/curves@1.2.0/secp256k1";
+
+import {
+    bech32,
+    bech32m,
+    base58
+}
+from "https://esm.sh/@scure/base@1.1.7";
+
+import * as ed25519
+from "https://esm.sh/@noble/ed25519@2.1.0";
+
+
+/* =====================================================
+ED25519 SHA512 FIX
+===================================================== */
+
+ed25519.etc.sha512Sync =
+    (...messages) => {
+
+        let length = 0;
+
+        for(const m of messages){
+            length += m.length;
+        }
+
+        const data =
+            new Uint8Array(length);
+
+        let offset = 0;
+
+        for(const m of messages){
+
+            data.set(m,offset);
+
+            offset += m.length;
+        }
+
+        return sha512(data);
+    };
+
+
+/* =====================================================
+CARDANO
+===================================================== */
+
+import CardanoWasm
+from "https://esm.sh/@emurgo/cardano-serialization-lib-browser@15.0.3";
+
+
+/* =====================================================
+ELEMENTS
+===================================================== */
+
+const input =
+    document.getElementById("mnemonic");
+
+const generateBtn =
+    document.getElementById("generateBtn");
+
+const testBtn =
+    document.getElementById("testBtn");
+
+const status =
+    document.getElementById("status");
+
+
+/* =====================================================
+HELPERS
+===================================================== */
+
+function concatBytes(...arrays){
+
+    let length = 0;
+
+    for(const a of arrays){
+        length += a.length;
+    }
+
+    const result =
+        new Uint8Array(length);
+
+    let offset = 0;
+
+    for(const a of arrays){
+
+        result.set(a,offset);
+
+        offset += a.length;
+    }
+
+    return result;
+}
+
+
+function uint32BE(n){
+
+    return new Uint8Array([
+        (n >>> 24) & 255,
+        (n >>> 16) & 255,
+        (n >>> 8) & 255,
+        n & 255
+    ]);
+}
+
+
+function bytesToHex(bytes){
+
+    return Array.from(bytes)
+        .map(
+            b => b.toString(16).padStart(2,"0")
+        )
+        .join("");
+}
+
+
+function hexToBytes(hex){
+
+    const result =
+        new Uint8Array(hex.length / 2);
+
+    for(let i=0;i<result.length;i++){
+
+        result[i] =
+            parseInt(
+                hex.slice(i*2,i*2+2),
+                16
+            );
+    }
+
+    return result;
+}
+
+
+function hash160(data){
+
+    return ripemd160(
+        sha256(data)
+    );
+}
+
+
+/* =====================================================
+BASE58CHECK
+===================================================== */
+
+function base58Check(payload){
+
+    const checksum =
+        sha256(
+            sha256(payload)
+        ).slice(0,4);
+
+    return base58.encode(
+        concatBytes(
+            payload,
+            checksum
+        )
+    );
+}
+
+
+/* =====================================================
+BITCOIN NODE
+===================================================== */
+
+function bitcoinNode(seed,path){
+
+    const root =
+        HDKey.fromMasterSeed(seed);
+
+    return root.derive(path);
+}
+
+
+/* =====================================================
+BITCOIN LEGACY
+===================================================== */
+
+function makeBitcoinLegacy(seed){
+
+    const node =
+        bitcoinNode(
+            seed,
+            "m/44'/0'/0'/0/0"
+        );
+
+    const hash =
+        hash160(node.publicKey);
+
+    return base58Check(
+        concatBytes(
+            new Uint8Array([0x00]),
+            hash
+        )
+    );
+}
+
+
+/* =====================================================
+BITCOIN NESTED
+===================================================== */
+
+function makeBitcoinNested(seed){
+
+    const node =
+        bitcoinNode(
+            seed,
+            "m/49'/0'/0'/0/0"
+        );
+
+    const pubHash =
+        hash160(node.publicKey);
+
+    const redeem =
+        concatBytes(
+            new Uint8Array([
+                0x00,
+                0x14
+            ]),
+            pubHash
+        );
+
+    const scriptHash =
+        hash160(redeem);
+
+    return base58Check(
+        concatBytes(
+            new Uint8Array([0x05]),
+            scriptHash
+        )
+    );
+}
+
+
+/* =====================================================
+BITCOIN NATIVE
+===================================================== */
+
+function makeBitcoinNative(seed){
+
+    const node =
+        bitcoinNode(
+            seed,
+            "m/84'/0'/0'/0/0"
+        );
+
+    const hash =
+        hash160(node.publicKey);
+
+    const words =
+        bech32.toWords(hash);
+
+    words.unshift(0);
+
+    return bech32.encode(
+        "bc",
+        words,
+        90
+    );
+}
+
+
+/* =====================================================
+TAPROOT
+===================================================== */
+
+function bytesToBigInt(bytes){
+
+    return BigInt(
+        "0x" +
+        bytesToHex(bytes)
+    );
+}
+
+
+function bigIntToBytes32(n){
+
+    return hexToBytes(
+        n.toString(16)
+        .padStart(64,"0")
+    );
+}
+
+
+function taggedHash(tag,data){
+
+    const tagHash =
+        sha256(
+            new TextEncoder()
+            .encode(tag)
+        );
+
+    return sha256(
+        concatBytes(
+            tagHash,
+            tagHash,
+            data
+        )
+    );
+}
+
+
+function makeBitcoinTaproot(seed){
+
+    const node =
+        bitcoinNode(
+            seed,
+            "m/86'/0'/0'/0/0"
+        );
+
+    const curve =
+        secp256k1;
+
+    const n =
+        curve.CURVE.n;
+
+    let privateKey =
+        new Uint8Array(node.privateKey);
+
+    let point =
+        curve.ProjectivePoint
+        .fromPrivateKey(privateKey);
+
+    let compressed =
+        point.toRawBytes(true);
+
+
+    if(compressed[0] === 3){
+
+        const d =
+            bytesToBigInt(privateKey);
+
+        privateKey =
+            bigIntToBytes32(
+                n - d
+            );
+
+        point =
+            curve.ProjectivePoint
+            .fromPrivateKey(privateKey);
+
+        compressed =
+            point.toRawBytes(true);
+    }
+
+
+    const internalKey =
+        compressed.slice(1,33);
+
+    const tweakBytes =
+        taggedHash(
+            "TapTweak",
+            internalKey
+        );
+
+    const tweak =
+        bytesToBigInt(tweakBytes);
+
+    if(tweak >= n){
+        throw new Error(
+            "Taproot tweak invalid"
+        );
+    }
+
+    const tweakPoint =
+        curve.ProjectivePoint.BASE
+        .multiply(tweak);
+
+    const outputPoint =
+        point.add(tweakPoint);
+
+    const output =
+        outputPoint.toRawBytes(true)
+        .slice(1,33);
+
+    const words =
+        bech32m.toWords(output);
+
+    words.unshift(1);
+
+    return bech32m.encode(
+        "bc",
+        words,
+        90
+    );
+}
+
+
+/* =====================================================
+SLIP10 ED25519
+===================================================== */
+
+function slip10Master(seed){
+
+    const key =
+        new TextEncoder()
+        .encode("ed25519 seed");
+
+    const I =
+        hmac(
+            sha512,
+            key,
+            seed
+        );
+
+    return {
+        key:I.slice(0,32),
+        chainCode:I.slice(32,64)
+    };
+}
+
+
+function slip10Child(parent,index){
+
+    const hardened =
+        index + 0x80000000;
+
+    const data =
+        concatBytes(
+            new Uint8Array([0]),
+            parent.key,
+            uint32BE(hardened)
+        );
+
+    const I =
+        hmac(
+            sha512,
+            parent.chainCode,
+            data
+        );
+
+    return {
+        key:I.slice(0,32),
+        chainCode:I.slice(32,64)
+    };
+}
+
+
+function deriveSlip10(seed,path){
+
+    let node =
+        slip10Master(seed);
+
+    for(const index of path){
+
+        node =
+            slip10Child(
+                node,
+                index
+            );
+    }
+
+    return node.key;
+}
+
+
+/* =====================================================
+SOLANA
+===================================================== */
+
+async function makeSolana(seed){
+
+    const privateKey =
+        deriveSlip10(
+            seed,
+            [44,501,0,0]
+        );
+
+    const publicKey =
+        ed25519.getPublicKey(
+            privateKey
+        );
+
+    return base58.encode(
+        publicKey
+    );
+}
+
+
+/* =====================================================
+XRP
+===================================================== */
+
+const XRP_ALPHABET =
+    "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz";
+
+
+function xrpBase58Encode(bytes){
+
+    let digits = [0];
+
+    for(const byte of bytes){
+
+        let carry = byte;
+
+        for(let i=0;i<digits.length;i++){
+
+            const value =
+                digits[i] * 256 + carry;
+
+            digits[i] =
+                value % 58;
+
+            carry =
+                Math.floor(value / 58);
+        }
+
+        while(carry){
+
+            digits.push(
+                carry % 58
+            );
+
+            carry =
+                Math.floor(carry / 58);
+        }
+    }
+
+    let result = "";
+
+    for(let i=0;i<bytes.length && bytes[i]===0;i++){
+        result += XRP_ALPHABET[0];
+    }
+
+    for(let i=digits.length-1;i>=0;i--){
+        result += XRP_ALPHABET[digits[i]];
+    }
+
+    return result;
+}
+
+
+function makeXRP(seed){
+
+    const node =
+        bitcoinNode(
+            seed,
+            "m/44'/144'/0'/0/0"
+        );
+
+    const accountID =
+        hash160(node.publicKey);
+
+    const payload =
+        concatBytes(
+            new Uint8Array([0x00]),
+            accountID
+        );
+
+    const checksum =
+        sha256(
+            sha256(payload)
+        ).slice(0,4);
+
+    return xrpBase58Encode(
+        concatBytes(
+            payload,
+            checksum
+        )
+    );
+}
+
+
+/* =====================================================
+TRON
+===================================================== */
+
+function makeTron(seed){
+
+    const node =
+        bitcoinNode(
+            seed,
+            "m/44'/195'/0'/0/0"
+        );
+
+    /*
+       TRON uses uncompressed public key.
+    */
+
+    const point =
+        secp256k1.ProjectivePoint
+        .fromPrivateKey(
+            node.privateKey
+        );
+
+    const uncompressed =
+        point.toRawBytes(false);
+
+    const publicKey =
+        uncompressed.slice(1);
+
+    const hash =
+        keccak_256(publicKey);
+
+    const address20 =
+        hash.slice(-20);
+
+    /*
+       TRON mainnet prefix = 0x41
+    */
+
+    return base58Check(
+        concatBytes(
+            new Uint8Array([0x41]),
+            address20
+        )
+    );
+}
+
+
+/* =====================================================
+CARDANO
+===================================================== */
+
+function harden(n){
+
+    return 0x80000000 + n;
+}
+
+
+function makeCardano(mnemonic){
+
+    /*
+       BIP39 mnemonic -> entropy
+    */
+
+    const entropyHex =
+        mnemonicToEntropy(
+            mnemonic,
+            wordlist
+        );
+
+    const entropy =
+        hexToBytes(entropyHex);
+
+
+    /*
+       CIP-1852 / Icarus
+    */
+
+    const root =
+        CardanoWasm
+        .Bip32PrivateKey
+        .from_bip39_entropy(
+            entropy,
+            new Uint8Array()
+        );
+
+
+    /*
+       m/1852'/1815'/0'
+    */
+
+    const account =
+        root
+        .derive(harden(1852))
+        .derive(harden(1815))
+        .derive(harden(0));
+
+
+    /*
+       Payment key:
+       m/1852'/1815'/0'/0/0
+    */
+
+    const payment =
+        account
+        .derive(0)
+        .derive(0)
+        .to_public()
+        .to_raw_key();
+
+
+    /*
+       Stake key:
+       m/1852'/1815'/0'/2/0
+    */
+
+    const stake =
+        account
+        .derive(2)
+        .derive(0)
+        .to_public()
+        .to_raw_key();
+
+
+    const paymentCredential =
+        CardanoWasm
+        .StakeCredential
+        .from_keyhash(
+            payment.hash()
+        );
+
+    const stakeCredential =
+        CardanoWasm
+        .StakeCredential
+        .from_keyhash(
+            stake.hash()
+        );
+
+
+    /*
+       Cardano Mainnet = network id 1
+    */
+
+    const baseAddress =
+        CardanoWasm
+        .BaseAddress
+        .new(
+            CardanoWasm
+            .NetworkInfo
+            .mainnet()
+            .network_id(),
+
+            paymentCredential,
+
+            stakeCredential
+        );
+
+
+    return baseAddress
+        .to_address()
+        .to_bech32();
+}
+
+
+/* =====================================================
+SUI
+===================================================== */
+
+async function makeSui(seed){
+
+    /*
+       m/44'/784'/0'/0'/0'
+    */
+
+    const privateKey =
+        deriveSlip10(
+            seed,
+            [44,784,0,0,0]
+        );
+
+    const publicKey =
+        ed25519.getPublicKey(
+            privateKey
+        );
+
+
+    /*
+       Sui Ed25519 flag = 0x00
+    */
+
+    const data =
+        concatBytes(
+            new Uint8Array([0x00]),
+            publicKey
+        );
+
+
+    const digest =
+        blake2b(
+            data,
+            {
+                dkLen:32
+            }
+        );
+
+
+    return "0x" +
+        bytesToHex(digest);
+}
+
+
+/* =====================================================
+STELLAR
+===================================================== */
+
+function crc16xmodem(bytes){
+
+    let crc = 0x0000;
+
+    for(const byte of bytes){
+
+        crc ^=
+            byte << 8;
+
+        for(let i=0;i<8;i++){
+
+            if(crc & 0x8000){
+
+                crc =
+                    ((crc << 1) ^
+                    0x1021) & 0xffff;
+
+            }else{
+
+                crc =
+                    (crc << 1) & 0xffff;
+            }
+        }
+    }
+
+    return new Uint8Array([
+        crc & 0xff,
+        (crc >> 8) & 0xff
+    ]);
+}
+
+
+const BASE32 =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+
+
+function base32Encode(bytes){
+
+    let output = "";
+
+    let buffer = 0;
+    let bits = 0;
+
+    for(const byte of bytes){
+
+        buffer =
+            (buffer << 8) | byte;
+
+        bits += 8;
+
+        while(bits >= 5){
+
+            bits -= 5;
+
+            output +=
+                BASE32[
+                    (buffer >> bits) & 31
+                ];
+        }
+    }
+
+    if(bits > 0){
+
+        output +=
+            BASE32[
+                (buffer << (5-bits)) & 31
+            ];
+    }
+
+    return output;
+}
+
+
+function makeStellar(seed){
+
+    const privateKey =
+        deriveSlip10(
+            seed,
+            [44,148,0]
+        );
+
+    const publicKey =
+        ed25519.getPublicKey(
+            privateKey
+        );
+
+
+    /*
+       Stellar public key StrKey version = 0x30
+    */
+
+    const payload =
+        concatBytes(
+            new Uint8Array([0x30]),
+            publicKey
+        );
+
+    const checksum =
+        crc16xmodem(payload);
+
+    return base32Encode(
+        concatBytes(
+            payload,
+            checksum
+        )
+    );
+}
+
+
+/* =====================================================
+ICP
+===================================================== */
+
+function makeICP(seed){
+
+    /*
+       Common ICP HD path
+    */
+
+    const privateKey =
+        deriveSlip10(
+            seed,
+            [44,223,0,0,0]
+        );
+
+    const publicKey =
+        ed25519.getPublicKey(
+            privateKey
+        );
+
+
+    /*
+       DER SubjectPublicKeyInfo
+       for Ed25519
+    */
+
+    const derPrefix =
+        hexToBytes(
+            "302a300506032b6570032100"
+        );
+
+    const derPublicKey =
+        concatBytes(
+            derPrefix,
+            publicKey
+        );
+
+
+    /*
+       Self-authenticating Principal:
+       SHA224(DER public key) || 0x02
+    */
+
+    const hash =
+        sha256(
+            derPublicKey
+        );
+
+
+    /*
+       SHA-224 implementation using SHA-256
+       is not equivalent.
+
+       Use WebCrypto SHA-224 is unavailable,
+       therefore this function implements SHA-224.
+    */
+
+    const principalHash =
+        awaitSha224(derPublicKey);
+
+    const principalBytes =
+        concatBytes(
+            principalHash,
+            new Uint8Array([0x02])
+        );
+
+
+    const crc =
+        crc32(principalBytes);
+
+    return base32Encode(
+        concatBytes(
+            crc,
+            principalBytes
+        )
+    ).toLowerCase();
+}
+
+
+/* =====================================================
+SHA224
+===================================================== */
+
+function awaitSha224(data){
+
+    /*
+       SHA-224 constants
+    */
+
+    const H = [
+        0xc1059ed8,
+        0x367cd507,
+        0x3070dd17,
+        0xf70e5939,
+        0xffc00b31,
+        0x68581511,
+        0x64f98fa7,
+        0xbefa4fa4
+    ];
+
+    const K = [
+        0x428a2f98,0x71374491,0xb5c0fbcf,
+        0xe9b5dba5,0x3956c25b,0x59f111f1,
+        0x923f82a4,0xab1c5ed5,0xd807aa98,
+        0x12835b01,0x243185be,0x550c7dc3,
+        0x72be5d74,0x80deb1fe,0x9bdc06a7,
+        0xc19bf174,0xe49b69c1,0xefbe4786,
+        0x0fc19dc6,0x240ca1cc,0x2de92c6f,
+        0x4a7484aa,0x5cb0a9dc,0x76f988da,
+        0x983e5152,0xa831c66d,0xb00327c8,
+        0xbf597fc7,0xc6e00bf3,0xd5a79147,
+        0x06ca6351,0x14292967,0x27b70a85,
+        0x2e1b2138,0x4d2c6dfc,0x53380d13,
+        0x650a7354,0x766a0abb,0x81c2c92e,
+        0x92722c85,0xa2bfe8a1,0xa81a664b,
+        0xc24b8b70,0xc76c51a3,0xd192e819,
+        0xd6990624,0xf40e3585,0x106aa070,
+        0x19a4c116,0x1e376c08,0x2748774c,
+        0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,
+        0x5b9cca4f,0x682e6ff3,0x748f82ee,
+        0x78a5636f,0x84c87814,0x8cc70208,
+        0x90befffa,0xa4506ceb,0xbef9a3f7,
+        0xc67178f2
+    ];
+
+    function rotr(x,n){
+        return (x >>> n) | (x << (32-n));
+    }
+
+    const bitLength =
+        data.length * 8;
+
+    const paddedLength =
+        ((data.length + 9 + 63) >> 6) << 6;
+
+    const msg =
+        new Uint8Array(paddedLength);
+
+    msg.set(data);
+
+    msg[data.length] = 0x80;
+
+    const view =
+        new DataView(msg.buffer);
+
+    view.setUint32(
+        paddedLength - 4,
+        bitLength,
+        false
+    );
+
+    let h =
+        H.slice();
+
+    for(
+        let offset=0;
+        offset<msg.length;
+        offset+=64
+    ){
+
+        const w =
+            new Uint32Array(64);
+
+        for(let i=0;i<16;i++){
+
+            w[i] =
+                view.getUint32(
+                    offset+i*4,
+                    false
+                );
+        }
+
+        for(let i=16;i<64;i++){
+
+            const s0 =
+                rotr(w[i-15],7) ^
+                rotr(w[i-15],18) ^
+                (w[i-15] >>> 3);
+
+            const s1 =
+                rotr(w[i-2],17) ^
+                rotr(w[i-2],19) ^
+                (w[i-2] >>> 10);
+
+            w[i] =
+                (w[i-16] +
+                s0 +
+                w[i-7] +
+                s1) >>> 0;
+        }
+
+        let [
+            a,b,c,d,e,f,g,hh
+        ] = h;
+
+        for(let i=0;i<64;i++){
+
+            const S1 =
+                rotr(e,6) ^
+                rotr(e,11) ^
+                rotr(e,25);
+
+            const ch =
+                (e & f) ^
+                (~e & g);
+
+            const temp1 =
+                (hh + S1 + ch + K[i] + w[i])
+                >>> 0;
+
+            const S0 =
+                rotr(a,2) ^
+                rotr(a,13) ^
+                rotr(a,22);
+
+            const maj =
+                (a & b) ^
+                (a & c) ^
+                (b & c);
+
+            const temp2 =
+                (S0 + maj) >>> 0;
+
+            hh = g;
+            g = f;
+            f = e;
+            e = (d + temp1) >>> 0;
+            d = c;
+            c = b;
+            b = a;
+            a = (temp1 + temp2) >>> 0;
+        }
+
+        h[0] = (h[0]+a) >>> 0;
+        h[1] = (h[1]+b) >>> 0;
+        h[2] = (h[2]+c) >>> 0;
+        h[3] = (h[3]+d) >>> 0;
+        h[4] = (h[4]+e) >>> 0;
+        h[5] = (h[5]+f) >>> 0;
+        h[6] = (h[6]+g) >>> 0;
+        h[7] = (h[7]+hh) >>> 0;
+    }
+
+    const result =
+        new Uint8Array(28);
+
+    const resultView =
+        new DataView(result.buffer);
+
+    for(let i=0;i<7;i++){
+
+        resultView.setUint32(
+            i*4,
+            h[i],
+            false
+        );
+    }
+
+    return result;
+}
+
+
+/* =====================================================
+CRC32
+===================================================== */
+
+function crc32(bytes){
+
+    let crc =
+        0xffffffff;
+
+    for(const byte of bytes){
+
+        crc ^= byte;
+
+        for(let i=0;i<8;i++){
+
+            crc =
+                (crc >>> 1) ^
+                (
+                    (crc & 1)
+                    ? 0xedb88320
+                    : 0
+                );
+        }
+    }
+
+    crc =
+        (crc ^ 0xffffffff) >>> 0;
+
+    return new Uint8Array([
+        (crc >>> 24) & 255,
+        (crc >>> 16) & 255,
+        (crc >>> 8) & 255,
+        crc & 255
+    ]);
+}
+
+
+/* =====================================================
+LITECOIN
+===================================================== */
+
+function makeLitecoin(seed){
+
+    const node =
+        bitcoinNode(
+            seed,
+            "m/44'/2'/0'/0/0"
+        );
+
+    const hash =
+        hash160(node.publicKey);
+
+    /*
+       Litecoin P2PKH = 0x30
+    */
+
+    return base58Check(
+        concatBytes(
+            new Uint8Array([0x30]),
+            hash
+        )
+    );
+}
+
+
+/* =====================================================
+DOGECOIN
+===================================================== */
+
+function makeDogecoin(seed){
+
+    const node =
+        bitcoinNode(
+            seed,
+            "m/44'/3'/0'/0/0"
+        );
+
+    const hash =
+        hash160(node.publicKey);
+
+    /*
+       Dogecoin P2PKH = 0x1e
+    */
+
+    return base58Check(
+        concatBytes(
+            new Uint8Array([0x1e]),
+            hash
+        )
+    );
+}
+
+
+/* =====================================================
+SET ADDRESS
+===================================================== */
+
+function setAddress(id,value){
+
+    document.getElementById(id)
+        .textContent = value;
+}
+
+
+/* =====================================================
+GENERATE
+===================================================== */
+
+async function generate(){
+
+    generateBtn.disabled = true;
+
+    const ids = [
+        "btcLegacy",
+        "btcNested",
+        "btcNative",
+        "btcTaproot",
+        "solana",
+        "xrp",
+        "tron",
+        "cardano",
+        "sui",
+        "stellar",
+        "icp",
+        "litecoin",
+        "dogecoin"
+    ];
+
+    for(const id of ids){
+        setAddress(id,"---");
+    }
+
+    status.className = "status";
+    status.textContent = "";
+
+    try{
+
+        const mnemonic =
+            input.value
+            .trim()
+            .replace(/\s+/g," ");
+
+        if(!mnemonic){
+
+            throw new Error(
+                "عبارت ۱۲ کلمه‌ای را وارد کنید."
+            );
+        }
+
+        const words =
+            mnemonic.split(" ");
+
+        if(words.length !== 12){
+
+            throw new Error(
+                "عبارت باید دقیقاً ۱۲ کلمه باشد."
+            );
+        }
+
+        if(
+            !validateMnemonic(
+                mnemonic,
+                wordlist
+            )
+        ){
+
+            throw new Error(
+                "عبارت BIP-39 معتبر نیست یا Checksum صحیح نیست."
+            );
+        }
+
+
+        /*
+           BIP39 SEED
+        */
+
+        const seed =
+            await mnemonicToSeed(
+                mnemonic
+            );
+
+
+        /*
+           BITCOIN
+        */
+
+        setAddress(
+            "btcLegacy",
+            makeBitcoinLegacy(seed)
+        );
+
+        setAddress(
+            "btcNested",
+            makeBitcoinNested(seed)
+        );
+
+        setAddress(
+            "btcNative",
+            makeBitcoinNative(seed)
+        );
+
+        setAddress(
+            "btcTaproot",
+            makeBitcoinTaproot(seed)
+        );
+
+
+        /*
+           SOLANA
+        */
+
+        setAddress(
+            "solana",
+            await makeSolana(seed)
+        );
+
+
+        /*
+           XRP
+        */
+
+        setAddress(
+            "xrp",
+            makeXRP(seed)
+        );
+
+
+        /*
+           TRON
+        */
+
+        setAddress(
+            "tron",
+            makeTron(seed)
+        );
+
+
+        /*
+           CARDANO
+        */
+
+        setAddress(
+            "cardano",
+            makeCardano(mnemonic)
+        );
+
+
+        /*
+           SUI
+        */
+
+        setAddress(
+            "sui",
+            await makeSui(seed)
+        );
+
+
+        /*
+           STELLAR
+        */
+
+        setAddress(
+            "stellar",
+            makeStellar(seed)
+        );
+
+
+        /*
+           ICP
+        */
+
+        setAddress(
+            "icp",
+            makeICP(seed)
+        );
+
+
+        /*
+           LITECOIN
+        */
+
+        setAddress(
+            "litecoin",
+            makeLitecoin(seed)
+        );
+
+
+        /*
+           DOGECOIN
+        */
+
+        setAddress(
+            "dogecoin",
+            makeDogecoin(seed)
+        );
+
+
+        status.className =
+            "status success";
+
+        status.textContent =
+            "تمام آدرس‌ها با موفقیت ساخته شدند.";
+
+    }
+    catch(error){
+
+        console.error(error);
+
+        status.className =
+            "status error";
+
+        status.textContent =
+            "خطا: " +
+            (
+                error?.message ||
+                String(error)
+            );
+    }
+    finally{
+
+        generateBtn.disabled = false;
+    }
+}
+
+
+/* =====================================================
+TEST
+===================================================== */
+
+testBtn.addEventListener(
+    "click",
+    () => {
+
+        input.value =
+            "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+
+        status.className = "status";
+        status.textContent = "";
+
+        const ids = [
+            "btcLegacy",
+            "btcNested",
+            "btcNative",
+            "btcTaproot",
+            "solana",
+            "xrp",
+            "tron",
+            "cardano",
+            "sui",
+            "stellar",
+            "icp",
+            "litecoin",
+            "dogecoin"
+        ];
+
+        for(const id of ids){
+            setAddress(id,"---");
+        }
+    }
+);
+
+
+/* =====================================================
+BUTTON
+===================================================== */
+
+generateBtn.addEventListener(
+    "click",
+    generate
+);
+
+
+/* =====================================================
+COPY
+===================================================== */
+
+window.copyAddress =
+async function(id){
+
+    const element =
+        document.getElementById(id);
+
+    const value =
+        element.textContent.trim();
+
+    if(!value || value === "---"){
+        return;
+    }
+
+    try{
+
+        await navigator.clipboard
+            .writeText(value);
+
+        alert("آدرس کپی شد.");
+
+    }
+    catch(error){
+
+        const textarea =
+            document.createElement("textarea");
+
+        textarea.value =
+            value;
+
+        document.body.appendChild(
+            textarea
+        );
+
+        textarea.select();
+
+        document.execCommand("copy");
+
+        textarea.remove();
+
+        alert("آدرس کپی شد.");
+    }
+};
+
+</script>
+
+</body>
+</html>
