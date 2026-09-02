@@ -43,10 +43,6 @@ textarea{
     outline:none;
 }
 
-textarea:focus{
-    border-color:#3b82f6;
-}
-
 button{
     width:100%;
     border:0;
@@ -65,7 +61,6 @@ button:hover{
 
 button:disabled{
     opacity:.6;
-    cursor:not-allowed;
 }
 
 .test{
@@ -174,46 +169,46 @@ button:disabled{
 
 
 <div class="card">
-    <div class="title">Bitcoin — Legacy</div>
-    <div class="type">P2PKH — شروع با 1</div>
-    <div class="path">m/44'/0'/0'/0/0</div>
-    <div id="legacy" class="address">---</div>
-    <button class="copy" onclick="copyAddress('legacy')">کپی</button>
+<div class="title">Bitcoin — Legacy</div>
+<div class="type">P2PKH — شروع با 1</div>
+<div class="path">m/44'/0'/0'/0/0</div>
+<div id="legacy" class="address">---</div>
+<button class="copy" onclick="copyAddress('legacy')">کپی</button>
 </div>
 
 
 <div class="card">
-    <div class="title">Bitcoin — Nested SegWit</div>
-    <div class="type">P2SH-P2WPKH — شروع با 3</div>
-    <div class="path">m/49'/0'/0'/0/0</div>
-    <div id="nested" class="address">---</div>
-    <button class="copy" onclick="copyAddress('nested')">کپی</button>
+<div class="title">Bitcoin — Nested SegWit</div>
+<div class="type">P2SH-P2WPKH — شروع با 3</div>
+<div class="path">m/49'/0'/0'/0/0</div>
+<div id="nested" class="address">---</div>
+<button class="copy" onclick="copyAddress('nested')">کپی</button>
 </div>
 
 
 <div class="card">
-    <div class="title">Bitcoin — Native SegWit</div>
-    <div class="type">P2WPKH — شروع با bc1q</div>
-    <div class="path">m/84'/0'/0'/0/0</div>
-    <div id="native" class="address">---</div>
-    <button class="copy" onclick="copyAddress('native')">کپی</button>
+<div class="title">Bitcoin — Native SegWit</div>
+<div class="type">P2WPKH — شروع با bc1q</div>
+<div class="path">m/84'/0'/0'/0/0</div>
+<div id="native" class="address">---</div>
+<button class="copy" onclick="copyAddress('native')">کپی</button>
 </div>
 
 
 <div class="card">
-    <div class="title">Bitcoin — Taproot</div>
-    <div class="type">P2TR — شروع با bc1p</div>
-    <div class="path">m/86'/0'/0'/0/0</div>
-    <div id="taproot" class="address">---</div>
-    <button class="copy" onclick="copyAddress('taproot')">کپی</button>
+<div class="title">Bitcoin — Taproot</div>
+<div class="type">P2TR — شروع با bc1p</div>
+<div class="path">m/86'/0'/0'/0/0</div>
+<div id="taproot" class="address">---</div>
+<button class="copy" onclick="copyAddress('taproot')">کپی</button>
 </div>
 
 
 <div class="card">
-    <div class="title">Solana</div>
-    <div class="path">m/44'/501'/0'/0'</div>
-    <div id="solana" class="address">---</div>
-    <button class="copy" onclick="copyAddress('solana')">کپی</button>
+<div class="title">Solana</div>
+<div class="path">m/44'/501'/0'/0'</div>
+<div id="solana" class="address">---</div>
+<button class="copy" onclick="copyAddress('solana')">کپی</button>
 </div>
 
 </div>
@@ -221,11 +216,9 @@ button:disabled{
 
 <script type="module">
 
-/*
-=========================================================
-LIBRARIES
-=========================================================
-*/
+/* =====================================================
+   LIBRARIES
+===================================================== */
 
 import {
     mnemonicToSeed,
@@ -266,18 +259,59 @@ import {
     base58
 } from "https://esm.sh/@scure/base@1.1.7";
 
-import {
-    getPublicKey
-} from "https://esm.sh/@noble/ed25519@2.1.0";
+
+/*
+=========================================================
+ED25519
+=========================================================
+*/
+
+import * as ed25519
+from "https://esm.sh/@noble/ed25519@2.1.0";
 
 
 /*
 =========================================================
-ELEMENTS
+IMPORTANT FIX
+
+@NOBLE/ED25519 v2.1.0
+
+getPublicKey() نیاز به SHA-512
+سینکرون دارد.
 =========================================================
 */
 
-const input = document.getElementById("mnemonic");
+ed25519.etc.sha512Sync =
+    (...messages) => {
+
+        let total = 0;
+
+        for(const m of messages){
+            total += m.length;
+        }
+
+        const data =
+            new Uint8Array(total);
+
+        let offset = 0;
+
+        for(const m of messages){
+
+            data.set(m, offset);
+
+            offset += m.length;
+        }
+
+        return sha512(data);
+    };
+
+
+/* =====================================================
+   ELEMENTS
+===================================================== */
+
+const input =
+    document.getElementById("mnemonic");
 
 const generateBtn =
     document.getElementById("generateBtn");
@@ -304,22 +338,20 @@ const solana =
     document.getElementById("solana");
 
 
-/*
-=========================================================
-BYTE HELPERS
-=========================================================
-*/
+/* =====================================================
+   HELPERS
+===================================================== */
 
 function concatBytes(...arrays){
 
-    let length = 0;
+    let size = 0;
 
     for(const a of arrays){
-        length += a.length;
+        size += a.length;
     }
 
     const result =
-        new Uint8Array(length);
+        new Uint8Array(size);
 
     let offset = 0;
 
@@ -360,11 +392,11 @@ function hexToBytes(hex){
     const result =
         new Uint8Array(hex.length / 2);
 
-    for(let i = 0; i < result.length; i++){
+    for(let i=0;i<result.length;i++){
 
         result[i] =
             parseInt(
-                hex.slice(i * 2, i * 2 + 2),
+                hex.slice(i*2,i*2+2),
                 16
             );
     }
@@ -373,11 +405,9 @@ function hexToBytes(hex){
 }
 
 
-/*
-=========================================================
-HASH160
-=========================================================
-*/
+/* =====================================================
+   HASH160
+===================================================== */
 
 function hash160(data){
 
@@ -387,21 +417,16 @@ function hash160(data){
 }
 
 
-/*
-=========================================================
-BASE58CHECK
-=========================================================
-*/
+/* =====================================================
+   BASE58 CHECK
+===================================================== */
 
 function base58Check(payload){
 
-    const hash =
+    const checksum =
         sha256(
             sha256(payload)
-        );
-
-    const checksum =
-        hash.slice(0,4);
+        ).slice(0,4);
 
     return base58.encode(
         concatBytes(
@@ -412,13 +437,11 @@ function base58Check(payload){
 }
 
 
-/*
-=========================================================
-BITCOIN HD NODE
-=========================================================
-*/
+/* =====================================================
+   BITCOIN NODE
+===================================================== */
 
-function bitcoinNode(seed, path){
+function bitcoinNode(seed,path){
 
     const root =
         HDKey.fromMasterSeed(seed);
@@ -442,12 +465,9 @@ function bitcoinNode(seed, path){
 }
 
 
-/*
-=========================================================
-BITCOIN LEGACY
-P2PKH
-=========================================================
-*/
+/* =====================================================
+   LEGACY
+===================================================== */
 
 function makeLegacy(seed){
 
@@ -469,12 +489,9 @@ function makeLegacy(seed){
 }
 
 
-/*
-=========================================================
-BITCOIN NESTED SEGWIT
-P2SH-P2WPKH
-=========================================================
-*/
+/* =====================================================
+   NESTED SEGWIT
+===================================================== */
 
 function makeNested(seed){
 
@@ -486,12 +503,6 @@ function makeNested(seed){
 
     const pubHash =
         hash160(node.publicKey);
-
-    /*
-       OP_0
-       OP_PUSHBYTES_20
-       HASH160(pubkey)
-    */
 
     const redeemScript =
         concatBytes(
@@ -505,10 +516,6 @@ function makeNested(seed){
     const scriptHash =
         hash160(redeemScript);
 
-    /*
-       P2SH mainnet = 0x05
-    */
-
     return base58Check(
         concatBytes(
             new Uint8Array([0x05]),
@@ -518,12 +525,9 @@ function makeNested(seed){
 }
 
 
-/*
-=========================================================
-BITCOIN NATIVE SEGWIT
-P2WPKH
-=========================================================
-*/
+/* =====================================================
+   NATIVE SEGWIT
+===================================================== */
 
 function makeNative(seed){
 
@@ -549,18 +553,16 @@ function makeNative(seed){
 }
 
 
-/*
-=========================================================
-TAPROOT
-BIP86
-=========================================================
-*/
+/* =====================================================
+   TAPROOT
+===================================================== */
 
-function taggedHash(tag, data){
+function taggedHash(tag,data){
 
     const tagHash =
         sha256(
-            new TextEncoder().encode(tag)
+            new TextEncoder()
+            .encode(tag)
         );
 
     return sha256(
@@ -583,13 +585,11 @@ function bytesToBigInt(bytes){
 
 function bigIntToBytes32(value){
 
-    let hex =
-        value.toString(16);
-
-    hex =
-        hex.padStart(64,"0");
-
-    return hexToBytes(hex);
+    return hexToBytes(
+        value
+        .toString(16)
+        .padStart(64,"0")
+    );
 }
 
 
@@ -610,11 +610,6 @@ function makeTaproot(seed){
     let privateKey =
         new Uint8Array(node.privateKey);
 
-
-    /*
-       P = privateKey * G
-    */
-
     let point =
         curve.ProjectivePoint
         .fromPrivateKey(privateKey);
@@ -625,10 +620,7 @@ function makeTaproot(seed){
 
     /*
        BIP340:
-       internal public key must have even Y.
-
-       02 = even
-       03 = odd
+       Y باید زوج باشد
     */
 
     if(compressed[0] === 3){
@@ -636,11 +628,10 @@ function makeTaproot(seed){
         const d =
             bytesToBigInt(privateKey);
 
-        const neg =
-            n - d;
-
         privateKey =
-            bigIntToBytes32(neg);
+            bigIntToBytes32(
+                n - d
+            );
 
         point =
             curve.ProjectivePoint
@@ -651,18 +642,9 @@ function makeTaproot(seed){
     }
 
 
-    /*
-       X-only internal key
-    */
-
     const internalKey =
         compressed.slice(1,33);
 
-
-    /*
-       TapTweak =
-       tagged_hash("TapTweak", internalKey)
-    */
 
     const tweakBytes =
         taggedHash(
@@ -673,18 +655,12 @@ function makeTaproot(seed){
     const tweak =
         bytesToBigInt(tweakBytes);
 
-
     if(tweak >= n){
-
         throw new Error(
             "Taproot tweak نامعتبر است."
         );
     }
 
-
-    /*
-       Q = P + tweak*G
-    */
 
     const tweakPoint =
         curve.ProjectivePoint.BASE
@@ -693,22 +669,12 @@ function makeTaproot(seed){
     const outputPoint =
         point.add(tweakPoint);
 
-
-    /*
-       X-only output key
-    */
-
     const outputCompressed =
         outputPoint.toRawBytes(true);
 
     const outputKey =
         outputCompressed.slice(1,33);
 
-
-    /*
-       Witness version 1
-       Bech32m
-    */
 
     const words =
         bech32m.toWords(outputKey);
@@ -723,12 +689,9 @@ function makeTaproot(seed){
 }
 
 
-/*
-=========================================================
-SOLANA
-SLIP-0010 ED25519
-=========================================================
-*/
+/* =====================================================
+   SOLANA SLIP-0010
+===================================================== */
 
 function slip10Master(seed){
 
@@ -797,23 +760,36 @@ function deriveSolana(seed){
 }
 
 
-async function makeSolana(seed){
+/*
+=========================================================
+SOLANA ADDRESS
+=========================================================
+*/
+
+function makeSolana(seed){
 
     const privateKey =
         deriveSolana(seed);
 
-    const publicKey =
-        await getPublicKey(privateKey);
+    /*
+       اکنون getPublicKey سینکرون
+       با sha512Sync تنظیم شده است.
+    */
 
-    return base58.encode(publicKey);
+    const publicKey =
+        ed25519.getPublicKey(
+            privateKey
+        );
+
+    return base58.encode(
+        publicKey
+    );
 }
 
 
-/*
-=========================================================
-GENERATE
-=========================================================
-*/
+/* =====================================================
+   GENERATE
+===================================================== */
 
 async function generate(){
 
@@ -835,7 +811,6 @@ async function generate(){
             .trim()
             .replace(/\s+/g," ");
 
-
         if(!mnemonic){
 
             throw new Error(
@@ -847,7 +822,6 @@ async function generate(){
         const words =
             mnemonic.split(" ");
 
-
         if(words.length !== 12){
 
             throw new Error(
@@ -855,10 +829,6 @@ async function generate(){
             );
         }
 
-
-        /*
-           BIP39 CHECKSUM
-        */
 
         if(
             !validateMnemonic(
@@ -874,7 +844,7 @@ async function generate(){
 
 
         /*
-           MNEMONIC → SEED
+           BIP39 → SEED
         */
 
         const seed =
@@ -903,7 +873,7 @@ async function generate(){
         */
 
         solana.textContent =
-            await makeSolana(seed);
+            makeSolana(seed);
 
 
         status.className =
@@ -932,11 +902,9 @@ async function generate(){
 }
 
 
-/*
-=========================================================
-TEST MNEMONIC
-=========================================================
-*/
+/* =====================================================
+   TEST
+===================================================== */
 
 testBtn.addEventListener(
     "click",
@@ -957,11 +925,9 @@ testBtn.addEventListener(
 );
 
 
-/*
-=========================================================
-BUTTON
-=========================================================
-*/
+/* =====================================================
+   GENERATE BUTTON
+===================================================== */
 
 generateBtn.addEventListener(
     "click",
@@ -969,11 +935,9 @@ generateBtn.addEventListener(
 );
 
 
-/*
-=========================================================
-COPY
-=========================================================
-*/
+/* =====================================================
+   COPY
+===================================================== */
 
 window.copyAddress =
 async function(id){
