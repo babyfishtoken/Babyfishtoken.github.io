@@ -1,15 +1,7 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<!DOCTYPE html><html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-
-<title>نمایش فرآیند ساخت آدرس Ethereum</title>
-
-<script src="https://cdn.jsdelivr.net/npm/ethers@6.15.0/dist/ethers.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bip39@3.1.0/dist/index.js"></script>
-
-<style>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"><title>نمایش فرآیند ساخت آدرس Ethereum</title><!-- Ethers.js محلی --><script src="/files/ethers.umd.min.js"></script><style>
 *{
     box-sizing:border-box;
 }
@@ -135,192 +127,142 @@ button:hover{
 .hidden{
     display:none;
 }
-</style>
-</head>
-
-<body>
-
-<div class="container">
-
-<h1>محاسبه مرحله‌به‌مرحله آدرس Ethereum</h1>
-
-<div class="subtitle">
+</style></head><body><div class="container"><h1>محاسبه مرحله‌به‌مرحله آدرس Ethereum</h1><div class="subtitle">
 BIP-39 → Seed → BIP-44 → Private Key → Public Key → Keccak-256 → Address
-</div>
+</div><div class="card"><label>عبارت بازیابی ۱۲ کلمه‌ای</label>
 
-<div class="card">
-
-<label>عبارت بازیابی ۱۲ کلمه‌ای</label>
-
-<textarea id="mnemonic"
-placeholder="مثال:
-abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"></textarea>
-
-<button onclick="calculate()">
+<textarea
+    id="mnemonic"
+    placeholder="مثال:
+abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"></textarea><button onclick="calculate()">
 محاسبه و نمایش مراحل
-</button>
-
-<div id="error" class="error hidden"></div>
-
-</div>
-
-<div id="result" class="hidden">
-
-<div class="card">
-
-<div class="step">
-
-<h3>مرحله ۱ — عبارت BIP-39</h3>
-
-<div class="value" id="words"></div>
-
-</div>
-
-
-<div class="step">
-
-<h3>مرحله ۲ — بررسی اعتبار BIP-39</h3>
-
-<div class="value" id="valid"></div>
-
-</div>
-
-
-<div class="step">
-
-<h3>مرحله ۳ — Entropy</h3>
-
-<div class="small">
+</button><div id="error" class="error hidden"></div></div><div id="result" class="hidden"><div class="card"><div class="step"><h3>مرحله ۱ — عبارت BIP-39</h3><div class="value" id="words"></div></div><div class="step"><h3>مرحله ۲ — بررسی اعتبار BIP-39</h3><div class="value" id="valid"></div></div><div class="step"><h3>مرحله ۳ — Entropy</h3><div class="small">
 عبارت ۱۲ کلمه‌ای معتبر BIP-39 دارای ۱۲۸ بیت Entropy و ۴ بیت Checksum است.
-</div>
-
-<div class="value" id="entropy"></div>
-
-</div>
-
-
-<div class="step">
-
-<h3>مرحله ۴ — Checksum</h3>
-
-<div class="value" id="checksum"></div>
-
-</div>
-
-
-<div class="step">
-
-<h3>مرحله ۵ — تبدیل Mnemonic به Seed</h3>
-
-<div class="small">
+</div><div class="value" id="entropy"></div></div><div class="step"><h3>مرحله ۴ — Checksum</h3><div class="value" id="checksum"></div></div><div class="step"><h3>مرحله ۵ — تبدیل Mnemonic به Seed</h3><div class="small">
 BIP-39 از PBKDF2-HMAC-SHA512 با 2048 تکرار استفاده می‌کند.
-در اینجا Passphrase خالی در نظر گرفته شده است.
-</div>
-
-<div class="value" id="seed"></div>
-
-</div>
-
-
-<div class="step">
-
-<h3>مرحله ۶ — مسیر استاندارد Ethereum</h3>
-
-<div class="value">
+Passphrase خالی در نظر گرفته شده است.
+</div><div class="value" id="seed"></div></div><div class="step"><h3>مرحله ۶ — مسیر استاندارد Ethereum</h3><div class="value">
 m/44'/60'/0'/0/0
-</div>
-
-</div>
-
-
-<div class="step">
-
-<h3>مرحله ۷ — کلید خصوصی</h3>
-
-<div class="value" id="privateKey"></div>
-
-</div>
-
-
-<div class="step">
-
-<h3>مرحله ۸ — کلید عمومی</h3>
-
-<div class="value" id="publicKey"></div>
-
-</div>
-
-
-<div class="step">
-
-<h3>مرحله ۹ — Keccak-256</h3>
-
-<div class="small">
-برای ساخت آدرس Ethereum، کلید عمومی بدون پیشوند 02/03/04 هش می‌شود.
-۲۴ بایت انتهایی خروجی Keccak-256 به عنوان آدرس استفاده می‌شود.
-</div>
-
-<div class="value" id="keccak"></div>
-
-</div>
-
-
-<div class="step success">
-
-<h3>مرحله ۱۰ — آدرس Ethereum</h3>
-
-<div class="value address" id="address"></div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-
-<script>
+</div></div><div class="step"><h3>مرحله ۷ — کلید خصوصی</h3><div class="value" id="privateKey"></div></div><div class="step"><h3>مرحله ۸ — کلید عمومی</h3><div class="value" id="publicKey"></div></div><div class="step"><h3>مرحله ۹ — Keccak-256</h3><div class="small">
+برای ساخت آدرس Ethereum، کلید عمومی فشرده‌نشده استفاده می‌شود.
+پیشوند 04 حذف شده و باقی کلید عمومی با Keccak-256 هش می‌شود.
+۲۰ بایت آخر هش، آدرس Ethereum را تشکیل می‌دهد.
+</div><div class="value" id="keccak"></div></div><div class="step success"><h3>مرحله ۱۰ — آدرس Ethereum</h3><div class="value address" id="address"></div></div></div></div></div><script>
 
 function $(id){
     return document.getElementById(id);
 }
 
 
+/* =========================
+   نمایش خطا
+========================= */
+
 function showError(message){
 
     $("error").textContent = message;
-    $("error").classList.remove("hidden");
-    $("result").classList.add("hidden");
 
+    $("error").classList.remove("hidden");
+
+    $("result").classList.add("hidden");
 }
 
 
 function clearError(){
 
     $("error").classList.add("hidden");
-
 }
 
+
+/* =========================
+   تبدیل Hex به باینری
+========================= */
+
+function hexToBinary(hex){
+
+    let result = "";
+
+    for(let i = 0; i < hex.length; i++){
+
+        result += parseInt(hex[i],16)
+            .toString(2)
+            .padStart(4,"0");
+    }
+
+    return result;
+}
+
+
+/* =========================
+   تبدیل باینری به Hex
+========================= */
+
+function binaryToHex(binary){
+
+    let result = "";
+
+    for(let i = 0; i < binary.length; i += 4){
+
+        const chunk = binary.slice(i,i+4);
+
+        result += parseInt(chunk,2)
+            .toString(16);
+    }
+
+    return result;
+}
+
+
+/* =========================
+   محاسبه
+========================= */
 
 async function calculate(){
 
     clearError();
 
-    const input = $("mnemonic").value.trim();
+    $("result").classList.add("hidden");
+
+
+    /* -------------------------
+       بررسی ethers
+    ------------------------- */
+
+    if(typeof ethers === "undefined"){
+
+        showError(
+            "کتابخانه ethers.js بارگذاری نشده است. مسیر /files/ethers.umd.min.js را بررسی کنید."
+        );
+
+        return;
+    }
+
+
+    /* -------------------------
+       دریافت Mnemonic
+    ------------------------- */
+
+    const input =
+        $("mnemonic").value
+        .trim()
+        .toLowerCase();
+
 
     if(!input){
 
-        showError("عبارت ۱۲ کلمه‌ای را وارد کنید.");
-        return;
+        showError(
+            "عبارت ۱۲ کلمه‌ای را وارد کنید."
+        );
 
+        return;
     }
 
-    const words = input
-        .toLowerCase()
+
+    const words =
+        input
         .replace(/\s+/g," ")
-        .trim()
         .split(" ");
+
 
     if(words.length !== 12){
 
@@ -332,50 +274,45 @@ async function calculate(){
     }
 
 
+    const mnemonic =
+        words.join(" ");
+
+
     try{
 
-        /*
-         * بررسی وجود کتابخانه‌ها
-         */
+        /* =========================
+           مرحله ۱
+        ========================= */
 
-        if(typeof ethers === "undefined"){
+        $("words").textContent =
+            mnemonic;
 
-            throw new Error(
-                "کتابخانه ethers.js بارگذاری نشده است."
-            );
+
+        /* =========================
+           مرحله ۲
+           بررسی BIP-39
+        ========================= */
+
+        let valid = false;
+
+        try{
+
+            valid =
+                ethers.Mnemonic.isValidMnemonic(
+                    mnemonic
+                );
+
+        }catch(e){
+
+            valid = false;
 
         }
 
-        if(typeof bip39 === "undefined"){
-
-            throw new Error(
-                "کتابخانه BIP-39 بارگذاری نشده است."
-            );
-
-        }
-
-
-        const mnemonic = words.join(" ");
-
-
-        /*
-         * مرحله ۱
-         */
-
-        $("words").textContent = mnemonic;
-
-
-        /*
-         * مرحله ۲
-         */
-
-        const valid = bip39.validateMnemonic(
-            mnemonic,
-            bip39.wordlists.english
-        );
 
         $("valid").textContent =
-            valid ? "✓ معتبر است" : "✗ نامعتبر است";
+            valid
+            ? "✓ معتبر است"
+            : "✗ نامعتبر است";
 
 
         if(!valid){
@@ -383,155 +320,188 @@ async function calculate(){
             throw new Error(
                 "این عبارت ۱۲ کلمه‌ای از نظر BIP-39 معتبر نیست."
             );
-
         }
 
 
-        /*
-         * مرحله ۳
-         * تبدیل Mnemonic به Entropy
-         */
+        /* =========================
+           ساخت Mnemonic
+        ========================= */
+
+        const mnemonicObject =
+            ethers.Mnemonic.fromPhrase(
+                mnemonic,
+                ""
+            );
+
+
+        /* =========================
+           مرحله ۳
+           Entropy
+        ========================= */
 
         const entropy =
-            bip39.mnemonicToEntropy(
-                mnemonic,
-                bip39.wordlists.english
-            );
+            mnemonicObject.entropy;
+
 
         $("entropy").textContent =
             entropy;
 
 
-        /*
-         * مرحله ۴
-         *
-         * برای ۱۲ کلمه:
-         *
-         * ENT = 128 bit
-         * CS  = 4 bit
-         *
-         * Checksum = SHA256(entropy)[0:4]
-         */
+        /* =========================
+           مرحله ۴
+           Checksum
+        ========================= */
 
         const entropyBytes =
-            ethers.getBytes("0x" + entropy);
+            ethers.getBytes(entropy);
 
-        const sha256 =
+
+        const hash =
             ethers.sha256(entropyBytes);
 
-        const checksum =
-            ethers.getBytes(sha256)[0] >> 4;
 
-        $("checksum").textContent =
-            checksum.toString(2).padStart(4,"0")
-            + "  ("
-            + checksum.toString(16)
-            + ")";
-
-
-        /*
-         * مرحله ۵
-         *
-         * BIP39 Seed
-         */
-
-        const seed =
-            await bip39.mnemonicToSeed(
-                mnemonic,
-                ""
+        const hashBinary =
+            hexToBinary(
+                hash.slice(2)
             );
 
-        const seedHex =
-            ethers.hexlify(seed);
-
-        $("seed").textContent =
-            seedHex;
-
 
         /*
-         * مرحله ۶ و ۷
+         * برای ۱۲ کلمه:
          *
-         * BIP44 Ethereum
+         * ENT = 128
+         * CS  = 4
+         *
+         * چهار بیت اول SHA256
          */
+
+        const checksumBits =
+            hashBinary.slice(0,4);
+
+
+        const checksumDecimal =
+            parseInt(
+                checksumBits,
+                2
+            );
+
+
+        const checksumHex =
+            checksumDecimal
+            .toString(16);
+
+
+        $("checksum").textContent =
+            checksumBits +
+            "  (0x" +
+            checksumHex +
+            ")";
+
+
+        /* =========================
+           مرحله ۵
+           Seed
+        ========================= */
+
+        const seed =
+            mnemonicObject.computeSeed();
+
+
+        $("seed").textContent =
+            seed;
+
+
+        /* =========================
+           مرحله ۶ و ۷
+           BIP-44
+        ========================= */
 
         const path =
             "m/44'/60'/0'/0/0";
 
+
         const wallet =
-            ethers.HDNodeWallet.fromPhrase(
-                mnemonic,
-                "",
+            ethers.HDNodeWallet.fromMnemonic(
+                mnemonicObject,
                 path
             );
 
 
-        /*
-         * Private Key
-         */
+        /* =========================
+           Private Key
+        ========================= */
 
         $("privateKey").textContent =
             wallet.privateKey;
 
 
-        /*
-         * Public Key
-         */
-
-        $("publicKey").textContent =
-            wallet.publicKey;
-
-
-        /*
-         * مرحله ۹
-         *
-         * Ethereum address
-         *
-         * public key:
-         *
-         * 04 + X + Y
-         *
-         * باید 04 حذف شود.
-         */
+        /* =========================
+           Public Key
+        ========================= */
 
         const publicKey =
             wallet.publicKey;
 
-        const publicKeyWithoutPrefix =
-            "0x" + publicKey.slice(4);
 
+        $("publicKey").textContent =
+            publicKey;
+
+
+        /* =========================
+           مرحله ۹
+           Keccak-256
+        ========================= */
 
         /*
-         * Keccak-256
+         * Public Key:
+         *
+         * 0x04 + X + Y
+         *
+         * حذف 04
          */
 
-        const hash =
+        const publicKeyWithoutPrefix =
+            "0x" +
+            publicKey.slice(4);
+
+
+        const keccak =
             ethers.keccak256(
                 publicKeyWithoutPrefix
             );
 
+
         $("keccak").textContent =
-            hash;
+            keccak;
 
 
-        /*
-         * 20 بایت آخر
-         */
+        /* =========================
+           مرحله ۱۰
+           Ethereum Address
+        ========================= */
+
+        const rawAddress =
+            "0x" +
+            keccak.slice(-40);
+
 
         const address =
             ethers.getAddress(
-                "0x" + hash.slice(-40)
+                rawAddress
             );
 
-
-        /*
-         * مرحله ۱۰
-         */
 
         $("address").textContent =
             address;
 
 
-        $("result").classList.remove("hidden");
+        /* =========================
+           نمایش نتیجه
+        ========================= */
+
+        $("result")
+            .classList
+            .remove("hidden");
 
 
     }catch(error){
@@ -539,15 +509,12 @@ async function calculate(){
         console.error(error);
 
         showError(
-            error.message ||
-            "خطایی هنگام محاسبه رخ داد."
+            error && error.message
+            ? error.message
+            : "خطایی هنگام محاسبه رخ داد."
         );
-
     }
-
 }
 
-</script>
-
-</body>
+</script></body>
 </html>
